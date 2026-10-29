@@ -1,0 +1,9 @@
+node_modules/
+dist/
+offline.html
+java-validation/
+.DS_Store
+*.log
+.openai/
+.env
+.env.*

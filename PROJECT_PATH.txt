@@ -1,0 +1,7 @@
+本次工作区项目路径：
+/workspace/sites/algorithm-quest
+
+这个工作区路径不是你 Windows 电脑的磁盘路径。
+下载完整 ZIP，解压到自己的电脑后，在解压出的 algorithm-quest 文件夹里启动。
+无需安装：双击 offline.html。
+继续开发：安装 Node.js 24 LTS 后，双击 start-windows.bat；或 npm ci，再 npm run dev。

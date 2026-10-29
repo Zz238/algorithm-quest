@@ -1,0 +1,17 @@
+<script setup>
+import {ref,computed,watch} from 'vue';
+import {TERMS} from '../data/terms';
+import {CODE_GUIDES} from '../data/code-guides';
+const props=defineProps({program:Object,guideKey:String,title:{default:'Java 逐行说明'},filename:{default:'Solution.java'}});
+const guide=computed(()=>CODE_GUIDES[props.guideKey]);
+const line=ref(0),term=ref('');watch(()=>props.program,()=>{line.value=0;term.value=''});
+const tokens=computed(()=>props.program.lines.map(s=>s.match(/\s+|\+\+|--|==|!=|<=|>=|&&|\|\||->|\+=|%=|[A-Za-z_][A-Za-z_0-9]*|\d+|./g)||[]));
+const termInfo=computed(()=>(['<','>'].includes(term.value)&&/(?:List|Map|Deque|Queue|ArrayList|HashMap|PriorityQueue)</.test(props.program.lines[line.value])?['泛型尖括号','这里用来说明容器存什么类型，或用空尖括号让编译器推断类型，不是数值大小比较。',props.program.lines[line.value].trim()]:TERMS[term.value])||[/^\d+$/.test(term.value)?'数字字面量':'程序里的名字或符号',/^\d+$/.test(term.value)?'这是一项具体数值。它参与本行的赋值、边界或计算。':'它的具体用途在当前行的说明中解释。名字由程序员按用途命名，不能仅凭英文名字判断算法含义。',props.program.lines[line.value].trim()]);
+const isWord=t=>!/^\s+$/.test(t);
+function copy(){if(!navigator.clipboard?.writeText){status.value='复制不可用，请下载源码';return;}navigator.clipboard.writeText(props.program.lines.join('\n')).then(()=>status.value='已复制').catch(()=>status.value='可全选下面代码复制');}
+const status=ref('');
+function download(){const b=new Blob([props.program.lines.join('\n')+'\n'],{type:'text/plain;charset=utf-8'}),a=document.createElement('a'),url=URL.createObjectURL(b);a.href=url;a.download=props.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+</script>
+<template><section class="code-reader"><div class="section-bar"><h3>{{title}}</h3><div><button @click="copy">复制</button><button @click="download">下载 .java</button><small role="status">{{status}}</small></div></div>
+<section v-if="guide" class="code-overview" aria-label="代码整体讲解"><span class="eyebrow">CODE GUIDE / 先看整体</span><h4>这段代码要做什么？</h4><p class="overview-goal">{{guide.goal}}</p><div class="overview-io"><p><strong>输入</strong><span>{{guide.input}}</span></p><p><strong>输出</strong><span>{{guide.output}}</span></p></div><div class="overview-example"><h4>带着例子走一遍</h4><p>{{guide.example}}</p><ol><li v-for="(step,i) in guide.steps" :key="i"><b>{{String(i+1).padStart(2,'0')}}</b><span>{{step}}</span></li></ol></div><p class="overview-tip"><strong>理解重点：</strong>{{guide.tip}}</p></section>
+<p class="micro">接下来可以点行号读整句，点词语拆开看。代码里的每一行都能解释，包括大括号。</p><div class="code-layout"><div class="code-scroll"><div v-for="(tokens,i) in tokens" :key="i" class="code-line" :class="{selected:line===i}" @click="line=i;term=''" :data-line="i+1"><button class="line-num" @click.stop="line=i;term=''" :aria-label="`解释第 ${i+1} 行`">{{i+1}}</button><code><template v-for="(t,j) in tokens" :key="j"><button v-if="isWord(t)" class="token" :class="{keyword:['public','private','class','static','void','int','boolean','char','if','else','for','while','return','new','import','break','continue'].includes(t)}" @click.stop="line=i;term=t">{{t}}</button><span v-else>{{t}}</span></template></code></div></div><aside class="npc-dialog code-explain" aria-live="polite"><span class="eyebrow">GUIDE ▸ 第 {{line+1}} 行</span><code class="selected-source">{{program.lines[line].trim()}}</code><p>{{program.notes[line]}}</p><div v-if="term" class="term-card"><strong>{{term}} <small>{{termInfo[0]}}</small></strong><p>{{termInfo[1]}}</p><code>{{termInfo[2]}}</code></div><p v-else class="micro">单词看不懂？直接点代码里的那个词。变量名和关键字会分开说明。</p></aside></div></section></template>
