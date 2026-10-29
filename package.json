@@ -8,12 +8,14 @@
     "build": "vite build && node scripts/offline.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "check": "node scripts/check.mjs",
-    "check:examples": "node scripts/check-guide-examples.mjs"
+    "check:examples": "node scripts/check-guide-examples.mjs",
+    "check:cloud": "node scripts/check-cloud.mjs && node scripts/check-account-session.mjs"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
     "@vitejs/plugin-vue": "6.0.10",
     "vite": "7.3.7",
     "vue": "3.5.44"

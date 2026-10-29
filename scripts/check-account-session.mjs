@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {createRenderer,nextTick} from 'vue';
+import {chapters} from '../src/data/course.js';
+import {freshProgress} from '../src/logic.js';
+import {useCloudProgress} from '../src/useCloudProgress.js';
+import {GUEST_KEY,accountKey} from '../src/cloud-progress.js';
+const ids=chapters.flatMap(c=>c.lessons).map(l=>l.id),guest=freshProgress();guest.lessons=['1-1'];guest.notes['1-1']='guest only';
+const records=new Map([[GUEST_KEY,JSON.stringify(guest)]]);let storageWrites=0;const storage={getItem:k=>records.get(k)??null,setItem:(k,v)=>{storageWrites++;records.set(k,v);},removeItem:k=>records.delete(k)};
+const win=new EventTarget();Object.assign(win,{location:{href:'https://example.com/#/account'},localStorage:storage,document:Object.assign(new EventTarget(),{visibilityState:'visible'})});
+const old={window:globalThis.window,navigator:Object.getOwnPropertyDescriptor(globalThis,'navigator')};globalThis.window=win;let connected=true;Object.defineProperty(globalThis,'navigator',{configurable:true,value:{get onLine(){return connected;}}});
+const alice='11111111-1111-4111-8111-111111111111',bob='22222222-2222-4222-8222-222222222222';let callback,session={user:{id:alice,user_metadata:{user_name:'alice'}}},readGate=null,signOutCalls=0;const cloud=new Map();
+const client={auth:{onAuthStateChange:f=>{callback=f;return {data:{subscription:{unsubscribe(){}}}};},async getSession(){return {data:{session},error:null};},async signOut(){signOutCalls++;session=null;return {error:null};}}};
+const services={client,oauthRedirect:()=>'',githubProviderEnabled:async()=>true,saveAdapter:id=>({async read(){if(id===alice&&readGate)await readGate;return structuredClone(cloud.get(id)??null);},async write(document,revision){const current=cloud.get(id);if((current?.revision??null)!==revision)return null;const row={document:structuredClone(document),revision:(revision||0)+1,updated_at:new Date().toISOString()};cloud.set(id,row);return row;}})};
+const renderer=createRenderer({createElement:()=>({}),createText:()=>({}),createComment:()=>({}),setText(){},setElementText(){},parentNode(){},nextSibling(){},insert(){},remove(){},patchProp(){}});let store;
+const app=renderer.createApp({setup(){store=useCloudProgress(ids,services);return ()=>null;}});app.mount({});
+const flush=async()=>{await new Promise(resolve=>setTimeout(resolve,10));await nextTick();};
+try{
+ await flush();assert.equal(store.cloud.state.user.id,alice);assert.equal(store.progress.lessons.length,0,'Signing in must not automatically attach a guest save.');assert(store.cloud.state.mergePrompt);
+ await store.cloud.mergeGuest();assert.deepEqual(store.progress.lessons,['1-1']);assert.equal(store.progress.notes['1-1'],'guest only');assert.equal(cloud.get(alice).document.progress.notes['1-1'],'guest only');
+ store.progress.notes['1-1']='alice private';await store.cloud.sync();assert.equal(JSON.parse(records.get(accountKey(alice))).progress.notes['1-1'],'alice private');assert.equal(JSON.parse(records.get(GUEST_KEY)).notes['1-1'],'guest only','Account edits must not overwrite the guest cache.');
+ await store.cloud.signOut();assert.equal(store.cloud.state.user,null);assert.equal(store.progress.notes['1-1'],'guest only','Signing out restores the guest save, not the previous account.');
+ session={user:{id:bob,user_metadata:{user_name:'bob'}}};callback('SIGNED_IN',session);await flush();assert.equal(store.cloud.state.user.id,bob);assert.deepEqual(store.progress.lessons,[]);assert.equal(store.progress.notes['1-1'],undefined,'Another account must never inherit Alice records.');assert.equal(cloud.get(bob).document.progress.notes['1-1'],undefined);
+ session={user:{id:alice,user_metadata:{user_name:'alice'}}};callback('SIGNED_IN',session);await flush();assert.equal(store.progress.notes['1-1'],'alice private');
+ connected=false;store.progress.notes['2-1']='offline draft';await store.cloud.sync();assert.equal(store.cloud.state.syncStatus,'offline');assert.equal(JSON.parse(records.get(accountKey(alice))).progress.notes['2-1'],'offline draft');assert.equal(cloud.get(alice).document.progress.notes['2-1'],undefined);
+ connected=true;await store.cloud.sync();assert.equal(cloud.get(alice).document.progress.notes['2-1'],'offline draft');assert.equal(store.cloud.state.syncStatus,'synced');
+ const writesBefore=storageWrites;const storageEvent=new Event('storage');Object.assign(storageEvent,{key:accountKey(alice),newValue:records.get(accountKey(alice))});win.dispatchEvent(storageEvent);assert.equal(storageWrites,writesBefore,'An identical cross-tab save must not echo another storage event.');
+ let release;readGate=new Promise(resolve=>{release=resolve;});const delayedMerge=store.cloud.mergeGuest(),delayedLogout=store.cloud.signOut(),logoutCount=signOutCalls;
+ session={user:{id:bob,user_metadata:{user_name:'bob'}}};callback('SIGNED_IN',session);await flush();release();await Promise.all([delayedMerge,delayedLogout]);readGate=null;
+ assert.equal(store.cloud.state.user.id,bob,'A delayed logout must not sign out a newly selected account.');assert.equal(signOutCalls,logoutCount);assert.deepEqual(store.progress.lessons,[],'A delayed guest merge must not modify the newly selected account.');assert.equal(store.progress.notes['1-1'],undefined);
+ console.log('Account session checks passed: explicit guest merge, isolated caches, logout restoration, offline sync, cross-tab convergence and cancellation during account switches.');
+}finally{app.unmount();if(old.window===undefined)delete globalThis.window;else globalThis.window=old.window;if(old.navigator)Object.defineProperty(globalThis,'navigator',old.navigator);else delete globalThis.navigator;}

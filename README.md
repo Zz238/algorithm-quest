@@ -1,10 +1,39 @@
 # 算法之旅 · ALGO QUEST
 
-像素 RPG 风格、面向编程零基础的算法学习网站。Vue 3 + Vite，所有课程与图解都在项目内，不需要在线 AI 服务。GitHub Pages版公开访问，不需要登录；学习进度保存在访问者自己的浏览器中。下载项目后也可以在本机使用。
+像素 RPG 风格、面向编程零基础的算法学习网站。Vue 3 + Vite，所有课程与图解都在项目内，不需要在线 AI 服务。GitHub Pages 版公开访问；游客存档保存在浏览器，GitHub 登录后可使用 Supabase 云端存档。下载项目后也可以在本机使用。
+
+正式网站：https://zz238.github.io/algorithm-quest/
+
+## 账号与云端存档
+
+导航栏的“登录 / 云存档”使用 GitHub OAuth + Supabase Auth，采用 PKCE。没有邮箱注册、验证码、邮件找回或邮件发送服务，也不申请 GitHub 仓库权限。游客可以直接学习。
+
+- 登录后加载此账号独立的阅读、练习、闯关、笔记、收藏、每日阅读和打卡记录。
+- 发现游客旧存档时，先询问是否合并。完成记录和日期去重；同一小节已有账号笔记时保留账号笔记，游客原存档仍保留。
+- 学习修改会自动同步；离线先存到当前账号的本机缓存，联网、窗口重新聚焦或手动同步时重试。退出回到游客存档，不把账号数据写入游客存档。
+- 多设备同步通过 revision 比较后写入，发生冲突会重新读取并合并。笔记和收藏有字段修改时钟，支持清空笔记、取消收藏，不会被旧设备记录重新添加。
+- 完成进度按集合合并；它不是可以撤回完成状态的协作编辑器。同一笔记同时修改时，按修改时钟保留一个版本，不保留笔记历史。重要笔记仍建议导出 JSON 备份。
+- 云端登录仅在正式网站开放。本机开发和 offline.html 继续使用游客存档，避免跨来源 OAuth 回调丢失 PKCE 校验。
+
+### Supabase 配置
+
+`src/config/cloud.js` 只包含公开的项目 URL、publishable key 和正式网站地址；浏览器需要这些值。数据库隔离依靠 RLS，不依靠隐藏前端 key。**service_role、secret key、数据库密码和 GitHub Client Secret 不能放进源代码、前端环境变量或 GitHub Pages 构建产物。**
+
+1. 在自己的 Supabase 项目 SQL Editor 执行 `supabase/migrations/202610290001_cloud_saves.sql` 一次，创建独立的 `algo_quest_saves` 表、字段约束、版本触发器和用户隔离策略。已有该表时不要重复执行。
+2. Authentication → URL Configuration 的 Site URL 和 Redirect URLs 均设为正式网站的完整根地址 `https://zz238.github.io/algorithm-quest/`；不要使用通配符。
+3. 在 GitHub Developer Settings 创建 OAuth App。Homepage URL 填正式网站根地址，Authorization callback URL 填 `https://dirmhvwmvvcqgwoarlyj.supabase.co/auth/v1/callback`。
+4. 把该 OAuth App 的 Client ID 和 Client Secret 直接填到 Supabase Authentication → Sign In / Providers → GitHub，并启用 GitHub。Client Secret 只在 GitHub 与 Supabase 服务端保存，不经过本仓库。
+5. 正式网站点击“重新检查登录服务”，然后使用 GitHub 登录。未配置提供商时按钮会保持禁用，游客学习与本机记录不受影响。
+
+Fork 或更换部署域名时，应使用自己的 Supabase 项目，并同步修改公开配置、OAuth callback、Site URL 和 redirect allowlist。
+
+数据库校验脚本 `supabase/tests/cloud_saves_rls.sql` 在事务内创建两个无邮件、无密码的测试身份，检查本人读写、跨用户隔离、匿名拒绝、版本冲突、无效日期及重复日期约束，最后全部回滚。已在当前项目实际执行通过；不会留下测试用户或学习记录。
 
 ## GitHub Pages 自动部署
 
 本仓库包含网站完整源代码。Settings → Pages → Source 选择 **GitHub Actions**，推送 main 后由 `.github/workflows/deploy-pages.yml` 自动检查、构建并发布 `dist/`。
+
+免费个人账号使用 GitHub Pages 时需要公开仓库；将仓库改为私有会让 Pages 停用并返回 404。云端学习记录存放在 Supabase 的 RLS 隔离表中，不在源代码仓库里。
 
 - 使用 Node.js 24，`npm ci` 安装锁定依赖。
 - `vite.config.js` 的相对资源路径配合 hash 路由，支持仓库子目录访问及刷新，不需要服务器重写规则。
@@ -89,7 +118,7 @@ npm run preview
 
 日历采用贡献格样式：未打卡为浅灰格，已打卡的格子根据当天读完的章节数显示四档绿色，分别为 1 章、2 章、3 章、4 章及以上。旧版只有打卡日期的记录仍显示绿色。月份标签与周列对齐，手机端可在日历区域左右滑动。
 
-学习进度、每日阅读记录与打卡数据保存在当前浏览器，不会自动跨设备同步。可在“角色记录”中导出 JSON，并在另一台设备导入合并；旧版进度备份同样可以导入。
+游客的学习进度、每日阅读记录与打卡数据保存在当前浏览器；GitHub 登录后会随账号同步到云端。也可在“角色记录”中导出 JSON，并在另一台设备导入合并；旧版进度备份同样可以导入。
 
 ## 文件与后续扩展
 
@@ -114,6 +143,11 @@ scripts/content.py         已停用的旧生成器，保留作历史资料
 scripts/check-traces.mjs    可复现随机输入与追踪状态验证
 scripts/check.mjs          内容、参考算法与 Java 验证
 scripts/check-guide-examples.mjs  逐个运行 Java 整体讲解中的示例
+src/useCloudProgress.js    账号生命周期、分账号缓存和自动同步
+src/cloud-progress.js     合并、字段修改时钟与并发版本处理
+src/components/AccountPanel.vue  登录、同步状态和游客合并
+supabase/migrations/      数据表、RLS 和数据格式约束
+supabase/tests/           回滚式数据库隔离验证
 scripts/offline.mjs        生成单文件离线版
 public/answers/            适用于力扣编辑区的完整答案
 java-validation/           带 Main 和辅助类型的独立 Java 验证文件
@@ -130,6 +164,7 @@ java-validation/           带 Main 和辅助类型的独立 Java 验证文件
 ```bash
 npm run check
 npm run check:examples
+npm run check:cloud
 ```
 
 基础内容与参考算法检查只需要 Node。如果系统有带 jdk.compiler 模块的 JDK，还会编译全部 Java 示例，并执行十二道章末答案的 24 个情境。没有 JDK 时会明确提示跳过可选 Java 编译验证，网站仍能正常使用。
@@ -145,3 +180,5 @@ npm run check:examples
 课程组织参考 Hello 算法（https://www.hello-algo.com/）与算法通关手册（https://algo.itcharge.cn/）；语法参考 Java 官方教程（https://dev.java/learn/）。讲解、图解与代码重新编写，未搬运原站整篇教程。所有章末题均保留 LeetCode 原题链接，题目要求已逐题核对。网页用自行编写的中文说明与练习情境讲解题意。
 
 项目使用锁定版本：Vue 3.5.44、Vite 7.3.7、@vitejs/plugin-vue 6.0.10。依赖许可证见对应 npm 包。
+
+云端功能使用锁定的 @supabase/supabase-js 2.118.0。`npm run check:cloud` 检查合并收敛、打卡去重、清空笔记与取消收藏、旧存档迁移、并发重试、保存时输入、离线恢复和切换账号时取消旧请求。GitHub Actions 在每次部署前自动执行课程检查和云端逻辑检查。真实 OAuth 首次登录仍需完成上述提供商配置后，在浏览器验证。

@@ -26,7 +26,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
       - name: Verify course and interactive examples
-        run: node scripts/check.mjs --skip-java
+        run: |
+          node scripts/check.mjs --skip-java
+          npm run check:cloud
       - name: Build website
         run: npm run build
       - name: Include the self-contained offline edition
