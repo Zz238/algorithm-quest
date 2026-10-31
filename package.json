@@ -9,7 +9,8 @@
     "preview": "vite preview --host 127.0.0.1",
     "check": "node scripts/check.mjs",
     "check:examples": "node scripts/check-guide-examples.mjs",
-    "check:cloud": "node scripts/check-cloud.mjs && node scripts/check-account-session.mjs"
+    "check:cloud": "node scripts/check-cloud.mjs && node scripts/check-account-session.mjs",
+    "check:comments": "node scripts/check-comments.mjs"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

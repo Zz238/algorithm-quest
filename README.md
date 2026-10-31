@@ -4,6 +4,18 @@
 
 正式网站：https://zz238.github.io/algorithm-quest/
 
+## 小节笔记评论
+
+每个学习小节底部的“学习交流”是公开评论区，保留上方原有的私人学习笔记。登录 GitHub 后可点击“发送笔记”或按 Enter 发送，Shift + Enter 换行；输入法确认候选字时不会发送。发送后立即展示内容，支持原文预览、最新/最早排序、每页20条、失败保留分账号草稿，以及撤回本人的评论。评论按小节隔离，最多2000个字符。
+
+评论通过 Supabase 保存，作者昵称由服务端从 GitHub 公开用户名确定。公开接口返回昵称、正文、时间和本人标记，不返回内部账号ID、邮箱或私人笔记。正文按纯文本渲染，不执行 HTML。服务器校验登录、归属、长度、小节编号，使用请求ID防止重复发送，并限制为每10秒1条、每小时最多50条。
+
+数据库迁移 `supabase/migrations/202610310001_lesson_comments.sql` 在现有 Supabase 项目执行一次。真实评论表仅供受限函数访问，实时订阅使用另一张只含小节编号与版本号的通知表；连接中断时每20秒及页面回到前台时刷新列表。离线文件仍可记私人笔记，公开评论需联网访问正式网站。
+
+`npm run check:comments` 验证回车与输入法、长度、重复请求、草稿、切换小节和账号等行为。`supabase/tests/lesson_comments_rls.sql` 是全部回滚的数据库安全测试，不会留下公开测试评论。界面沿用像素风，控件聚焦仅切换原边框颜色，过渡约0.25秒，边框宽度和样式保持不变。具体更新见 [CHANGELOG.md](./CHANGELOG.md)。
+
+实现资料通过 Exa 核对：[Supabase Realtime](https://supabase.com/docs/guides/realtime/postgres-changes)、[Vue 表单与输入法](https://vuejs.org/guide/essentials/forms.html)。
+
 ## 账号与云端存档
 
 导航栏的“登录 / 云存档”使用 GitHub OAuth + Supabase Auth，采用 PKCE。没有邮箱注册、验证码、邮件找回或邮件发送服务，也不申请 GitHub 仓库权限。游客可以直接学习。

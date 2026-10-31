@@ -71,7 +71,7 @@ export function useCloudProgress(ids,services={client,oauthRedirect,githubProvid
    const {data,error}=await client.auth.getSession();if(error)throw error;await switchSession(data.session);
   }catch(error){state.initializing=false;state.error='登录没有完成，请重新尝试。原有本机进度未被修改。';state.syncStatus=owner==='guest'?'guest':'error';}
   finally{
-   if(code||authError){for(const key of ['code','sb_flow_id','error','error_description','error_code'])url.searchParams.delete(key);url.hash='/account';window.history.replaceState({},'',url.pathname+url.search+url.hash);window.dispatchEvent(new HashChangeEvent('hashchange'));sessionStorage.removeItem('algo-quest-return-route');}
+   if(code||authError){const back=sessionStorage.getItem('algo-quest-return-route')||'';for(const key of ['code','sb_flow_id','error','error_description','error_code'])url.searchParams.delete(key);url.hash=state.user&&!state.error&&/^#\/learn\/([1-9]|1[0-2])\/[0-5]$/.test(back)?back.slice(1):'/account';window.history.replaceState({},'',url.pathname+url.search+url.hash);window.dispatchEvent(new HashChangeEvent('hashchange'));sessionStorage.removeItem('algo-quest-return-route');}
    state.initializing=false;checkProvider();
   }
  }

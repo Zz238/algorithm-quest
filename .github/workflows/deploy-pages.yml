@@ -29,6 +29,7 @@ jobs:
         run: |
           node scripts/check.mjs --skip-java
           npm run check:cloud
+          npm run check:comments
       - name: Build website
         run: npm run build
       - name: Include the self-contained offline edition
