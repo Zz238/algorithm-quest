@@ -36,8 +36,23 @@ function chapterReady(c){return requiredLessons(c).every(l=>progress.lessons.inc
 
 const todayReadCount=computed(()=>cloud.state.user?readingCount(progress,today.value):0);
 const signedToday=computed(()=>progress.checkins.includes(today.value));
-function go(path){if(path==='/checkin')path='/account';location.hash=path;route.value=path;query.value='';window.scrollTo({top:0});}
-function onHash(){route.value=readRoute();window.scrollTo({top:0});}window.addEventListener('hashchange',onHash);onUnmounted(()=>window.removeEventListener('hashchange',onHash));
+const departing=ref(false);let departureFallback;
+function cancelDeparture(){clearTimeout(departureFallback);departureFallback=undefined;departing.value=false;}
+function finishDeparture(event){
+ if(event&&event.animationName!=='hero-depart')return;
+ if(!departing.value||view.value!=='home')return;
+ go(continuePath.value);
+}
+function startLearning(){
+ if(departing.value||view.value!=='home')return;
+ departing.value=true;
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){finishDeparture();return;}
+ // The animation normally completes navigation; this also covers interrupted animations.
+ departureFallback=setTimeout(()=>finishDeparture(),1400);
+}
+onUnmounted(cancelDeparture);
+function go(path){cancelDeparture();if(path==='/checkin')path='/account';location.hash=path;route.value=path;query.value='';window.scrollTo({top:0});}
+function onHash(){cancelDeparture();route.value=readRoute();window.scrollTo({top:0});}window.addEventListener('hashchange',onHash);onUnmounted(()=>window.removeEventListener('hashchange',onHash));
 function toast(s){notice.value=s;setTimeout(()=>notice.value='',3500)}
 function complete(){
  if(cloud.state.initializing)return;
@@ -76,7 +91,7 @@ const dayText='Java 基础、算法讲解与配套练习。';
 <div v-if="!storageOK" class="storage-warning">当前浏览器保存功能不可用。可以继续学习，离开前请到角色记录里导出进度。</div>
 <div v-if="notice" class="toast" role="status">{{notice}}</div>
 <main v-if="view==='home'" class="home">
-<section class="hero"><div class="hero-intro"><span class="eyebrow">十二章基础课程</span><h1>Java 与算法入门</h1><p>先学语法，再学数组、排序和常用算法。<br>每节都有操作演示、逐行代码说明和三道练习。</p><button class="primary start" @click="go(continuePath)">{{progress.lessons.length?'继续学习 →':'从第1章开始 →'}}</button><div class="hero-meta"><span>已读 {{progress.lessons.length}} / {{allLessons.length}} 节</span><span>练习通过 {{progress.mastery.length}} 节</span><span>闯关 {{clearedCount}} / {{chapters.length}}</span></div></div><div class="hero-next"><small>接下来学习</small><h2>{{resumeTitle}}</h2><p>通过本节练习后，点击“学完”保存进度。登录后，每天完成4个不同小节可自动打卡。</p></div><div class="scene" aria-hidden="true"><i class="sprite"></i><i class="ground"></i></div></section>
+<section class="hero" :class="{'is-departing':departing}"><div class="hero-intro"><span class="eyebrow">十二章基础课程</span><h1>Java 与算法入门</h1><p>先学语法，再学数组、排序和常用算法。<br>每节都有操作演示、逐行代码说明和三道练习。</p><button class="primary start" :disabled="departing" :aria-busy="departing" @click="startLearning">{{progress.lessons.length?'继续学习 →':'从第1章开始 →'}}</button><span v-if="departing" class="sr-only" role="status">正在进入课程</span><div class="hero-meta"><span>已读 {{progress.lessons.length}} / {{allLessons.length}} 节</span><span>练习通过 {{progress.mastery.length}} 节</span><span>闯关 {{clearedCount}} / {{chapters.length}}</span></div></div><div class="hero-next"><small>接下来学习</small><h2>{{resumeTitle}}</h2><p>通过本节练习后，点击“学完”保存进度。登录后，每天完成4个不同小节可自动打卡。</p></div><div class="scene" aria-hidden="true"><span class="sprite-walker" :class="{'is-walking':departing}" @animationend="finishDeparture"><i class="sprite"></i></span><i class="ground"></i></div></section>
 
 <section class="search-block"><div><h2>课程目录</h2><p class="muted">按章节顺序学习；标为选学的内容可以稍后再看。</p></div><label><span class="sr-only">搜索知识点</span><input v-model="query" type="search" placeholder="搜索：递归、循环、二分、栈……"/></label></section>
 <div v-if="query" class="search-results"><p v-if="!filtered.length">没有找到，试试更短的词。</p><button v-for="l in filtered" :key="l.id" @click="go(lessonRoute(l.id))"><strong>{{l.title}}</strong><span>{{l.concept}}</span></button></div>

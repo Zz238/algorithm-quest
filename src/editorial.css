@@ -12,7 +12,34 @@
 .hero-next h2 { font-size: 22px; margin: 12px 0; line-height: 1.6; overflow-wrap: anywhere; }
 .hero-next p { font-size: 14px; line-height: 1.9; color: var(--muted); }
 .hero .scene .cloud,.hero .scene .mountain,.hero .scene .castle { display: none; }
-.hero .scene .sprite { left: auto; right: 32px; bottom: 58px; transform: scale(.8); opacity: .5; }
+.hero .scene { container-type: inline-size; }
+.hero .scene .sprite-walker { --sprite-dark: #314d36; --sprite-mid: #405f45; position: absolute; right: 32px; bottom: 58px; width: 8px; height: 8px; opacity: .5; }
+.hero .scene .sprite { position: relative; display: block; left: 0; right: auto; top: 0; bottom: auto; transform: scale(.8); opacity: 1; box-shadow: 8px 0 var(--sprite-dark),16px 0 var(--sprite-dark),0 8px #9eb47f,8px 8px #f3edcc,16px 8px var(--sprite-dark),0 16px var(--sprite-mid),8px 16px var(--sprite-mid),16px 16px var(--sprite-mid),-8px 24px var(--sprite-dark),0 24px var(--sprite-mid),8px 24px var(--sprite-mid),16px 24px var(--sprite-mid),24px 24px var(--sprite-dark); }
+.hero .scene .sprite::before,.hero .scene .sprite::after { content: ''; position: absolute; top: 32px; width: 8px; height: 8px; background: var(--sprite-dark); }
+.hero .scene .sprite::before { left: 0; }
+.hero .scene .sprite::after { left: 16px; }
+.hero .scene .sprite-walker.is-walking { animation: hero-depart 1.2s linear both; will-change: transform, opacity; }
+.hero .scene .is-walking .sprite { animation: hero-step-bob .16s steps(2,end) infinite; }
+.hero .scene .is-walking .sprite::before { animation: hero-left-foot .16s steps(2,end) infinite; }
+.hero .scene .is-walking .sprite::after { animation: hero-right-foot .16s steps(2,end) infinite; }
+.hero.is-departing .start:disabled { opacity: .8; cursor: wait; }
+@keyframes hero-depart {
+  0% { transform: translateX(0); opacity: .5; }
+  12%,65% { opacity: 1; }
+  100% { transform: translateX(calc(84px - 100cqw)); opacity: 0; }
+}
+@keyframes hero-step-bob {
+  0%,100% { transform: scale(.8) translateY(0); }
+  50% { transform: scale(.8) translateY(-2px); }
+}
+@keyframes hero-left-foot {
+  0%,100% { transform: translate(0,0); }
+  50% { transform: translate(-4px,-2px); }
+}
+@keyframes hero-right-foot {
+  0%,100% { transform: translate(0,-2px); }
+  50% { transform: translate(4px,0); }
+}
 .search-block { margin: 38px 0 10px; }
 .world-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; row-gap: 16px; }
 .world-card { background: transparent; border: 0; border-top: 2px solid var(--line); box-shadow: none; padding: 24px 0 30px; }
@@ -111,4 +138,5 @@ html { scrollbar-gutter: stable; }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-surface,.chapter-trigger,.chapter-panel-enter-active,.chapter-panel-leave-active,.chapter-backdrop-enter-active,.chapter-backdrop-leave-active { transition: none; }
+  .hero .scene .sprite-walker.is-walking,.hero .scene .is-walking .sprite,.hero .scene .is-walking .sprite::before,.hero .scene .is-walking .sprite::after { animation: none; }
 }
