@@ -49,13 +49,26 @@ export function checkinStats(checkins,today=localDateKey()){
  for(const day of days){run=previous&&shiftDateKey(previous,1)===day?run+1:1;longest=Math.max(longest,run);previous=day;}
  return {total:days.length,current,longest};
 }
-export function canCheckin(progress,chapters,date){
- const read=new Set(progress.dailyRead?.[date]||[]);
- return chapters.some(chapter=>chapter.lessons.filter(lesson=>!lesson.optional).every(lesson=>read.has(lesson.id)));
+export const DAILY_READING_TARGET=4;
+export function readingCount(progress,date){return new Set(progress.dailyRead?.[date]||[]).size;}
+export function readingLevel(count,marked){return marked?Math.max(1,Math.min(4,Math.floor(count/DAILY_READING_TARGET))):0;}
+export function canCheckin(progress,date){return validDateKey(date)&&readingCount(progress,date)>=DAILY_READING_TARGET;}
+export function recordCheckin(progress,date,authenticated=false){
+ if(!authenticated||!canCheckin(progress,date)||progress.checkins.includes(date))return false;
+ progress.checkins.push(date);progress.checkins.sort();return true;
 }
-export function recordCheckin(progress,chapters,date){
- if(!validDateKey(date)||progress.checkins.includes(date)||!canCheckin(progress,chapters,date))return false;
- progress.checkins.push(date);return true;
+export function completeLesson(progress,id,date,authenticated=false){
+ if(!validDateKey(date)||!progress.mastery.includes(id))return {ok:false};
+ const isNew=!progress.lessons.includes(id),wasMarked=progress.checkins.includes(date);
+ if(isNew)progress.lessons.push(id);
+ // Guest learning remains available, but only account reading advances automatic check-in.
+ let newReading=false;
+ if(authenticated){
+  if(!progress.dailyRead[date])progress.dailyRead[date]=[];
+  if(!progress.dailyRead[date].includes(id)){progress.dailyRead[date].push(id);newReading=true;}
+  recordCheckin(progress,date,true);
+ }
+ return {ok:true,isNew,newReading,checkedIn:!wasMarked&&progress.checkins.includes(date),count:authenticated?readingCount(progress,date):0};
 }
 export function freshProgress(){return {version:1,lessons:[],mastery:[],bosses:[],bossTasks:{},notes:{},bookmarks:[],checkins:[],dailyRead:{}};}
 export function cleanProgress(p,lessonIds){

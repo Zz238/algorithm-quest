@@ -18,7 +18,7 @@ function sort(value){page.value=0;order.value=value;}
 </script>
 <template>
 <section class="lesson-comments" aria-labelledby="discussion-title">
- <div class="discussion-intro"><span class="eyebrow">CAMPFIRE NOTES / 学习交流</span><h2 id="discussion-title">把你的理解，留在这里。</h2><p>分享本节的思路、疑问或建议，一起把算法弄明白。</p></div>
+ <div class="discussion-intro"><span class="eyebrow">本节交流</span><h2 id="discussion-title">笔记与讨论</h2><p>写下本节的问题、解法或阅读补充。</p></div>
  <div class="discussion-heading"><h3><strong>{{total}}</strong> 条笔记评论</h3><div class="comment-sort" aria-label="评论排序"><button :aria-pressed="order==='oldest'" @click="sort('oldest')">最早</button><button :aria-pressed="order==='newest'" @click="sort('newest')">最新</button></div></div>
  <form class="comment-composer" @submit.prevent="send">
   <div class="composer-tabs" aria-label="笔记编辑模式"><button type="button" :aria-pressed="!preview" @click="preview=false">写笔记</button><button type="button" :aria-pressed="preview" @click="preview=true">预览</button><span class="composer-label">公开 · 本节交流</span></div>

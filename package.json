@@ -10,7 +10,8 @@
     "check": "node scripts/check.mjs",
     "check:examples": "node scripts/check-guide-examples.mjs",
     "check:cloud": "node scripts/check-cloud.mjs && node scripts/check-account-session.mjs",
-    "check:comments": "node scripts/check-comments.mjs"
+    "check:comments": "node scripts/check-comments.mjs",
+    "check:reading": "node scripts/check-reading.mjs"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -18,6 +19,7 @@
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
     "@vitejs/plugin-vue": "6.0.10",
+    "morphicons": "2.0.2",
     "vite": "7.3.7",
     "vue": "3.5.44"
   }

@@ -31,7 +31,7 @@ for(const c of chapters)for(const id of c.boss.review)assert(Number(id.split('-'
 assert.equal(chapters[4].boss.lc,1051);assert(lessons.find(l=>l.id==='8-2').foundation.links.some(link=>link.lc===912&&link.url.includes('sort-an-array')));
 const previous=cleanProgress({version:1,lessons:['5-3'],bosses:[5],notes:{'5-3':'old'},checkins:['2026-10-27']},lessons.map(l=>l.id));
 assert.deepEqual(previous.mastery,[]);assert.deepEqual(previous.bossTasks,{});assert.deepEqual(previous.lessons,['5-3']);assert.equal(experience(previous),180);
-const optionalChapter=chapters[7],optionalProgress=freshProgress();optionalProgress.dailyRead['2026-10-27']=requiredLessons(optionalChapter).map(l=>l.id);assert(canCheckin(optionalProgress,chapters,'2026-10-27'),'Optional quicksort must not block reading check-in.');
+const optionalChapter=chapters[7],optionalProgress=freshProgress();optionalProgress.dailyRead['2026-10-27']=requiredLessons(optionalChapter).slice(0,4).map(l=>l.id);assert(canCheckin(optionalProgress,'2026-10-27'),'Four completed lessons must be enough; a whole chapter is not required.');
 let cases=0;
 for(const c of chapters){assert.equal(c.lessons.length,6);for(const l of c.lessons){for(const k of ['story','concept','trap','complexity'])assert(l[k].length>0,`${l.id} ${k}`);assert(l.steps.length>=3);assert(framesFor(l.viz).length>=2);assert.equal(l.code.lines.length,l.code.notes.length);assert(l.code.notes.every(x=>x.trim().length>0));}const b=c.boss;assert(b.url.includes('leetcode.com/problems/'));for(const k of ['description','proof','complexity'])assert(b[k].length>15);assert(b.approach.length>=3&&b.hints.length===3&&b.relation.length>=2);for(const t of b.cases){assert(equalOutput(solve(b.lc,t.input),t.output,b.lc),`LC ${b.lc}`);cases++;}}
 assert.equal(experience({lessons:Array(72),bosses:Array(12)}),3960);
@@ -39,9 +39,9 @@ assert.deepEqual(cleanProgress({version:1,lessons:['1-1','bad'],bosses:[1,1,100]
 assert.equal(localDateKey(new Date(2026,9,27,0,30)),'2026-10-27');
 assert(validDateKey('2024-02-29'));assert(!validDateKey('2026-02-29'));assert.equal(shiftDateKey('2026-01-01',-1),'2025-12-31');
 const daily=freshProgress(),day='2026-10-27',chapter=chapters[0];
-daily.dailyRead[day]=requiredLessons(chapter).slice(0,-1).map(l=>l.id);
-assert(!canCheckin(daily,chapters,day));assert(!recordCheckin(daily,chapters,day));
-daily.dailyRead[day].push(requiredLessons(chapter).at(-1).id);assert(canCheckin(daily,chapters,day));assert(recordCheckin(daily,chapters,day));assert(!recordCheckin(daily,chapters,day));assert.deepEqual(daily.checkins,[day]);
+daily.dailyRead[day]=requiredLessons(chapter).slice(0,3).map(l=>l.id);
+assert(!canCheckin(daily,day));assert(!recordCheckin(daily,day,true));
+daily.dailyRead[day].push(requiredLessons(chapter)[3].id);assert(canCheckin(daily,day));assert(!recordCheckin(daily,day,false));assert(recordCheckin(daily,day,true));assert(!recordCheckin(daily,day,true));assert.deepEqual(daily.checkins,[day]);
 assert.deepEqual(checkinStats(['2026-10-25','2026-10-26','2026-10-26'],'2026-10-27'),{total:2,current:2,longest:2});
 assert.deepEqual(checkinStats(['2026-10-24','2026-10-26','2026-10-27'],'2026-10-27'),{total:3,current:2,longest:2});
 const cleaned=cleanProgress({version:1,checkins:['2026-10-27','2026-10-27','2026-02-29'],dailyRead:{'2026-10-27':['1-1','1-1','bad'],'not-a-date':['1-1']}},['1-1']);

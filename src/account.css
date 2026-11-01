@@ -1,0 +1,256 @@
+/* Account navigation keeps the paper palette and the shared orange focus transition. */
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 24px;
+}
+
+.header nav {
+  grid-column: 2;
+  grid-row: 1;
+  order: 0;
+  justify-content: center;
+  gap: clamp(16px, 2vw, 28px);
+}
+
+.header-actions {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header .brand {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.github-link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 2px solid transparent;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.github-link:hover {
+  background: var(--soft);
+}
+
+.github-icon {
+  display: block;
+  flex: none;
+}
+
+.github-link > .github-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.github-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  padding: 7px 11px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+
+.github-link:hover .github-tooltip,
+.github-link:focus-visible .github-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 4px 7px;
+  border: 2px solid transparent;
+  background: transparent;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.account-trigger[aria-current="page"] {
+  border-color: var(--selection-border);
+}
+
+.account-name {
+  min-width: 0;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.profile-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar.account-avatar {
+  width: 64px;
+  height: 64px;
+  border: 3px solid var(--ink);
+  font-size: 29px;
+}
+
+.login-trigger {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.github-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.account-heading h1 {
+  margin: 12px 0;
+  font-size: 34px;
+  overflow-wrap: anywhere;
+}
+
+.account-identity > div {
+  min-width: 0;
+}
+
+.account-identity h2 {
+  overflow-wrap: anywhere;
+}
+
+.reading-activity {
+  display: grid;
+  gap: 23px;
+  min-width: 0;
+}
+
+.activity-heading h2 {
+  margin: 7px 0 9px;
+  font-size: 26px;
+}
+
+.activity-heading p {
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+
+.reading-activity .today-card,
+.reading-activity .checkin-stats {
+  margin: 0;
+}
+
+.reading-activity .today-copy {
+  min-width: 0;
+}
+
+.reading-activity .today-copy h3 {
+  font-size: 23px;
+  margin: 9px 0;
+}
+
+.reading-activity .today-copy .micro {
+  font-size: 14px;
+}
+
+.reading-activity .today-pixel {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+.reading-progress {
+  height: 9px;
+  max-width: 480px;
+  margin: 16px 0 12px;
+  background: #cbd6b6;
+}
+
+.reading-progress i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+  transition: width .25s ease;
+}
+
+.activity-complete {
+  font-size: 14px;
+  color: var(--green);
+}
+
+.reading-activity .calendar-title h3 {
+  font-size: 23px;
+  margin: 6px 0 8px;
+}
+
+@media (max-width: 1200px) {
+  .account-name { max-width: 110px; }
+}
+
+@media (max-width: 900px) {
+  .header { grid-template-columns: minmax(0, 1fr) auto; gap: 14px; }
+  .header .brand { grid-column: 1; grid-row: 1; }
+  .header-actions { grid-column: 2; grid-row: 1; gap: 8px; }
+  .header nav { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; gap: 10px; }
+}
+
+@media (max-width: 780px) {
+  .account-name { max-width: 76px; }
+  .account-trigger { gap: 7px; padding: 4px; font-size: 14px; }
+  .account-trigger .profile-avatar { width: 32px; height: 32px; }
+  .github-link { width: 38px; height: 38px; }
+  .account-heading h1 { font-size: 27px; }
+  .activity-heading h2 { font-size: 23px; }
+  .reading-activity .today-copy h3,
+  .reading-activity .calendar-title h3 { font-size: 21px; }
+  .reading-activity .today-pixel { font-size: 17px; }
+  .reading-activity .today-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 380px) {
+  .header { padding: 15px 14px; column-gap: 8px; }
+  .header .brand { font-size: 20px; gap: 10px; }
+  .header-actions { gap: 6px; }
+  .header nav button { font-size: 14px; }
+  .account-name { max-width: 48px; }
+  .account-trigger { gap: 6px; }
+  .account-trigger .profile-avatar { width: 28px; height: 28px; }
+  .reading-activity .today-pixel { display: none; }
+}

@@ -22,7 +22,11 @@ select,
 .reward,
 .practice-saved,
 .xp-track,
-.xp-track i {
+.xp-track i,
+.github-link,
+.reading-progress,
+.reading-progress i,
+.chapter-panel-list button {
   border-radius: var(--radius-sm);
 }
 
@@ -67,6 +71,9 @@ input[type="range"] {
 .login-setup,
 .storage-warning,
 .toast,
+.github-tooltip,
+.profile-avatar,
+.profile-avatar img,
 [role="alert"] {
   border-radius: var(--radius-md);
 }
@@ -98,6 +105,8 @@ dialog,
 .account-card,
 .guest-merge,
 .account-help,
+.profile-avatar.account-avatar,
+.chapter-panel,
 .account-summary article {
   border-radius: var(--radius-lg);
 }

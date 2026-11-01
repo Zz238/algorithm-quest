@@ -1,6 +1,7 @@
 import {ref,reactive,watch,onMounted,onUnmounted} from 'vue';
 import {GUEST_KEY,GUEST_DOCUMENT_KEY,accountKey,emptyDocument,cleanDocument,readGuest,updateDocument,mergeDocuments,mergeGuestDocument,storageRead,hasProgress,fingerprint,stableStringify,synchronize} from './cloud-progress.js';
 import {client,oauthRedirect,githubProviderEnabled,saveAdapter} from './supabase.js';
+import {recordCheckin,localDateKey} from './logic.js';
 
 export function useCloudProgress(ids,services={client,oauthRedirect,githubProviderEnabled,saveAdapter}){
  const {client,oauthRedirect,githubProviderEnabled,saveAdapter}=services;
@@ -12,7 +13,7 @@ export function useCloudProgress(ids,services={client,oauthRedirect,githubProvid
  const state=reactive({user:null,initializing:true,loggingIn:false,providerLoading:true,providerEnabled:false,syncStatus:'guest',error:'',lastSyncedAt:null,mergePrompt:false,guestSummary:null,revision:null});
  const localKey=()=>owner==='guest'?GUEST_DOCUMENT_KEY:accountKey(owner);
  function persist(){try{storage?.setItem(localKey(),JSON.stringify(document));if(owner==='guest')storage?.setItem(GUEST_KEY,JSON.stringify(document.progress));}catch{storageOK.value=false;}}
- function apply(next){document=cleanDocument(next,ids);applying=true;Object.assign(progress,structuredClone(document.progress));applying=false;persist();}
+ function apply(next){document=cleanDocument(next,ids);if(owner!=='guest')recordCheckin(document.progress,localDateKey(),true);applying=true;Object.assign(progress,structuredClone(document.progress));applying=false;persist();}
  watch(progress,()=>{if(applying)return;document=updateDocument(document,progress,ids,device);persist();if(owner!=='guest'){state.syncStatus=navigator.onLine?'pending':'offline';schedule();}},{deep:true,flush:'sync'});
  function message(error){if(!navigator.onLine)return '当前离线，修改已保存在本机，联网后会继续同步。';if(['42P01','PGRST205'].includes(error?.code))return '云端存档服务尚未准备好，本机记录仍已保存。';if(error?.status===401||error?.code==='PGRST301')return '登录已过期，请重新登录；未同步的记录仍保留在本机。';return error?.message?.includes('其他设备')?error.message:'暂时没有同步成功，修改已保存在本机，可以稍后重试。';}
  function schedule(){clearTimeout(timer);timer=setTimeout(()=>sync(),900);}

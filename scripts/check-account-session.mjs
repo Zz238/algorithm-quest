@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {createRenderer,nextTick} from 'vue';
 import {chapters} from '../src/data/course.js';
-import {freshProgress} from '../src/logic.js';
+import {freshProgress,localDateKey,completeLesson} from '../src/logic.js';
+import {updateDocument} from '../src/cloud-progress.js';
 import {useCloudProgress} from '../src/useCloudProgress.js';
 import {GUEST_KEY,accountKey} from '../src/cloud-progress.js';
 const ids=chapters.flatMap(c=>c.lessons).map(l=>l.id),guest=freshProgress();guest.lessons=['1-1'];guest.notes['1-1']='guest only';
@@ -23,6 +24,15 @@ try{
  session={user:{id:alice,user_metadata:{user_name:'alice'}}};callback('SIGNED_IN',session);await flush();assert.equal(store.progress.notes['1-1'],'alice private');
  connected=false;store.progress.notes['2-1']='offline draft';await store.cloud.sync();assert.equal(store.cloud.state.syncStatus,'offline');assert.equal(JSON.parse(records.get(accountKey(alice))).progress.notes['2-1'],'offline draft');assert.equal(cloud.get(alice).document.progress.notes['2-1'],undefined);
  connected=true;await store.cloud.sync();assert.equal(cloud.get(alice).document.progress.notes['2-1'],'offline draft');assert.equal(store.cloud.state.syncStatus,'synced');
+ // Two devices each read two different lessons; reconciliation must check in after union.
+ const today=localDateKey(),readingIds=['3-1','3-2','4-1','4-2'];
+ store.progress.mastery=[...new Set([...store.progress.mastery,...readingIds])];
+ completeLesson(store.progress,readingIds[0],today,true);completeLesson(store.progress,readingIds[1],today,true);
+ const remote=cloud.get(alice),remoteProgress=structuredClone(remote.document.progress);remoteProgress.dailyRead[today]=readingIds.slice(2);
+ remote.document=updateDocument(remote.document,remoteProgress,ids,'second-device');remote.revision++;
+ await store.cloud.sync();assert.equal(store.progress.dailyRead[today].length,4);assert.deepEqual(store.progress.checkins,[today]);assert.deepEqual(cloud.get(alice).document.progress.checkins,[today],'The merged automatic check-in must reach cloud storage.');
+ await store.cloud.sync();assert.equal(store.progress.checkins.length,1,'Refreshing/syncing again must not duplicate today.');
+ connected=false;store.progress.mastery.push('1-1');completeLesson(store.progress,'1-1',today,true);await store.cloud.sync();assert(JSON.parse(records.get(accountKey(alice))).progress.dailyRead[today].includes('1-1'));connected=true;await store.cloud.sync();assert.equal(cloud.get(alice).document.progress.dailyRead[today].length,5);
  const writesBefore=storageWrites;const storageEvent=new Event('storage');Object.assign(storageEvent,{key:accountKey(alice),newValue:records.get(accountKey(alice))});win.dispatchEvent(storageEvent);assert.equal(storageWrites,writesBefore,'An identical cross-tab save must not echo another storage event.');
  let release;readGate=new Promise(resolve=>{release=resolve;});const delayedMerge=store.cloud.mergeGuest(),delayedLogout=store.cloud.signOut(),logoutCount=signOutCalls;
  session={user:{id:bob,user_metadata:{user_name:'bob'}}};callback('SIGNED_IN',session);await flush();release();await Promise.all([delayedMerge,delayedLogout]);readGate=null;
