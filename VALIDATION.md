@@ -1,5 +1,10 @@
 # 验证记录
 
+## 2026-11-02：站点标志不显示聚焦方框
+
+- 真实SiteHeader组件中分别鼠标点击标志、用Shift+Tab将键盘焦点移到标志，border-color均为透明、outline:none、box-shadow:none，不再显示橙黄色方框或额外文字下划线。
+- 标志仍保留透明结构边框及原尺寸，未改动返回课程目录的事件或导航下划线样式。生产构建通过，JavaScript产物保持index-CcpAtWXr.js。
+
 ## 2026-11-02：顶部导航中心展开下划线
 
 - 使用真实SiteHeader组件及全站CSS隔离验证：聚焦术语手册时，下划线宽度由0px依次增加到约30px、50px、56px和58px，left从29px减到0；移开焦点后按相反方向收回。width与left的过渡均为0.4s，缓动为cubic-bezier(.25,.8,.25,1)。
