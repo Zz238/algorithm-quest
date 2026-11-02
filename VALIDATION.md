@@ -1,5 +1,14 @@
 # 验证记录
 
+## 2026-11-02：移除课程收藏按钮
+
+- 移除小节标题收藏按钮及对应点击函数，保留课程内容、练习、笔记、账号及历史数据结构。同步修正学习记录页收藏空状态；生产构建通过。
+
+## 2026-11-02：用户提供的PNG网站图标
+
+- public/favicon.png保持用户提供PNG的原始字节，index.html声明image/png图标和相对地址；生产构建后dist/favicon.png与原图逐字节一致。
+- 自包含offline.html将同一PNG转换为data URL，不增加离线文件的外部图片依赖。生产构建通过。
+
 ## 2026-11-02：站点标志不显示聚焦方框
 
 - 真实SiteHeader组件中分别鼠标点击标志、用Shift+Tab将键盘焦点移到标志，border-color均为透明、outline:none、box-shadow:none，不再显示橙黄色方框或额外文字下划线。
