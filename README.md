@@ -12,7 +12,7 @@
 - 内部导航先显示约 110ms 的点击反馈，再替换页面并用 220ms 的淡入与小幅位移动效呈现内容。最新点击覆盖未执行跳转，浏览器历史切换取消待执行导航；系统设置减少动态效果时立即切换。
 - 带遮罩的章节导航保留平滑滑入、Esc 关闭、焦点限制和关闭后恢复焦点；正文为其预留位置。聚焦和选中仅切换原有边框颜色，以 0.25 秒过渡。
 
-设计参考：[UI/UX Pro Max](https://www.uupm.cc/)、[Taste Skill](https://www.tasteskill.dev/)、[Uiverse](https://uiverse.io/)。界面由本项目自行实现，没有引入外部 UI 框架或复制示例组件代码。
+设计参考：[UI/UX Pro Max](https://www.uupm.cc/)、[Taste Skill](https://www.tasteskill.dev/)、[Uiverse](https://uiverse.io/)。主要界面由本项目自行实现，没有引入外部 UI 框架。顶部导航下划线改编自 [WhiteNervosa 的 Uiverse 按钮](https://uiverse.io/WhiteNervosa/popular-ladybug-27)，采用400ms中心展开动画；许可与来源见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
 
 ## 小节笔记评论
 
