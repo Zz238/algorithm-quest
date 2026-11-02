@@ -228,7 +228,7 @@ export const chapters = [
           ]
         }
       ],
-      "question": "走到第二个格子前，sum 应该记着什么？",
+      "question": "从 sum=0 开始，按下标依次累计 nums=[1,2,3]。准备处理下标 1 的元素 2 之前，sum 应该记着什么？",
       "options": [
         "已经处理过的所有数字之和",
         "还没处理的数字之和",
@@ -450,7 +450,7 @@ export const chapters = [
           "output": -6
         }
       ],
-      "question": "这里 return 的作用是？",
+      "question": "Java 两数相加方法 sum(int a,int b) 执行 return a+b;。这条 return 的作用是什么？",
       "options": [
         "把两个数放进数组",
         "把结果交给调用者并结束当前方法",
@@ -994,7 +994,7 @@ export const chapters = [
           "output": -1
         }
       ],
-      "question": "nums[mid] 比目标小时，应怎样更新？",
+      "question": "在升序数组 nums=[-1,0,3,5,9,12] 中二分查找 target=9，当前闭区间 [left,right]=[0,5]、mid=2、nums[mid]=3。因中点值比目标小，应怎样更新区间？",
       "options": [
         "right = mid - 1",
         "left = mid + 1",
@@ -1630,7 +1630,7 @@ export const chapters = [
           "output": false
         }
       ],
-      "question": "为什么不能只统计左右括号数量？",
+      "question": "判断字符串 s=\"([)]\" 是否正确匹配。为什么不能只统计左右括号数量？",
       "options": [
         "数量无法判断嵌套顺序与种类",
         "统计数量一定很慢",
@@ -1931,7 +1931,7 @@ export const chapters = [
           ]
         }
       ],
-      "question": "把当前数字登记到表里，应该放在哪一步？",
+      "question": "两数之和要求使用两个不同下标，哈希表保存此前的“数字→下标”。处理 nums=[3,3]、target=6 时，当前数字应在何时登记到表里？",
       "options": [
         "查找搭档之前",
         "找到答案以后再改数组",
@@ -2255,7 +2255,7 @@ export const chapters = [
           ]
         }
       ],
-      "question": "保存 path 为答案时，为什么要 new ArrayList<>(path)？",
+      "question": "回溯生成 nums=[1,2] 的所有子集，path 是还会继续添加和撤销元素的可变列表。为什么用 new ArrayList<>(path) 保存答案？",
       "options": [
         "为了改变原数组",
         "保存当时的快照，避免后续撤销改掉旧答案",
@@ -2945,7 +2945,7 @@ export const chapters = [
           ]
         }
       ],
-      "question": "起点旧颜色与新颜色相同时，应如何处理？",
+      "question": "用 BFS 将 image=[[1,1,0],[1,0,0]] 中与 (0,0) 四方向连通的同色区域染色；起点旧颜色为 1，目标颜色也为 1。应如何处理？",
       "options": [
         "一直重新入队",
         "直接返回原图",
@@ -3237,7 +3237,7 @@ export const chapters = [
           "output": 8
         }
       ],
-      "question": "计算出 next=a+b 后，下一轮应怎样更新？",
+      "question": "爬楼梯每次走 1 或 2 级，滚动状态 a、b 保存相邻两级的方案数。初始 a=1、b=2，已计算 next=a+b=3，下一轮应怎样更新？",
       "options": [
         "先 a=b，再 b=next",
         "a=next，b=next",
@@ -3512,7 +3512,7 @@ export const chapters = [
           "output": 0
         }
       ],
-      "question": "为什么不能直接取整段价格的最大值减最小值？",
+      "question": "股票 prices=[7,1,5]，最多完成一次先买后卖的交易，也允许不交易。为什么不能用整段价格的最大值减最小值作为通用算法？",
       "options": [
         "这样一定比扫描快",
         "最低价可能出现在最高价之后，违反先买后卖",

@@ -38,7 +38,7 @@ function calendarKey(event,index){
         <div class="reading-progress" role="progressbar" aria-label="今日自动打卡进度" :aria-valuemin="0" :aria-valuemax="DAILY_READING_TARGET" :aria-valuenow="completedCount" :aria-valuetext="signedToday?'今日已打卡':`${count} / ${DAILY_READING_TARGET} 个小节`"><i :style="{width:(completedCount/DAILY_READING_TARGET*100)+'%'}"></i></div>
         <p class="micro">通过本节练习后，点击页面底部的“学完”记录完成。可跨章节累计，同一小节当天只计一次。</p>
         <div class="today-actions"><button @click="emit('continue')">{{user?'继续学习 →':'继续游客学习 →'}}</button><span v-if="signedToday" class="activity-complete">✓ 今天已打卡，无需手动操作</span></div>
-      </div><div class="today-pixel" aria-hidden="true"><span>{{signedToday?'✓':Math.min(count,DAILY_READING_TARGET)+' / '+DAILY_READING_TARGET}}</span></div>
+      </div>
     </section>
     <section class="checkin-stats" aria-label="打卡统计"><article><strong>{{stats.current}}</strong><span>当前连续天数</span></article><article><strong>{{stats.total}}</strong><span>累计打卡天数</span></article><article><strong>{{stats.longest}}</strong><span>最长连续天数</span></article></section>
     <section class="calendar-card" aria-labelledby="calendar-title">
@@ -49,7 +49,7 @@ function calendarKey(event,index){
       </div></div></div>
       <div class="calendar-legend" aria-label="未打卡、完成4个、8个、12个、16个及以上小节"><span>少</span><i v-for="level in [0,1,2,3,4]" :key="level" :data-level="level" :title="level===0?'未打卡':`完成 ${level*DAILY_READING_TARGET}${level===4?' 个及以上':' 个'}小节`"></i><span>多</span></div>
       <div class="calendar-detail" aria-live="polite"><strong>{{selectedDate}}</strong><span>{{selected?.marked?'已打卡 ✓':'未打卡'}}</span><span v-if="selected?.read">完成 {{selected.read}} 个小节</span><span v-if="selectedDate===today">今天</span></div>
-      <p class="calendar-help">点击格子查看日期。每天只打卡一次，重复登录不会清空当天进度；今天尚未打卡时，连续天数按截至昨天计算。{{user?'打卡随当前账号自动保存与同步。':'历史游客记录仍保留在本机。'}}旧版打卡历史继续保留，可在角色记录中导出备份。</p>
+      <p class="calendar-help">点击格子查看日期。每天只打卡一次，重复登录不会清空当天进度；今天尚未打卡时，连续天数按截至昨天计算。{{user?'打卡随当前账号自动保存与同步。':'历史游客记录仍保留在本机。'}}旧版打卡历史继续保留，可在学习记录中导出备份。</p>
     </section>
   </section>
 </template>

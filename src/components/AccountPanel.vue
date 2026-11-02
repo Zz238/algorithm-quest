@@ -13,7 +13,7 @@ const busy=computed(()=>state.value.initializing||state.value.loggingIn||state.v
 </script>
 <template>
 <section class="account-page">
-  <div class="account-heading"><span class="eyebrow">个人账号</span><h1>{{user?'账号与云存档':'登录'}}</h1><p class="account-lead">{{user?'阅读、练习、闯关、笔记、收藏和打卡，都会随当前账号保存。':'目前支持 GitHub 登录。游客也可以继续学习，登录后可选择合并本机进度。'}}</p></div>
+  <div class="account-heading"><span class="eyebrow">个人账号</span><h1>{{user?'账号与云存档':'登录'}}</h1><p class="account-lead">{{user?'阅读、练习、笔记、收藏和打卡，都会随当前账号保存。':'目前支持 GitHub 登录。游客也可以继续学习，登录后可选择合并本机进度。'}}</p></div>
   <section class="account-card" aria-labelledby="identity-title">
     <div class="account-identity"><UserAvatar class="account-avatar" :user="user"/><div><h2 id="identity-title">{{user?name:'使用 GitHub 登录'}}</h2><p>{{user?'已使用 GitHub 登录，当前显示此账号的学习记录。':'当前记录保存在这个浏览器，登录不会自动覆盖它。'}}</p></div></div>
     <p class="cloud-status" role="status" :data-status="state.syncStatus">{{state.initializing?'正在检查登录状态…':status}}<span v-if="lastSaved"> · {{lastSaved}}</span></p>
@@ -26,6 +26,6 @@ const busy=computed(()=>state.value.initializing||state.value.loggingIn||state.v
   <section v-if="user&&state.mergePrompt" class="guest-merge" aria-labelledby="guest-title"><span class="eyebrow">本机存档</span><h2 id="guest-title">发现这台设备上的游客存档</h2><p>已读 {{state.guestSummary.lessons}} 节、练习通过 {{state.guestSummary.mastery}} 节、打卡 {{state.guestSummary.checkins}} 天、{{state.guestSummary.notes}} 篇笔记。</p><p>选择合并后，完成记录会去重加入此账号；同一小节已有账号笔记时保留账号里的内容。游客原存档仍然保留。</p><div class="account-actions"><button class="primary" @click="cloud.mergeGuest" :disabled="busy">合并到当前账号</button><button @click="cloud.skipGuest" :disabled="busy">本次不合并</button></div></section>
   <div class="account-summary"><article><strong>{{progress.lessons.length}}</strong><span>已读小节</span></article><article><strong>{{progress.mastery.length}}</strong><span>练习通过</span></article><article><strong>{{progress.checkins.length}}</strong><span>打卡天数</span></article></div>
   <ReadingActivity :progress="progress" :user="user" :today="today" @continue="emit('continue')"/>
-  <section class="account-help"><h2>存档会怎样保存？</h2><ul><li>登录后会先加载这个账号的存档，之后在学习和编辑时自动保存。</li><li>暂时断网时，修改先留在本机；恢复联网或回到网页时会继续同步。</li><li>换设备后登录同一账号即可继续；切换到其他账号，会显示该账号独立的进度。</li><li>多设备编辑同一笔记时，按记录的修改时间合并。角色记录里的 JSON 导出仍可作为额外备份。</li><li>退出账号会回到游客存档；未同步的账号修改留在此设备，重新登录同一账号后继续同步。</li></ul><details v-if="user&&state.guestSummary"><summary>重新合并这台设备的游客记录</summary><p>确认这些记录属于你，再加入当前账号。</p><button @click="cloud.mergeGuest" :disabled="busy">合并游客存档</button></details></section>
+  <section class="account-help"><h2>存档会怎样保存？</h2><ul><li>登录后会先加载这个账号的存档，之后在学习和编辑时自动保存。</li><li>暂时断网时，修改先留在本机；恢复联网或回到网页时会继续同步。</li><li>换设备后登录同一账号即可继续；切换到其他账号，会显示该账号独立的进度。</li><li>多设备编辑同一笔记时，按记录的修改时间合并。学习记录里的 JSON 导出仍可作为额外备份。</li><li>退出账号会回到游客存档；未同步的账号修改留在此设备，重新登录同一账号后继续同步。</li></ul><details v-if="user&&state.guestSummary"><summary>重新合并这台设备的游客记录</summary><p>确认这些记录属于你，再加入当前账号。</p><button @click="cloud.mergeGuest" :disabled="busy">合并游客存档</button></details></section>
 </section>
 </template>

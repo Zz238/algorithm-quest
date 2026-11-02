@@ -53,3 +53,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## 2026-11-02 设计参考
+
+通过 Exa 阅读 UI/UX Pro Max（https://www.uupm.cc/）、Taste Skill（https://www.tasteskill.dev/）与 Uiverse（https://uiverse.io/）的公开页面，用于配色、排版、布局和动效方向的参考。本项目自行编写样式与组件，没有复制这些页面的组件源码，也没有新增 UI 框架依赖。GitHub 官方图标和已使用的 Morphicons 继续按上述许可证提供。

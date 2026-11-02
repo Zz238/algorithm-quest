@@ -1,7 +1,7 @@
 <script setup>
 import {ref,computed,toRef} from 'vue';
 import {useLessonComments} from '../useLessonComments.js';
-import {COMMENT_LIMIT,commentLength,isSendKey,pixelAvatar} from '../comments.js';
+import {COMMENT_LIMIT,commentLength,isSendKey} from '../comments.js';
 const props=defineProps({lessonId:{type:String,required:true},user:Object,service:Object});
 const emit=defineEmits(['login']);
 const model=useLessonComments(toRef(props,'lessonId'),toRef(props,'user'),props.service);
@@ -29,10 +29,10 @@ function sort(value){page.value=0;order.value=value;}
  </form>
  <p v-if="sendError" class="comment-error" role="alert">{{sendError}}</p><p class="comment-feedback" role="status">{{status}}</p>
  <div v-if="loadError" class="comment-load-error" role="status"><p>{{loadError}}</p><button @click="refresh" :disabled="loading">重新加载评论</button></div>
- <p v-if="loading&&!items.length" class="comment-empty">正在翻开本节的交流记录…</p><p v-else-if="!items.length&&!loadError" class="comment-empty">还没有笔记评论。你的一个思路，也许正好能帮到下一位学习者。</p>
+ <p v-if="loading&&!items.length" class="comment-empty">正在加载本节评论…</p><p v-else-if="!items.length&&!loadError" class="comment-empty">还没有评论。可以留下你的问题，或分享这节课的学习笔记。</p>
  <ol class="comment-list" aria-label="本节笔记评论列表" aria-live="polite" aria-relevant="additions removals">
   <li v-for="item in items" :key="item.id" class="comment-card">
-   <div class="comment-card-heading"><span class="comment-avatar" aria-hidden="true"><i v-for="(lit,i) in pixelAvatar(item.author_name)" :key="i" :class="{lit}"></i></span><div class="comment-author"><strong>{{item.author_name}}</strong><span v-if="user&&item.is_mine" class="comment-mine">我</span><time :datetime="item.created_at">{{formatTime(item.created_at)}}</time></div><span class="comment-floor" aria-hidden="true">#{{item.id.slice(0,4)}}</span></div>
+   <div class="comment-card-heading"><span class="comment-avatar" aria-hidden="true">{{item.author_name.trim().slice(0,1).toUpperCase()}}</span><div class="comment-author"><strong>{{item.author_name}}</strong><span v-if="user&&item.is_mine" class="comment-mine">我</span><time :datetime="item.created_at">{{formatTime(item.created_at)}}</time></div><span class="comment-floor" aria-hidden="true">#{{item.id.slice(0,4)}}</span></div>
    <p class="comment-body">{{item.body}}</p><div v-if="user&&item.is_mine" class="comment-card-actions"><button @click="withdraw(item)" :disabled="withdrawing===item.id">{{withdrawing===item.id?'撤回中…':'撤回我的笔记'}}</button></div>
   </li>
  </ol>

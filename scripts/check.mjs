@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';import fs from 'node:fs';import os from 
 import {chapters,codes,requiredLessons,lessonRoute} from '../src/data/course.js';import {framesFor} from '../src/visuals.js';import {solve,equalOutput,experience,cleanProgress,freshProgress,localDateKey,validDateKey,shiftDateKey,checkinStats,canCheckin,recordCheckin} from '../src/logic.js';
 import {checkLessonAnswer} from '../src/practice.js';
 import './check-traces.mjs';
+import './check-question-context.mjs';
+import './check-navigation.mjs';
 import {CODE_GUIDES} from '../src/data/code-guides.js';
 assert.equal(chapters.length,12);assert.equal(chapters.flatMap(c=>c.lessons).length,72);
 assert.deepEqual(Object.keys(CODE_GUIDES).sort(),Object.keys(codes).sort(),'Every Java example needs its own overview.');

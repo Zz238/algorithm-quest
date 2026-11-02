@@ -1,149 +1,22 @@
-/* Shared corner scale. Keep values here; components only consume these tokens. */
-:root {
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-}
-
-/* Compact controls and small bordered indicators. */
-button,
-select,
-.file-button,
-.player > b,
-.tile,
-.trace-tile,
-.trace-vars > div,
-.trace-secondary code,
-.calendar-grid button,
-.calendar-legend i,
-.calendar-detail span,
-.comment-avatar,
-.comment-mine,
-.reward,
-.practice-saved,
-.xp-track,
-.xp-track i,
-.github-link,
-.reading-progress,
-.reading-progress i,
-.chapter-panel-list button {
-  border-radius: var(--radius-sm);
-}
-
-/* Text entry keeps a little more room around its corners. */
-input,
-textarea {
-  border-radius: var(--radius-md);
-}
-
-input[type="number"],
-input[type="range"] {
-  border-radius: var(--radius-sm);
-}
-
-/* Inner panels, callouts, notifications and code surfaces. */
-.story,
-.warning-note,
-.cost-note,
-.hint-box,
-.relation,
-.case-answer,
-.test-case pre,
-.code-overview,
-.overview-io p,
-.selected-source,
-.code-line,
-.optional-note,
-.code-later,
-.misconceptions article,
-.trace-error,
-.trace-current,
-.trace-output,
-.trace-code,
-.mini-solution,
-.daily-lesson,
-.daily-ready,
-.today-pixel,
-.comment-error,
-.comment-empty,
-.account-avatar,
-.cloud-status,
-.login-setup,
-.storage-warning,
-.toast,
-.github-tooltip,
-.profile-avatar,
-.profile-avatar img,
-[role="alert"] {
-  border-radius: var(--radius-md);
-}
-
-/* Outer cards and dialogs. Do not clip children: focus, scroll and shadows stay intact. */
-dialog,
-[role="dialog"],
-[role="alertdialog"],
-.hero,
-.world-card,
-.visualizer,
-.trace-lab,
-.code-reader,
-.npc-dialog,
-.lesson-goals,
-.worked-case,
-.related-problems article,
-.mini-question,
-.test-case,
-.clear-chapter,
-.record-summary,
-.level-grid article,
-.daily-home,
-.today-card,
-.checkin-stats article,
-.calendar-card,
-.comment-composer,
-.comment-card,
-.account-card,
-.guest-merge,
-.account-help,
-.profile-avatar.account-avatar,
-.chapter-panel,
-.account-summary article {
-  border-radius: var(--radius-lg);
-}
-
-/* Inset header backgrounds follow the parent's inner curve without global overflow clipping. */
-.visualizer > .section-bar,
-.trace-lab > .section-bar,
-.code-reader > .section-bar,
-.comment-composer > .composer-tabs {
-  border-top-left-radius: var(--radius-md);
-  border-top-right-radius: var(--radius-md);
-}
-
-/* SVG diagram nodes use the same compact token as HTML array cells. */
-.node-svg rect {
-  rx: var(--radius-sm);
-  ry: var(--radius-sm);
-}
-
-/* Collapsed table borders ignore border-radius. Clip only these noninteractive tables;
-   preserve their existing border model, widths, row heights and internal grid lines. */
-.terms-table table,
-.foundation-compare table {
-  border-radius: var(--radius-md);
-  clip-path: inset(0 round var(--radius-md));
-}
-
-@media (max-width: 600px) {
-  /* The mobile terminology table becomes separate cards, so round each bordered row. */
-  .terms-table table {
-    clip-path: none;
-  }
-
-  .terms-table tr {
-    border-radius: var(--radius-md);
-  }
-}
-
-/* Pixel-art scenery, avatar pixels and one-edge page separators are intentionally
-   not containers. Keep their geometry so the existing visual identity is preserved. */
+/* The complete corner scale lives here. Components consume tokens, never new values. */
+:root { --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; }
+button,select,.file-button,.github-link,.chapter-progress,.chapter-progress i,
+.trace-tile,.tile,.trace-vars > div,.trace-secondary code,.calendar-grid button,
+.calendar-legend i,.calendar-detail span,.reading-progress,.reading-progress i,
+.question-type,.practice-saved,.reward,.comment-mine,.comment-avatar { border-radius: var(--radius-sm); }
+input,textarea,.story,.trace-error,.trace-current,.trace-output,.trace-code,
+.cost-note,.code-overview,.overview-io p,.selected-source,.mini-solution,
+.misconceptions article,.optional-note,.code-later,.daily-lesson,.daily-ready,
+.relation,.hint-box,.case-answer,.test-case pre,.cloud-status,.login-setup,
+.comment-error,.comment-empty,.toast,.github-tooltip,.profile-avatar,.profile-avatar img,
+.glossary-layout pre,.empty-state,.terms-table tr { border-radius: var(--radius-md); }
+dialog,[role=dialog],[role=alertdialog],[role=alert],.hero-next,.chapter-card,
+.howto,.terms-table,.worked-case,.trace-lab,.visualizer,.code-reader,
+.explanation-panel,.mini-question,.related-problems article,.test-case,
+.clear-chapter,.record-summary,.term-list button,.comment-composer,.comment-card,
+.account-card,.guest-merge,.account-summary,.checkin-stats,.today-card,.calendar-card,
+.chapter-panel,.search-results > button { border-radius: var(--radius-lg); }
+.visualizer > .section-bar,.trace-lab > .section-bar,.code-reader > .section-bar,
+.comment-composer > .composer-tabs { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
+.node-svg rect { rx: var(--radius-sm); ry: var(--radius-sm); }
+.foundation-compare table { border-radius: var(--radius-lg); clip-path: inset(0 round var(--radius-lg)); }
