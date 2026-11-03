@@ -249,6 +249,8 @@ begin
   select v.id,v.visited_at,v.day,v.path,host(v.ip) as ip,v.source,p.title,p.chapter,p.chapter_title
   from algo_quest_analytics.visits v join algo_quest_analytics.pages p on p.path=v.path
   where v.day between p_from and p_to and (p_chapter is null or p.chapter=p_chapter)
+  and v.visited_at>=greatest(p_from::timestamp at time zone 'Asia/Shanghai',statement_timestamp()-interval '30 days')
+  and v.visited_at<(p_to+1)::timestamp at time zone 'Asia/Shanghai'
   and (p_before is null or (v.visited_at,v.id)<(p_before,p_before_id))
   order by v.visited_at desc,v.id desc limit 51
  ) r;

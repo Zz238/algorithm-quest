@@ -25,7 +25,7 @@ const disabled=createTrafficTracker({enabled:false,routes:new Set(['/']),locatio
 // Execute the real migration and privilege-sensitive queries on isolated PostgreSQL.
 const db=new PGlite();
 await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.identities(user_id uuid,provider text,provider_id text);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;`);
-await db.exec(fs.readFileSync(new URL('../supabase/migrations/202611030001_traffic_analytics.sql',import.meta.url),'utf8'));
+await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261103092159_traffic_analytics.sql',import.meta.url),'utf8'));
 const one=async(sql,params=[])=>(await db.query(sql,params)).rows[0];
 const scalar=async(sql,params=[])=>Object.values(await one(sql,params))[0];
 const adminId=randomUUID(),otherId=randomUUID(),browserId=randomUUID();
@@ -58,7 +58,12 @@ await assert.rejects(as('authenticated',adminId,()=>report('2000-01-01',day)),/3
 const catalog=await db.query('select path from algo_quest_analytics.pages');for(const c of chapters)for(let i=0;i<c.lessons.length;i++)assert(catalog.rows.some(r=>r.path===`/learn/${c.id}/${i}`));
 await db.exec(`insert into algo_quest_analytics.visits(id,visited_at,day,path,ip) values(gen_random_uuid(),clock_timestamp()-interval '31 days',current_date-31,'/','203.0.113.9');insert into algo_quest_analytics.daily(day,pv,uv) values(current_date-366,10,5),(current_date-100,20,8);update algo_quest_analytics.settings set last_cleanup='-infinity';select algo_quest_analytics.cleanup();`);
 assert.equal(await scalar(`select count(*)::integer from algo_quest_analytics.visits where ip='203.0.113.9'`),0);assert.equal(await scalar(`select count(*)::integer from algo_quest_analytics.daily where day=current_date-366`),0);assert.equal(await scalar(`select pv::integer from algo_quest_analytics.daily where day=current_date-100`),20);
+await db.exec(`insert into algo_quest_analytics.visits(id,visited_at,day,path,ip) values(gen_random_uuid(),clock_timestamp()-interval '30 days 5 minutes',(clock_timestamp() at time zone 'Asia/Shanghai')::date-30,'/','203.0.113.10');update algo_quest_analytics.settings set last_cleanup=clock_timestamp();`);
+const monthAgo=await scalar('select ($1::date-30)::text',[day]);const retentionReport=await as('authenticated',adminId,()=>report(monthAgo,day));assert(!retentionReport.visits.some(v=>v.ip==='203.0.113.10'),'Reports must never return expired IPs between hourly cleanup runs.');
 assert.equal(await scalar(`select count(*)::integer from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='algo_quest_analytics' and c.relkind='r' and not c.relrowsecurity`),0);
+const beforeSmoke=await scalar('select count(*)::integer from algo_quest_analytics.visits');
+await db.exec(fs.readFileSync(new URL('../supabase/tests/traffic_analytics_deployment.sql',import.meta.url),'utf8'));
+assert.equal(await scalar('select count(*)::integer from algo_quest_analytics.visits'),beforeSmoke,'Deployment checks must leave no synthetic records.');
 await db.close();
 
 // Real HTTP server: loopback binding, DNS-rebinding/CSRF protections, PKCE and admin session.

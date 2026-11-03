@@ -2,6 +2,8 @@
 
 查看每日访问人数（UV）与浏览量（PV）、热门章节、访问时间、网络出口 IP 和来源网站。统计从启用时开始，不补记历史访问。
 
+**当前项目已完成云端配置并启用采集（2026年11月3日）。** 以下Windows启动步骤可直接使用；“首次启用云端统计”供新项目部署时参考，无需在当前项目重复执行迁移。
+
 ## 在 Windows 电脑上打开
 
 1. 从 [GitHub 下载项目 ZIP](https://github.com/Zz238/algorithm-quest/archive/refs/heads/main.zip)，先解压到一个固定目录。请勿在压缩包里直接启动。
@@ -19,7 +21,7 @@
 
 使用现有 Supabase 项目 `dirmhvwmvvcqgwoarlyj`。不要填写或上传 service-role、secret key、数据库密码、GitHub Client Secret。
 
-1. 应用 `supabase/migrations/202611030001_traffic_analytics.sql`。该迁移只新增 `algo_quest_analytics` 私有 schema 与三个受控 RPC，不改学习存档、评论或现有账户数据。可通过 Supabase 迁移工具，或在项目 SQL Editor 中完整执行该文件。
+1. 应用 `supabase/migrations/20261103092159_traffic_analytics.sql`。该迁移只新增 `algo_quest_analytics` 私有 schema 与三个受控 RPC，不改学习存档、评论或现有账户数据。可通过 Supabase 迁移工具，或在项目 SQL Editor 中完整执行该文件。
 2. 在 Supabase **Authentication → URL Configuration → Redirect URLs** 添加这个**精确地址**：
 
    ```text
@@ -62,9 +64,9 @@
 
 ## 保留与清理
 
-- 含完整 IP 的访问明细保留30天；Cron 每小时清理一次到期记录。
+- 含完整 IP 的访问明细保留30天；Cron 每小时清理一次到期记录，查询接口立即排除超过30天的明细。
 - 日、页面和章节汇总保留365个自然日，不含完整 IP。匿名去重摘要只保留最近两天，且使用按天加盐的摘要，不能跨日期关联。
-- 限速计数器保留约两分钟，不保留原始 IP，只使用按日加盐摘要。单浏览器每分钟最多30条、单出口 IP 每分钟最多120条，超限忽略，不重试轰炸。
+- 限速计数器按分钟分桶，小时清理任务删除超过两分钟的分桶；不保留原始 IP，只使用按日加盐摘要。单浏览器每分钟最多30条、单出口 IP 每分钟最多120条，超限忽略，不重试轰炸。
 - 采集与管理员读取也会触发按小时节流的清理，作为定时任务的兜底。
 - `/privacy` 与网站底部披露用途和保留规则，遵循 Do Not Track / Global Privacy Control，并提供本浏览器停止统计选项。停止只影响后续采集，不抹除已有匿名汇总。
 
@@ -85,3 +87,12 @@ npm run check:analytics
 - **较早日期没有明细**：明细仅30天；365天内的匿名汇总仍可查看。
 - **数据没有自动刷新**：点击“查询 / 刷新”。后台有意不后台轮询，以减少数据库请求。
 - **其他 GitHub 账号不能登录后台**：这是预期行为。公开课程和讨论区仍可使用其他账号，后台只允许指定管理员。
+
+## 当前部署校验记录
+
+- Supabase迁移版本 `20261103092159`，90个有效页面，8张启用RLS的私有统计表。
+- 小时清理任务 `algo-quest-traffic-retention` 已启用，Cron表达式 `17 * * * *`。
+- 本机回调 `http://127.0.0.1:4780/auth/callback` 已添加，生产Site URL和原有回调保留。
+- 线上数据库角色测试已验证匿名写入、事件重放去重、管理员报告和普通账号拒绝；合成访问在同一事务中回滚，不计入真实统计。可复查 `supabase/tests/traffic_analytics_deployment.sql`。
+- REST检查：无效页面采集返回false；仅持公开publishable key的调用者读取管理员接口被拒绝。
+- Supabase安全顾问中，[RLS无策略提示](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)对应私有表的默认拒绝策略；[匿名SECURITY DEFINER接口提示](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable)对应有校验与限速的公开采集接口。报告接口另有不可修改GitHub身份校验；不应为消除提示而开放私有表。
