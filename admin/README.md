@@ -17,6 +17,28 @@
 
 **本项目中的启动验证发生在开发环境，不等于已经在你的电脑上安装或启动服务。** 必须在要使用的电脑上执行上面的启动步骤。
 
+## Windows启动窗口闪退或无法启动
+
+新版启动器采用ASCII文本和Windows CRLF换行，先进入保留窗口的CMD，再执行启动检查。即使发生错误，窗口也会留在屏幕上。请使用最新版项目中的启动文件；必须先完整解压ZIP，不能在压缩包内双击，也不能只复制一个BAT文件。
+
+| 错误标记 | 原因与处理 |
+| --- | --- |
+| `AQ_PROJECT_FILES` | 所在目录缺少后台文件。完整解压项目，再运行根目录的启动文件。 |
+| `AQ_NODE_NOT_FOUND` | 没有找到Node.js，或PATH尚未生效。安装Node.js 24 LTS，关闭旧窗口后重试。 |
+| `AQ_NODE_VERSION` | 当前Node.js版本不符合要求，窗口上方会显示版本号。推荐安装Node.js 24 LTS。 |
+| `AQ_NODE_BROKEN` | 找到了Node.js，但无法执行。重新安装正确架构的Node.js。 |
+| `AQ_SERVER_EXIT` | Node已执行，但后台启动失败。查看此标记上方的具体错误；若4780端口已占用，先尝试打开已经运行的后台。 |
+
+手动检查时，在**解压后的项目文件夹**地址栏输入 `cmd /d /k` 并回车，然后运行：
+
+```bat
+start-admin-windows.bat --check
+```
+
+出现 `Preflight OK` 代表文件和运行时检查通过。它不会启动后台或打开浏览器。将窗口里的错误标记及上方几行文字提供给维护者，才能判断具体原因；仅凭“窗口一闪而过”不能确定是哪一项出错。
+
+命令行参数 `--run --no-open` 用于无浏览器的启动验证。正常双击无需参数。启动器只检查本机运行条件，不会安装软件、修改系统PATH或改动云端数据。
+
 ## 首次启用云端统计（网站维护者执行一次）
 
 使用现有 Supabase 项目 `dirmhvwmvvcqgwoarlyj`。不要填写或上传 service-role、secret key、数据库密码、GitHub Client Secret。
@@ -96,3 +118,4 @@ npm run check:analytics
 - 线上数据库角色测试已验证匿名写入、事件重放去重、管理员报告和普通账号拒绝；合成访问在同一事务中回滚，不计入真实统计。可复查 `supabase/tests/traffic_analytics_deployment.sql`。
 - REST检查：无效页面采集返回false；仅持公开publishable key的调用者读取管理员接口被拒绝。
 - Supabase安全顾问中，[RLS无策略提示](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)对应私有表的默认拒绝策略；[匿名SECURITY DEFINER接口提示](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable)对应有校验与限速的公开采集接口。报告接口另有不可修改GitHub身份校验；不应为消除提示而开放私有表。
+
