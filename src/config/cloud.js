@@ -2,3 +2,5 @@
 export const SUPABASE_URL='https://dirmhvwmvvcqgwoarlyj.supabase.co';
 export const SUPABASE_PUBLISHABLE_KEY="sb_publishable_hMvo2i6uPIOVYw0hlUVB0w_UlTT6IeV";
 export const PRODUCTION_SITE='https://zz238.github.io/algorithm-quest/';
+// Enable only after applying the traffic migration and verifying the hourly retention job.
+export const TRAFFIC_ENABLED=false;

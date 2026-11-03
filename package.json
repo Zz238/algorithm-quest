@@ -11,7 +11,9 @@
     "check:examples": "node scripts/check-guide-examples.mjs",
     "check:cloud": "node scripts/check-cloud.mjs && node scripts/check-account-session.mjs",
     "check:comments": "node scripts/check-comments.mjs",
-    "check:reading": "node scripts/check-reading.mjs"
+    "check:reading": "node scripts/check-reading.mjs",
+    "check:analytics": "node scripts/check-analytics.mjs",
+    "admin": "node admin/server.mjs --open"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -22,5 +24,8 @@
     "morphicons": "2.0.2",
     "vite": "7.3.7",
     "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.14"
   }
 }

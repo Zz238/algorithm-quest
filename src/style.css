@@ -653,3 +653,19 @@ tr:last-child > :is(th,td) { border-bottom: 0; }
   .search-field input,.trace-inputs input,.mini-output textarea,.notebook textarea,
   .test-case textarea,.glossary-page > input { font-size: 16px; }
 }
+
+/* Visitor privacy notice shares the site's reading typography and radius tokens. */
+.footer-about { min-width: 0; }
+.footer .footer-about p { margin-top: 5px; }
+.footer-privacy { padding: 0; background: transparent; border: 0; color: var(--green); font-size: inherit; line-height: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.footer-privacy:hover:not(:disabled) { background: transparent; }
+.privacy-page { max-width: 920px; }
+.privacy-page > section { margin-top: 32px; }
+.privacy-page > section h2 { font-size: 22px; margin-bottom: 12px; }
+.privacy-page section p + p { margin-top: 12px; }
+.privacy-page > .micro { margin-top: 38px; }
+.privacy-choice { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 22px; background: var(--paper); }
+.privacy-choice button { margin-top: 16px; }
+@media (max-width:600px) { .privacy-choice { padding: 18px; } .privacy-page section h2 { font-size: 20px; } }
+
+.privacy-deployment-status { padding:16px 20px; border:1px solid var(--line); background:var(--soft); border-radius:var(--radius-lg); font-size:14px; }

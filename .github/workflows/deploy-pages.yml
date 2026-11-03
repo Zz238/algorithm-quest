@@ -31,6 +31,7 @@ jobs:
           npm run check:cloud
           npm run check:comments
           npm run check:reading
+          npm run check:analytics
       - name: Build website
         run: npm run build
       - name: Include the self-contained offline edition

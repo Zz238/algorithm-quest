@@ -3,6 +3,8 @@ import {ref,reactive,computed,watch,onUnmounted,onMounted,nextTick} from 'vue';
 import {chapters,codes,requiredLessons,findLesson,lessonRoute} from './data/course';import {TERMS} from './data/terms';import {cleanProgress,experience,equalOutput,localDateKey,readingCount,completeLesson,DAILY_READING_TARGET} from './logic';
 import Visualizer from './components/Visualizer.vue';import CodeReader from './components/CodeReader.vue';
 import {createNavigation} from './navigation.js';
+import {createTrafficTracker} from './analytics.js';
+import PrivacyNotice from './components/PrivacyNotice.vue';
 import SiteHeader from './components/SiteHeader.vue';import ChapterDrawer from './components/ChapterDrawer.vue';
 import AccountPanel from './components/AccountPanel.vue';import {useCloudProgress} from './useCloudProgress';
 import LessonComments from './components/LessonComments.vue';
@@ -17,6 +19,14 @@ function refreshDay(){today.value=localDateKey();}
 const clockTimer=setInterval(refreshDay,60000);document.addEventListener('visibilitychange',refreshDay);
 onUnmounted(()=>{clearInterval(clockTimer);document.removeEventListener('visibilitychange',refreshDay)});
 const parts=computed(()=>route.value.split('/').filter(Boolean)),view=computed(()=>parts.value[0]||'home');
+let trafficStorage;try{trafficStorage=window.localStorage;}catch{trafficStorage={getItem:()=> 'off',removeItem:()=>{}};}
+const trafficRoutes=new Set(['/', '/account', '/login', '/progress', '/glossary', '/privacy',...chapters.flatMap(c=>[...c.lessons.map((_,i)=>`/learn/${c.id}/${i}`),`/boss/${c.id}`])]);
+const traffic=createTrafficTracker({routes:trafficRoutes,location:window.location,storage:trafficStorage,navigator:window.navigator,referrer:document.referrer});
+onMounted(()=>traffic.visit(route.value));watch(route,path=>traffic.visit(path));
+function updateTraffic(enabled){if(enabled)traffic.visit(route.value);else traffic.stop();}
+function trafficPreferenceChanged(event){if(event.key==='algo-quest-traffic-choice-v1')updateTraffic(event.newValue!=='off');}
+window.addEventListener('storage',trafficPreferenceChanged);
+onUnmounted(()=>{traffic.cancel();window.removeEventListener('storage',trafficPreferenceChanged);});
 const drawerOpen=ref(false),hasChapterMenu=computed(()=>['learn','boss'].includes(view.value));
 watch(route,()=>{drawerOpen.value=false;});
 const chapter=computed(()=>chapters.find(c=>c.id===Number(parts.value[1]))||chapters[0]);
@@ -144,8 +154,9 @@ const dayText='Java 基础、算法讲解与配套练习。';
 <section><h2>收藏的知识点</h2><p v-if="!progress.bookmarks.length" class="empty-state">暂无收藏的知识点。</p><div class="saved-lessons"><button v-for="id in progress.bookmarks" :key="id" @click="go(lessonRoute(id))">{{findLesson(id)?.title}} <span aria-hidden="true">↗</span></button></div></section>
 <section class="backup"><h2>备份学习记录</h2><p>{{cloud.state.user?'账号进度会自动同步到云端，也可以导出 JSON 作为额外备份。':'游客进度保存在当前浏览器。可以登录开启云端存档，或导出 JSON 备份。'}}</p><div class="backup-actions"><button @click="exportProgress">导出进度 JSON</button><label class="file-button">导入备份<input type="file" accept=".json,application/json" @change="importProgress"/></label></div></section></main>
 <main v-else-if="view==='glossary'" class="glossary-page"><span class="eyebrow">术语查询</span><h1>术语手册</h1><p class="page-lead">遇到不熟悉的词，查一查含义，再用例子理解它。</p><label class="sr-only" for="glossary-search">搜索术语</label><input id="glossary-search" v-model="glossaryQuery" placeholder="搜索 int、返回值、队列……" type="search"/><div class="glossary-layout"><div class="term-list"><p v-if="!glossaryItems.length" class="empty-state" role="status">没有找到相关术语，试试更短的关键词。</p><button v-for="[k,t] in glossaryItems" :key="k" @click="term=k" :class="{selected:term===k}"><code>{{k}}</code><small>{{t[0]}}</small></button></div><aside v-if="termInfo" class="explanation-panel"><h2>{{term}}</h2><span class="eyebrow">{{termInfo[0]}}</span><p>{{termInfo[1]}}</p><pre>{{termInfo[2]}}</pre><p class="micro">具体变量名的用途，还要结合所在语句和题目一起看。</p></aside></div></main>
+<PrivacyNotice v-else-if="view==='privacy'" @change="updateTraffic"/>
 <main v-else class="record-page"><h1>没有找到这个页面</h1><p class="page-lead">可以回到课程目录，重新选择要学习的内容。</p><button @click="go('/')">回到课程目录</button></main>
 </div>
-<footer class="footer"><span>算法之旅 / ALGO QUEST · {{dayText}}</span><details><summary>课程参考与使用说明</summary><p>独立编写的入门讲解、图解和答案，知识组织参考 <a href="https://www.hello-algo.com/" target="_blank" rel="noopener">Hello 算法</a> 与 <a href="https://algo.itcharge.cn/" target="_blank" rel="noopener">算法通关手册</a>，语法参考 <a href="https://dev.java/learn/" target="_blank" rel="noopener">Java 官方教程</a>，可视化与即时练习的组织参考 <a href="https://visualgo.net/en/sorting/" target="_blank" rel="noopener">VisuAlgo</a> 与 <a href="https://opendsa.cs.vt.edu/" target="_blank" rel="noopener">OpenDSA</a>。本站讲解、题目与交互均重新编写。章末题保留力扣原题链接。图解为内置概念演示，网页不编译任意 Java。游客进度保存在当前浏览器；登录后可同步到账号。下载项目后也可以离线学习。</p></details></footer>
+<footer class="footer"><div class="footer-about"><span>算法之旅 / ALGO QUEST · {{dayText}}</span><p>仅为网站客流统计记录访问情况。<button class="footer-privacy" @click="go('/privacy')">隐私说明与统计设置</button></p></div><details><summary>课程参考与使用说明</summary><p>独立编写的入门讲解、图解和答案，知识组织参考 <a href="https://www.hello-algo.com/" target="_blank" rel="noopener">Hello 算法</a> 与 <a href="https://algo.itcharge.cn/" target="_blank" rel="noopener">算法通关手册</a>，语法参考 <a href="https://dev.java/learn/" target="_blank" rel="noopener">Java 官方教程</a>，可视化与即时练习的组织参考 <a href="https://visualgo.net/en/sorting/" target="_blank" rel="noopener">VisuAlgo</a> 与 <a href="https://opendsa.cs.vt.edu/" target="_blank" rel="noopener">OpenDSA</a>。本站讲解、题目与交互均重新编写。章末题保留力扣原题链接。图解为内置概念演示，网页不编译任意 Java。游客进度保存在当前浏览器；登录后可同步到账号。下载项目后也可以离线学习。</p></details></footer>
 </div><ChapterDrawer v-if="hasChapterMenu" v-model:open="drawerOpen" :chapters="chapters" :chapter-id="chapter.id" :progress="progress" @navigate="go"/></div>
 </template>
