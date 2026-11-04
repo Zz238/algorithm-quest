@@ -4,6 +4,7 @@ import {checkLessonAnswer} from '../src/practice.js';
 import './check-traces.mjs';
 import './check-question-context.mjs';
 import './check-navigation.mjs';
+import './check-learning-continuity.mjs';
 import {CODE_GUIDES} from '../src/data/code-guides.js';
 assert.equal(chapters.length,12);assert.equal(chapters.flatMap(c=>c.lessons).length,72);
 assert.deepEqual(Object.keys(CODE_GUIDES).sort(),Object.keys(codes).sort(),'Every Java example needs its own overview.');

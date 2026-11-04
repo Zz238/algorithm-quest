@@ -367,10 +367,6 @@ tr:last-child > :is(th,td) { border-bottom: 0; }
 .mini-solution { border: 1px solid #dfe8f7; background: #f6f8fc; padding: 17px; margin-top: 17px; font-size: 14px; }
 .mini-solution p + p { margin-top: 10px; }
 .mini-solution code { white-space: pre-wrap; overflow-wrap: anywhere; }
-.notebook { margin-top: 34px; }
-.notebook h2 { font-size: 24px; }
-.notebook .micro { margin-top: 11px; }
-.notebook textarea { margin-top: 16px; min-height: 126px; width: 100%; font-size: 15px; }
 .daily-lesson { padding: 19px 20px; margin-top: 24px; background: #f4f7fc; border: 1px solid var(--line); font-size: 14px; }
 .daily-lesson span { font-weight: 600; }
 .daily-lesson p { color: var(--muted); font-size: 13px; margin-top: 7px; }
@@ -650,7 +646,7 @@ tr:last-child > :is(th,td) { border-bottom: 0; }
   .trace-tile-wrap small { font-size: 10px; }
 }
 @media (max-width: 720px) {
-  .search-field input,.trace-inputs input,.mini-output textarea,.notebook textarea,
+  .search-field input,.trace-inputs input,.mini-output textarea,
   .test-case textarea,.glossary-page > input { font-size: 16px; }
 }
 

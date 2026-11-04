@@ -4,7 +4,11 @@ import {START_UNITS} from './units/start.js';
 import {SEQUENCE_UNITS} from './units/sequence.js';
 import {RELATION_UNITS} from './units/relationships.js';
 import {STRATEGY_UNITS} from './units/strategy.js';
-export const units={...START_UNITS,...SEQUENCE_UNITS,...RELATION_UNITS,...STRATEGY_UNITS};
+import {CHAPTER_INTROS} from './chapter-intros.js';
+import {LINKED_UNITS} from './units/linked-basics.js';
+import {LESSON_PATHS} from './lesson-paths.js';
+import {FOUNDATION_ADDITIONS} from './foundation-additions.js';
+export const units={...START_UNITS,...SEQUENCE_UNITS,...LINKED_UNITS,...RELATION_UNITS,...STRATEGY_UNITS};
 export const codes={...originalCodes,...EXTRA_CODES};
 const order={1:[1,2,5,3,4,6],2:[1,2,3,4,5,6],3:[1,2,3,5,4,6],4:[1,5,6,2,3,4],5:[5,6,1,2,3,4],6:[5,1,2,3,4,6],7:[1,2,5,3,4,6],8:[1,5,2,3,4,6],9:[5,1,2,6,3,4],10:[1,5,2,6,3,4],11:[1,2,3,5,6,4],12:[1,5,2,3,4,6]};
 const overrides={'2-5':'index','3-1':'condition','3-2':'forSum','3-5':'index','4-1':'index','4-5':'index','4-6':'copy','5-6':'swap'};
@@ -14,15 +18,15 @@ const oldLessons=Object.fromEntries(original.flatMap(c=>c.lessons).map(l=>[l.id,
 let previousCore=null;
 export const chapters=original.map(c=>{
  const lessons=order[c.id].map(suffix=>{
-  const id=`${c.id}-${suffix}`,u=units[id],old=oldLessons[id],codeKey=overrides[id]||u.codeKey;
+  const id=`${c.id}-${suffix}`,base=units[id],u={...base,sections:[...base.sections,...(FOUNDATION_ADDITIONS[id]||[])],demo:LESSON_PATHS[id].demo.mode},old=oldLessons[id],codeKey=overrides[id]||u.codeKey;
   const prerequisites=[...new Set([...(previousCore?[previousCore]:[]),...(u.requires||[])])];
-  const result={...old,id,title:u.title,story:u.example.setup,concept:u.sections[0].paragraphs[0],steps:u.example.steps,trap:u.mistakes[0].right,codeKey,code:codes[codeKey],viz:u.viz,complexity:cost[codeKey]||(old?.codeKey===codeKey?old.complexity:null)||'先根据实际步骤数操作，再分别统计保存的数据；不要只按程序行数估计。',foundation:u,optional:!!u.optional,prerequisiteIds:prerequisites,showCode:c.id!==1&&u.showCode!==false};
+const result={...old,id,title:u.title,story:u.example.setup,concept:u.sections[0].paragraphs[0],steps:u.example.steps,trap:u.mistakes[0].right,codeKey,code:codes[codeKey],viz:u.viz,learning:LESSON_PATHS[id],complexity:u.complexity||cost[codeKey]||(old?.codeKey===codeKey?old.complexity:null)||'先根据实际步骤数操作，再分别统计保存的数据；不要只按程序行数估计。',foundation:u,optional:!!u.optional,prerequisiteIds:prerequisites,showCode:c.id!==1&&u.showCode!==false&&LESSON_PATHS[id].showCode!==false};
   if(!u.optional)previousCore=id;
   return result;
  });
  const boss={...c.boss,code:codes[c.boss.codeKey],review:review[c.id],difficulty:c.id===8?'综合应用':'基础应用'};
  if(c.id===1)boss.codePrerequisiteChapters=[2,3];
- return {...c,title:c.id===5?'排序基础：交换、冒泡与插入':c.title,subtitle:c.id===5?'一次只聚焦一种移动规则':c.subtitle,lessons,boss};
+ return {...c,introduction:CHAPTER_INTROS[c.id],title:c.id===5?'排序基础：交换、冒泡与插入':c.title,subtitle:c.id===5?'一次只聚焦一种移动规则':c.subtitle,lessons,boss};
 });
 chapters[4].boss={
  lc:1051,title:'高度检查器',url:'https://leetcode.com/problems/height-checker/',codeKey:'height',code:codes.height,difficulty:'基础应用',review:review[5],

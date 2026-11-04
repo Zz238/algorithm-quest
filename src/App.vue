@@ -8,6 +8,10 @@ import PrivacyNotice from './components/PrivacyNotice.vue';
 import SiteHeader from './components/SiteHeader.vue';import ChapterDrawer from './components/ChapterDrawer.vue';
 import AccountPanel from './components/AccountPanel.vue';import {useCloudProgress} from './useCloudProgress';
 import LessonComments from './components/LessonComments.vue';
+import LessonNotes from './components/LessonNotes.vue';
+import ChapterIntroduction from './components/ChapterIntroduction.vue';
+import NodeAnatomy from './components/NodeAnatomy.vue';
+import EverydayExample from './components/EverydayExample.vue';
 import TraceLab from './components/TraceLab.vue';import LessonFoundation from './components/LessonFoundation.vue';import LessonPractice from './components/LessonPractice.vue';import {TRACE_TYPES} from './traces';
 const allLessons=chapters.flatMap(c=>c.lessons),ids=allLessons.map(l=>l.id);
 const props=defineProps({progressServices:Object,commentsService:Object});
@@ -27,8 +31,8 @@ function updateTraffic(enabled){if(enabled)traffic.visit(route.value);else traff
 function trafficPreferenceChanged(event){if(event.key==='algo-quest-traffic-choice-v1')updateTraffic(event.newValue!=='off');}
 window.addEventListener('storage',trafficPreferenceChanged);
 onUnmounted(()=>{traffic.cancel();window.removeEventListener('storage',trafficPreferenceChanged);});
-const drawerOpen=ref(false),hasChapterMenu=computed(()=>['learn','boss'].includes(view.value));
-watch(route,()=>{drawerOpen.value=false;});
+const drawerOpen=ref(false),notesOpen=ref(false),notesModalOpen=ref(false),hasChapterMenu=computed(()=>['learn','boss'].includes(view.value));
+watch([route,()=>cloud.state.user?.id],()=>{drawerOpen.value=false;notesOpen.value=false;notesModalOpen.value=false;});
 const chapter=computed(()=>chapters.find(c=>c.id===Number(parts.value[1]))||chapters[0]);
 const lessonIndex=computed(()=>{const index=Number(parts.value[2]||0);return Number.isInteger(index)?Math.max(0,Math.min(chapter.value.lessons.length-1,index)):0;});
 const lesson=computed(()=>chapter.value.lessons[lessonIndex.value]);const boss=computed(()=>chapter.value.boss);
@@ -102,7 +106,7 @@ const termInfo=computed(()=>COURSE_TERMS[term.value]);
 const dayText='Java 基础、算法讲解与配套练习。';
 </script>
 <template>
-<div class="app-layout" :class="{'has-chapter-menu':hasChapterMenu,'chapter-menu-open':drawerOpen}"><div class="app-surface" :inert="drawerOpen">
+<div class="app-layout" :class="{'has-chapter-menu':hasChapterMenu,'chapter-menu-open':drawerOpen,'has-lesson-notes':view==='learn'}"><div class="app-surface" :inert="drawerOpen||notesModalOpen">
 <SiteHeader :user="cloud.state.user" :view="view" :chapter-id="chapter.id" @navigate="go"/>
 <div v-if="!storageOK" class="storage-warning">当前浏览器保存功能不可用。可以继续学习，离开前请到学习记录里导出进度。</div>
 <div v-if="notice" class="toast" role="status">{{notice}}</div>
@@ -124,16 +128,18 @@ const dayText='Java 基础、算法讲解与配套练习。';
   <div class="lesson-title"><div><span class="eyebrow">建议 12～20 分钟</span><h1>{{lesson.title}}</h1></div></div>
   <div v-if="lesson.prerequisiteIds.length" class="prerequisite-links"><strong>先回顾</strong><button v-for="id in lesson.prerequisiteIds" :key="id" @click="go(lessonRoute(id))">{{findLesson(id)?.title}} ↗</button></div>
   <p v-if="lesson.optional" class="optional-note">这是进阶选学。先完成本章基础内容和练习也能闯关，熟练后可再回来学习。</p>
-  <section class="story"><span class="eyebrow">从熟悉的事情开始</span><p>{{lesson.story}}</p></section>
+  <ChapterIntroduction :key="'intro-'+lesson.id" :intro="chapter.introduction" :chapter-id="chapter.id" :first="lessonIndex===0"/>
+  <EverydayExample :example="lesson.learning.life"/>
   <LessonFoundation :unit="lesson.foundation"/>
-  <TraceLab v-if="TRACE_TYPES.includes(lesson.foundation.demo)" :key="lesson.id" :mode="lesson.foundation.demo" :variant="lesson.codeKey==='stairs'?'rolling':''" :plain="!lesson.showCode"/>
-  <Visualizer v-else :key="lesson.id" :type="lesson.viz"/>
-  <aside class="cost-note"><strong>时间和空间怎么数</strong><p>{{lesson.complexity}}</p></aside>
-  <CodeReader v-if="lesson.showCode" :guide-key="lesson.codeKey" :program="lesson.code" :filename="lesson.codeKey==='entry'?'Main.java':'Solution.java'"/>
-  <p v-else class="code-later">本节先把概念和操作说明白，不要求阅读尚未讲授的完整Java程序。后续对应小节会逐句拆解实现。</p>
+  <NodeAnatomy v-if="lesson.id==='6-1'"/>
+  <p class="experiment-bridge"><strong>接下来在实验里看什么：</strong>{{lesson.learning.demo.explanation}}</p>
+  <TraceLab v-if="TRACE_TYPES.includes(lesson.learning.demo.mode)" :key="lesson.id" :mode="lesson.learning.demo.mode" :initial="lesson.learning.demo.initial" :variant="lesson.learning.variant||''" :plain="true"/>
+  <Visualizer v-else :key="lesson.id" :type="lesson.learning.demo.mode"/>
+  <aside v-if="lesson.showCode||chapter.id===6" class="cost-note"><strong>时间和空间怎么数</strong><p>{{lesson.complexity}}</p></aside>
+  <details v-if="lesson.showCode" class="code-stage"><summary>{{lesson.learning.codeLabel||'理解了例子，再看 Java 实现'}} <span aria-hidden="true">⌄</span></summary><p class="code-bridge">{{lesson.learning.codeExplanation}}</p><CodeReader :guide-key="lesson.codeKey" :program="lesson.code" :filename="lesson.codeKey==='entry'?'Main.java':'Solution.java'"/></details>
+  <p v-else class="code-later">{{lesson.learning.codeExplanation}}</p>
   <section v-if="lesson.foundation.links" class="related-problems"><h2>对应的力扣练习</h2><article v-for="link in lesson.foundation.links" :key="link.lc"><a :href="link.url" target="_blank" rel="noopener">LC {{link.lc}} · {{link.name}} ↗</a><p>{{link.focus}}</p><details v-if="link.lc===912"><summary>本节已学方法的完整答案</summary><CodeReader guide-key="merge" :program="codes.merge" title="LC 912 · 归并排序完整答案"/></details></article></section>
   <LessonPractice :key="'practice-'+(cloud.state.user?.id||'guest')+'-'+lesson.id" :lesson="lesson" :mastered="lessonMastered" @mastered="markMastered"/>
-  <section class="notebook"><h2>学习笔记</h2><p class="micro">写出输入、关键状态、下一步和容易错的地方。{{cloud.state.user?'笔记会自动保存，并同步到当前账号。':'游客笔记保存在当前浏览器，登录后可以选择合并。'}}</p><textarea v-model="note" maxlength="5000" placeholder="例如：a[i+1]先算下标，不会改变i；移动会覆盖旧格，value保留待插入的数。"></textarea></section>
   <div class="daily-lesson"><span>{{cloud.state.user?`今日阅读 · ${todayReadCount} 个小节${signedToday?' · 已打卡 ✓':` / ${DAILY_READING_TARGET} 个自动打卡`}`:'登录后，每天完成4个不同小节可自动打卡'}}</span><p>{{lessonMastered?'本节练习已通过，点击下方按钮记录学完。':'请先通过上面的三道练习，再点击学完。'}}{{cloud.state.user?'可跨章节累计，同一小节当天只计一次。':'游客学习记录仍保存在当前浏览器。'}}</p></div>
   <div class="lesson-actions"><button @click="go('/learn/'+chapter.id+'/'+Math.max(0,lessonIndex-1))" :disabled="lessonIndex===0">← 上一节</button><button class="primary" @click="complete" :disabled="!lessonMastered||cloud.state.initializing">{{progress.lessons.includes(lesson.id)?'记录今日阅读并继续':'记录学完'}} {{chapter.lessons[lessonIndex+1]&&!chapter.lessons[lessonIndex+1].optional?'→ 下一节':'→ 章节练习'}}</button></div>
   <LessonComments :lesson-id="lesson.id" :user="cloud.state.user" :service="props.commentsService" @login="cloud.signIn"/>
@@ -158,5 +164,5 @@ const dayText='Java 基础、算法讲解与配套练习。';
 <main v-else class="record-page"><h1>没有找到这个页面</h1><p class="page-lead">可以回到课程目录，重新选择要学习的内容。</p><button @click="go('/')">回到课程目录</button></main>
 </div>
 <footer class="footer"><div class="footer-about"><span>算法之旅 / ALGO QUEST · {{dayText}}</span><p>仅为网站客流统计记录访问情况。<button class="footer-privacy" @click="go('/privacy')">隐私说明与统计设置</button></p></div><details><summary>课程参考与使用说明</summary><p>独立编写的入门讲解、图解和答案，知识组织参考 <a href="https://www.hello-algo.com/" target="_blank" rel="noopener">Hello 算法</a> 与 <a href="https://algo.itcharge.cn/" target="_blank" rel="noopener">算法通关手册</a>，语法参考 <a href="https://dev.java/learn/" target="_blank" rel="noopener">Java 官方教程</a>，可视化与即时练习的组织参考 <a href="https://visualgo.net/en/sorting/" target="_blank" rel="noopener">VisuAlgo</a> 与 <a href="https://opendsa.cs.vt.edu/" target="_blank" rel="noopener">OpenDSA</a>。本站讲解、题目与交互均重新编写。章末题保留力扣原题链接。图解为内置概念演示，网页不编译任意 Java。游客进度保存在当前浏览器；登录后可同步到账号。下载项目后也可以离线学习。</p></details></footer>
-</div><ChapterDrawer v-if="hasChapterMenu" v-model:open="drawerOpen" :chapters="chapters" :chapter-id="chapter.id" :progress="progress" @navigate="go"/></div>
+</div><LessonNotes v-if="view==='learn'" :key="'notes-'+(cloud.state.user?.id||'guest')+'-'+lesson.id" v-model="note" v-model:open="notesOpen" :lesson-title="lesson.title" :context-label="`第 ${chapter.id} 章 · 小节 ${lessonIndex+1}`" :user="cloud.state.user" :sync-status="cloud.state.syncStatus" :storage-o-k="storageOK" :initializing="cloud.state.initializing" :inert="drawerOpen" @modal-change="notesModalOpen=$event"/><ChapterDrawer v-if="hasChapterMenu" v-model:open="drawerOpen" :inert="notesModalOpen" :chapters="chapters" :chapter-id="chapter.id" :progress="progress" @navigate="go"/></div>
 </template>

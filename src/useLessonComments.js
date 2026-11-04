@@ -29,7 +29,7 @@ export function useLessonComments(lesson,user,service=createCommentsService()){
   sendError.value='';status.value='';
   if(!user.value){sendError.value='请先使用 GitHub 登录。';return;}
   const invalid=validateComment(draft.value);if(invalid){sendError.value=invalid;return;}
-  if(!service.available){sendError.value='离线版可使用上方私人笔记，公开评论请到正式网站发送。';return;}
+  if(!service.available){sendError.value='离线版可使用私人学习笔记，公开评论请到正式网站发送。';return;}
   const generation=epoch,raw=draft.value,body=raw.trim(),author=owner(),topic=lesson.value;
   if(!attempt||attempt.raw!==raw||attempt.author!==author||attempt.topic!==topic)attempt={id:crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('').replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,'$1-$2-$3-$4-$5'),raw,author,topic};
   const id=attempt.id;sending.value=true;
