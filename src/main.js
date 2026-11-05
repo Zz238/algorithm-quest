@@ -1,1 +1,3 @@
 import {createApp} from 'vue';import App from './App.vue';import './style.css';import './account.css';import './editorial.css';import './rounded-corners.css';import './lesson-notes.css';import './course-introductions.css';createApp(App).mount('#app');
+
+import "./study.css";

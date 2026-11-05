@@ -1,3 +1,5 @@
+import {localDateKey,validDateKey,shiftDateKey,emptyLearning,cleanLearning,dailyGoal,dailyStudyCount,DEFAULT_GOAL} from './study-state.js';
+export {localDateKey,validDateKey,shiftDateKey};
 export const LEVELS=[{name:'算法小白',min:0},{name:'算法学徒',min:100},{name:'算法探索者',min:300},{name:'算法能手',min:700},{name:'算法高手',min:1500},{name:'算法大牛',min:3000}];
 export const WORLD_NAMES=['启程村','结构森林','思路山脉','算法城'];
 export function normalize(value,id){
@@ -24,22 +26,6 @@ export function solve(id,p){
  default:throw Error('未定义的题号');
  }
 }
-export function localDateKey(date=new Date()){
- const pad=n=>String(n).padStart(2,'0');
- return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-}
-export function validDateKey(value){
- if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
- const [year,month,day]=value.split('-').map(Number);
- if(year<1900||month<1||month>12||day<1)return false;
- const d=new Date(year,month-1,day,12);
- return d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day;
-}
-export function shiftDateKey(date,days){
- if(!validDateKey(date)||!Number.isInteger(days))throw Error('日期格式无效');
- const [y,m,d]=date.split('-').map(Number);
- return localDateKey(new Date(y,m-1,d+days,12));
-}
 export function checkinStats(checkins,today=localDateKey()){
  const days=[...new Set((checkins||[]).filter(d=>validDateKey(d)&&d<=today))].sort();
  const marked=new Set(days);
@@ -49,16 +35,20 @@ export function checkinStats(checkins,today=localDateKey()){
  for(const day of days){run=previous&&shiftDateKey(previous,1)===day?run+1:1;longest=Math.max(longest,run);previous=day;}
  return {total:days.length,current,longest};
 }
-export const DAILY_READING_TARGET=4;
+export const DAILY_READING_TARGET=DEFAULT_GOAL;
 export function readingCount(progress,date){return new Set(progress.dailyRead?.[date]||[]).size;}
 export function readingLevel(count,marked){return marked?Math.max(1,Math.min(4,Math.floor(count/DAILY_READING_TARGET))):0;}
-export function canCheckin(progress,date){return validDateKey(date)&&readingCount(progress,date)>=DAILY_READING_TARGET;}
+export function canCheckin(progress,date){return validDateKey(date)&&dailyStudyCount(progress,date)>=dailyGoal(progress);}
 export function recordCheckin(progress,date,authenticated=false){
  if(!authenticated||!canCheckin(progress,date)||progress.checkins.includes(date))return false;
  progress.checkins.push(date);progress.checkins.sort();return true;
 }
 export function completeLesson(progress,id,date,authenticated=false){
- if(!validDateKey(date)||!progress.mastery.includes(id))return {ok:false};
+ if(!progress.mastery.includes(id))return {ok:false};
+ return recordLessonReading(progress,id,date,authenticated);
+}
+export function recordLessonReading(progress,id,date,authenticated=false){
+ if(!validDateKey(date))return {ok:false};
  const isNew=!progress.lessons.includes(id),wasMarked=progress.checkins.includes(date);
  if(isNew)progress.lessons.push(id);
  // Guest learning remains available, but only account reading advances automatic check-in.
@@ -70,7 +60,7 @@ export function completeLesson(progress,id,date,authenticated=false){
  }
  return {ok:true,isNew,newReading,checkedIn:!wasMarked&&progress.checkins.includes(date),count:authenticated?readingCount(progress,date):0};
 }
-export function freshProgress(){return {version:1,lessons:[],mastery:[],bosses:[],bossTasks:{},notes:{},bookmarks:[],checkins:[],dailyRead:{}};}
+export function freshProgress(){return {version:1,lessons:[],mastery:[],bosses:[],bossTasks:{},notes:{},bookmarks:[],checkins:[],dailyRead:{},learning:emptyLearning()};}
 export function cleanProgress(p,lessonIds){
  if(p?.version!==1)throw Error('备份版本不支持');
  const known=new Set(lessonIds),chapterIds=new Set(lessonIds.map(id=>Number(id.split('-')[0])));
@@ -83,6 +73,7 @@ export function cleanProgress(p,lessonIds){
   notes:Object.fromEntries(Object.entries(p.notes||{}).filter(([k,v])=>known.has(k)&&typeof v==='string').map(([k,v])=>[k,v.slice(0,5000)])),
   bookmarks:[...new Set((Array.isArray(p.bookmarks)?p.bookmarks:[]).filter(x=>known.has(x)))],
   checkins:[...new Set((Array.isArray(p.checkins)?p.checkins:[]).filter(validDateKey))].sort(),
+  learning:cleanLearning(p.learning,known),
   dailyRead:Object.fromEntries(Object.entries(dailyRead).filter(([day,items])=>validDateKey(day)&&Array.isArray(items)).map(([day,items])=>[day,[...new Set(items.filter(x=>known.has(x)))]]).filter(([,items])=>items.length))
  };
 }

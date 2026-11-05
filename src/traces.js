@@ -65,7 +65,25 @@ export function buildTrace(type,config={}){
   code=['for (int i=1; i<a.length; i++) {','    int value=a[i];','    int j=i-1;','    while (j>=0 && a[j]>value) {','        a[j+1]=a[j];','        j--;','    }','    a[j+1]=value;','}'];put('第一格单独看作有序',-1,{},'一次只把一个新值插入已排序前缀，不同时处理整段。');for(let i=1;i<a.length;i++){const value=a[i];let j=i-1;put(`保存value=a[${i}]=${value}`,1,{i,value},'提前把待插入值拿出来，右移过程中即使原位置被覆盖也不会丢。',{active:[i]});put(`j=i-1=${j}`,2,{i,j,value},'从左侧已排序部分的最右端向左找落点。',{active:[j]});while(true){const ok=j>=0&&a[j]>value;put(j<0?'j=-1，左侧已没有格子':`检查a[${j}]=${a[j]}是否大于${value}`,3,{i,j,value,condition:ok},j<0?'&&左边为假，短路跳过a[-1]的读取。':ok?'左值较大，必须向右挪，给value留空位。':'当前左值不大于value，不必再右移。',{active:j>=0?[j]:[]});if(!ok)break;const moved=a[j];a[j+1]=a[j];put(`a[${j+1}]=a[${j}]=${moved}`,4,{i,j,value},`只复制${moved}到右边；value仍是${value}，暂时重复是正常中间状态。`,{active:[j,j+1]});j--;put(`j--后j=${j}`,5,{i,j,value},'只改变比较位置，数组和value都不因这一条再变化；下一条重新检查条件。',{active:j>=0?[j]:[]});}a[j+1]=value;put(`a[j+1]=a[${j+1}]=${value}`,7,{i,j,value,'j+1':j+1},'循环停在不需要移动的位置或左边界外，真正空位是j+1。',{active:[j+1]});}put('全部待插入元素处理完成',8,{},'左侧有序前缀已扩展为整个数组。',{output:[...a]});
  }
  else if(type==='bubble'){
-  code=['for (int end=a.length-1; end>0; end--) {','    for (int i=0; i<end; i++) {','        if (a[i]>a[i+1]) {','            int temp=a[i];','            a[i]=a[i+1];','            a[i+1]=temp;','        }','    }','}'];put('初始未排序数组',-1,{},'每轮从左到右比较相邻两格，较大者向右移动。');for(let end=a.length-1;end>0;end--){for(let i=0;i<end;i++){const ok=a[i]>a[i+1];put(`比较a[${i}]=${a[i]}与a[${i+1}]=${a[i+1]}`,2,{end,i,'i+1':i+1,condition:ok},ok?'左值更大，要用三条赋值交换。':'这对已非递减，不交换，继续下一对。',{active:[i,i+1]});if(ok){const temp=a[i];put(`temp=${temp}`,3,{end,i,temp},'保存即将被覆盖的左值。',{active:[i]});a[i]=a[i+1];put('右值写入左格',4,{end,i,temp},'旧左值仍在temp中，因此中间重复不丢数据。',{active:[i]});a[i+1]=temp;put('temp写入右格',5,{end,i,temp},'当前两格互换完成，较大值在右侧。',{active:[i+1]});}}put(`本轮结束，编号${end}已确定`,0,{end},'本轮最大值到右端；下一轮缩小边界，不再处理已确定的后缀。',{active:[end]});}put('排序完成',8,{},'所有元素保留，并按非递减顺序排列。',{output:[...a]});
+  code=['for (int end=a.length-1; end>0; end--) {','    for (int i=0; i<end; i++) {','        if (a[i]>a[i+1]) {','            int temp=a[i];','            a[i]=a[i+1];','            a[i+1]=temp;','        }','    }','}'];
+  put('初始未排序数组',-1,{},'每轮从左到右比较相邻两格，较大者向右移动。');
+  for(let end=a.length-1;end>0;end--){
+   const round=a.length-end;
+   put(`第 ${round} 轮开始，内层 i 初始化为0`,1,{round,end,i:0},'外层确定这轮的右边界；内层从头走。',{phase:'start'});
+   for(let i=0;i<end;i++){
+    const vars={round,end,i},ok=a[i]>a[i+1];
+    put(`比较a[${i}]=${a[i]}与a[${i+1}]=${a[i+1]}`,2,{...vars,'i+1':i+1,condition:ok},ok?'左值更大，要用三条赋值交换。':'这对已非递减，不交换，仍会执行内层更新。',{active:[i,i+1],phase:'compare'});
+    if(ok){
+     const temp=a[i];put(`temp=${temp}`,3,{...vars,temp},'保存即将被覆盖的左值。',{active:[i],phase:'swap'});
+     a[i]=a[i+1];put('右值写入左格',4,{...vars,temp},'旧左值仍在temp中，因此中间重复不丢数据。',{active:[i],phase:'swap'});
+     a[i+1]=temp;put('temp写入右格',5,{...vars,temp},'当前两格互换完成。内层更新还没发生。',{active:[i+1],phase:'swap'});
+    }
+    put(`执行 i++：i 从 ${i} 变为 ${i+1}`,1,{...vars,i:i+1},i+1<end?'i 仍小于 end，下一次继续比较同一轮的下一对。':'i 已等于 end，下一次条件检查会结束内层；此时 end 还没变。',{phase:'inner-update'});
+   }
+   put(`检查 i < end 为假：编号 ${end} 已确定`,1,{round,end,i:end,condition:false},'内层现在才结束。外层的更新是接下来的动作。',{active:[end],phase:'inner-stop'});
+   put(`执行 end--：end 从 ${end} 变为 ${end-1}`,0,{round,end:end-1},'缩小下轮的未排序范围，已确定的末尾位置不再参与比较。',{phase:'outer-update'});
+  }
+  put('排序完成',8,{},'所有元素保留，并按非递减顺序排列。',{output:[...a],phase:'done'});
  }
  else if(['assignment','comparison','function'].includes(type)){
   if(type==='assignment'){const name=config.name||'x',start=config.start??3,add=config.add??2,result=start+add;code=[`int ${name}=${start};`,`${name}=${name}+${add};`,`System.out.println(${name});`];put(`${name}初始化为${start}`,0,{[name]:start},'变量名不变，当前整数值已经保存。');put(`先用旧值计算${start}+${add}=${result}`,1,{[name]:start,'右侧结果':result},'求值阶段尚未覆盖左侧变量。');put(`把${result}保存回${name}`,1,{[name]:result},'赋值完成，之后读取会得到新值。');put('输出当前值',2,{[name]:result},'输出不再改变这个变量。',{output:result});}

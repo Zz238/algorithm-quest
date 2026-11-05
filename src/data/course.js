@@ -8,6 +8,7 @@ import {CHAPTER_INTROS} from './chapter-intros.js';
 import {LINKED_UNITS} from './units/linked-basics.js';
 import {LESSON_PATHS} from './lesson-paths.js';
 import {FOUNDATION_ADDITIONS} from './foundation-additions.js';
+import {priorIds} from './learning-path.js';
 export const units={...START_UNITS,...SEQUENCE_UNITS,...LINKED_UNITS,...RELATION_UNITS,...STRATEGY_UNITS};
 export const codes={...originalCodes,...EXTRA_CODES};
 const order={1:[1,2,5,3,4,6],2:[1,2,3,4,5,6],3:[1,2,3,5,4,6],4:[1,5,6,2,3,4],5:[5,6,1,2,3,4],6:[5,1,2,3,4,6],7:[1,2,5,3,4,6],8:[1,5,2,3,4,6],9:[5,1,2,6,3,4],10:[1,5,2,6,3,4],11:[1,2,3,5,6,4],12:[1,5,2,3,4,6]};
@@ -15,13 +16,11 @@ const overrides={'2-5':'index','3-1':'condition','3-2':'forSum','3-5':'index','4
 const cost={index:'读取已知的合法位置只需要固定工作量：时间O(1)，额外空间O(1)。',copy:'每格复制一次：时间O(n)；创建n格独立副本，额外空间O(n)。',swap:'固定三次赋值：时间O(1)，只用一个临时整数，额外空间O(1)。',condition:'只执行一次条件分支，时间和额外空间都是O(1)。',forSum:'每个元素处理一次：时间O(n)；只保留sum、i，额外空间O(1)。',set:'合理散列条件下期望时间O(n)，最坏保存n个不同值，额外空间O(n)。',dfs:'邻接表下每个可达顶点和出边处理常数次，时间O(V+E)；seen与递归栈额外O(V)。',dpTable:'从第3级填到第n级，时间O(n)；保留整张表，额外空间O(n)。',bruteStock:'检查约n(n-1)/2个日期对，时间O(n²)；只记几个整数，额外空间O(1)。',height:'复制O(n)，基础冒泡O(n²)，比较O(n)；总时间O(n²)，副本额外O(n)。',bubble:'这份基础冒泡没有提前停止标记，固定比较约n(n-1)/2次，时间O(n²)，额外空间O(1)。',insert:'最坏每次向左移动许多元素，O(n²)；已排序时约O(n)，额外空间O(1)。',merge:'每层合并O(n)，约log n层，时间O(n log n)；辅助数组O(n)，递归栈O(log n)。',quick:'通常平均O(n log n)，最坏不平衡划分O(n²)；递归空间随实际深度而变。',array:'每格累加一次，时间O(n)，只保留总额，额外空间O(1)。',treeBfs:'每个结点进出队一次，时间O(n)；队列最多保存一层及下一层的部分结点，最坏O(n)。'};
 const review={1:['1-2','1-4','1-6'],2:['2-2','2-4','2-6'],3:['3-1','3-2','3-3','3-4'],4:['4-1','4-5','4-4'],5:['4-6','5-6','5-1','5-4'],6:['6-3','6-6'],7:['7-1','7-3','7-6'],8:['8-1','8-3','8-4'],9:['9-5','9-1','9-6'],10:['10-5','10-2','10-3'],11:['11-2','11-3','11-5','11-6'],12:['12-1','12-5','12-2','12-3']};
 const oldLessons=Object.fromEntries(original.flatMap(c=>c.lessons).map(l=>[l.id,l]));
-let previousCore=null;
 export const chapters=original.map(c=>{
  const lessons=order[c.id].map(suffix=>{
   const id=`${c.id}-${suffix}`,base=units[id],u={...base,sections:[...base.sections,...(FOUNDATION_ADDITIONS[id]||[])],demo:LESSON_PATHS[id].demo.mode},old=oldLessons[id],codeKey=overrides[id]||u.codeKey;
-  const prerequisites=[...new Set([...(previousCore?[previousCore]:[]),...(u.requires||[])])];
+  const prerequisites=[...new Set([...priorIds(id).filter(key=>!key.startsWith('java-')),...(u.requires||[])])];
 const result={...old,id,title:u.title,story:u.example.setup,concept:u.sections[0].paragraphs[0],steps:u.example.steps,trap:u.mistakes[0].right,codeKey,code:codes[codeKey],viz:u.viz,learning:LESSON_PATHS[id],complexity:u.complexity||cost[codeKey]||(old?.codeKey===codeKey?old.complexity:null)||'先根据实际步骤数操作，再分别统计保存的数据；不要只按程序行数估计。',foundation:u,optional:!!u.optional,prerequisiteIds:prerequisites,showCode:c.id!==1&&u.showCode!==false&&LESSON_PATHS[id].showCode!==false};
-  if(!u.optional)previousCore=id;
   return result;
  });
  const boss={...c.boss,code:codes[c.boss.codeKey],review:review[c.id],difficulty:c.id===8?'综合应用':'基础应用'};

@@ -1,4 +1,5 @@
 import {cleanProgress,freshProgress} from './logic.js';
+import {mergeLearning} from './study-state.js';
 
 export const GUEST_KEY='algo-quest-course-v1';
 export const GUEST_DOCUMENT_KEY='algo-quest-guest-v2';
@@ -33,6 +34,7 @@ export function mergeDocuments(left,right,ids){
  for(const field of ['lessons','mastery','bosses','checkins'])out.progress[field]=sortedUnion(a.progress[field],b.progress[field]);
  for(const id of sortedUnion(Object.keys(a.progress.bossTasks),Object.keys(b.progress.bossTasks))){const x=a.progress.bossTasks[id],y=b.progress.bossTasks[id];out.progress.bossTasks[id]=Number(id)===5&&(x===1051||y===1051)?1051:y??x;}
  for(const day of sortedUnion(Object.keys(a.progress.dailyRead),Object.keys(b.progress.dailyRead)))out.progress.dailyRead[day]=sortedUnion(a.progress.dailyRead[day],b.progress.dailyRead[day]);
+ out.progress.learning=mergeLearning(a.progress.learning,b.progress.learning);
  for(const id of ids)for(const kind of ['notes','bookmarks']){
   const sa=a.clocks[kind][id]||zeroStamp,sb=b.clocks[kind][id]||zeroStamp;
   let winner=sa>sb?a:sb>sa?b:null;
@@ -51,7 +53,7 @@ export function mergeGuestDocument(account,guest,ids,device='device',now=Date.no
  merged.notes={...local.notes,...current.progress.notes};merged.bookmarks=sortedUnion(current.progress.bookmarks,local.bookmarks);
  return updateDocument(current,merged,ids,device,now);
 }
-export function hasProgress(progress){return !!(progress.lessons.length||progress.mastery.length||progress.bosses.length||progress.checkins.length||progress.bookmarks.length||Object.values(progress.notes).some(Boolean)||Object.keys(progress.dailyRead).length);}
+export function hasProgress(progress){return !!(progress.lessons.length||progress.mastery.length||progress.bosses.length||progress.checkins.length||progress.bookmarks.length||Object.values(progress.notes).some(Boolean)||Object.keys(progress.dailyRead).length||progress.learning?.prepared.length||progress.learning?.independent.length||Object.keys(progress.learning?.review||{}).length||progress.learning?.goal);}
 export function storageRead(storage,key,fallback){try{const text=storage?.getItem(key);return text?JSON.parse(text):fallback;}catch{return fallback;}}
 export function readGuest(storage,ids,device){
  const raw=storageRead(storage,GUEST_KEY,freshProgress());let progress;try{progress=cleanProgress(raw,ids);}catch{progress=freshProgress();}

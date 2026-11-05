@@ -1,6 +1,9 @@
 <script setup>
 import {ref,computed,watch,onUnmounted} from 'vue';import {framesFor} from '../visuals';
-const props=defineProps({type:String});const frames=computed(()=>framesFor(props.type)),at=ref(0),speed=ref(1600),playing=ref(false);let timer;
+import {useStudyDraft} from '../study-drafts.js';
+const props=defineProps({type:String,topic:String,owner:String});const frames=computed(()=>framesFor(props.type));
+const draft=useStudyDraft(props.owner,props.topic||props.type,'diagram',raw=>({step:Number.isInteger(raw?.step)?Math.min(frames.value.length-1,Math.max(0,raw.step)):0}));
+const at=ref(draft.step),speed=ref(1600),playing=ref(false);watch(at,v=>draft.step=v);let timer;
 const f=computed(()=>frames.value[at.value]);watch(()=>props.type,()=>{stop();at.value=0});
 function stop(){clearInterval(timer);playing.value=false;}function play(){if(playing.value){stop();return}if(at.value===frames.value.length-1)at.value=0;playing.value=true;timer=setInterval(()=>{if(at.value<frames.value.length-1)at.value++;else stop()},Number(speed.value));}
 function next(d){stop();at.value=Math.max(0,Math.min(frames.value.length-1,at.value+d));}watch(speed,()=>{if(playing.value){stop();play()}});onUnmounted(stop);

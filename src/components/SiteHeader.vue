@@ -11,9 +11,9 @@ const profile=computed(()=>accountProfile(props.user));
   <header class="header">
     <button class="brand" aria-label="算法之旅，回到课程目录" @click="emit('navigate','/')"><svg class="brand-symbol" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="6" fill="currentColor"/><path d="m13 10-6 6 6 6m6-12 6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>算法之旅<small>ALGO QUEST</small></span></button>
     <nav aria-label="主导航">
-      <button :class="{active:['home','learn','boss'].includes(view)}" :aria-current="['home','learn','boss'].includes(view)?'page':undefined" @click="emit('navigate','/')">课程目录</button>
+      <button :class="{active:['home','learn','boss','java'].includes(view)}" :aria-current="['home','learn','boss','java'].includes(view)?'page':undefined" @click="emit('navigate','/')">课程目录</button>
       <button :class="{active:view==='glossary'}" :aria-current="view==='glossary'?'page':undefined" @click="emit('navigate','/glossary')">术语手册</button>
-      <button :class="{active:view==='progress'}" :aria-current="view==='progress'?'page':undefined" @click="emit('navigate','/progress')">学习记录</button>
+      <button :class="{active:['progress','review','trial'].includes(view)}" :aria-current="['progress','review','trial'].includes(view)?'page':undefined" @click="emit('navigate','/progress')">学习记录</button>
     </nav>
     <div class="header-actions">
       <a class="github-link" href="https://github.com/Zz238/algorithm-quest" target="_blank" rel="noopener noreferrer" aria-label="向我们提建议" aria-describedby="github-suggestion-tip" title="向我们提建议"><GitHubIcon/><span class="github-tooltip" id="github-suggestion-tip" role="tooltip">向我们提建议</span></a>

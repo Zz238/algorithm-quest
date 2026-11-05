@@ -5,6 +5,7 @@ import './check-traces.mjs';
 import './check-question-context.mjs';
 import './check-navigation.mjs';
 import './check-learning-continuity.mjs';
+import './check-study.mjs';
 import {CODE_GUIDES} from '../src/data/code-guides.js';
 assert.equal(chapters.length,12);assert.equal(chapters.flatMap(c=>c.lessons).length,72);
 assert.deepEqual(Object.keys(CODE_GUIDES).sort(),Object.keys(codes).sort(),'Every Java example needs its own overview.');
@@ -38,7 +39,7 @@ const optionalChapter=chapters[7],optionalProgress=freshProgress();optionalProgr
 let cases=0;
 for(const c of chapters){assert.equal(c.lessons.length,6);for(const l of c.lessons){for(const k of ['story','concept','trap','complexity'])assert(l[k].length>0,`${l.id} ${k}`);assert(l.steps.length>=3);assert(framesFor(l.viz).length>=2);assert.equal(l.code.lines.length,l.code.notes.length);assert(l.code.notes.every(x=>x.trim().length>0));}const b=c.boss;assert(b.url.includes('leetcode.com/problems/'));for(const k of ['description','proof','complexity'])assert(b[k].length>15);assert(b.approach.length>=3&&b.hints.length===3&&b.relation.length>=2);for(const t of b.cases){assert(equalOutput(solve(b.lc,t.input),t.output,b.lc),`LC ${b.lc}`);cases++;}}
 assert.equal(experience({lessons:Array(72),bosses:Array(12)}),3960);
-assert.deepEqual(cleanProgress({version:1,lessons:['1-1','bad'],bosses:[1,1,100],notes:{'bad':'x'},bookmarks:[]},['1-1']),{version:1,lessons:['1-1'],mastery:[],bosses:[1],bossTasks:{},notes:{},bookmarks:[],checkins:[],dailyRead:{}});
+assert.deepEqual(cleanProgress({version:1,lessons:['1-1','bad'],bosses:[1,1,100],notes:{'bad':'x'},bookmarks:[]},['1-1']),{...freshProgress(),lessons:['1-1'],bosses:[1]});
 assert.equal(localDateKey(new Date(2026,9,27,0,30)),'2026-10-27');
 assert(validDateKey('2024-02-29'));assert(!validDateKey('2026-02-29'));assert.equal(shiftDateKey('2026-01-01',-1),'2025-12-31');
 const daily=freshProgress(),day='2026-10-27',chapter=chapters[0];

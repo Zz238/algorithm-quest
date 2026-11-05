@@ -30,7 +30,7 @@ export function useCloudProgress(ids,services={client,oauthRedirect,githubProvid
   finally{if(activeRequest===job)activeRequest=null;if(epoch===generation&&again){again=false;schedule();}}})();
   activeRequest=job;return job;
  }
- function guestDetails(){const guest=readGuest(storage,ids,device).progress;state.guestSummary={lessons:guest.lessons.length,mastery:guest.mastery.length,bosses:guest.bosses.length,notes:Object.values(guest.notes).filter(Boolean).length,checkins:guest.checkins.length};return guest;}
+ function guestDetails(){const guest=readGuest(storage,ids,device).progress;state.guestSummary={lessons:guest.lessons.length,mastery:guest.mastery.length,bosses:guest.bosses.length,notes:Object.values(guest.notes).filter(Boolean).length,checkins:guest.checkins.length,prepared:guest.learning.prepared.length};return guest;}
  function decisionKey(){return 'algo-quest-guest-choice-v1:'+owner;}
  async function switchSession(session){
   if(disposed)return;
