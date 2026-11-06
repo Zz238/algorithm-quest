@@ -1,0 +1,183 @@
+.trace-picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  overflow: visible;
+}
+.picture-cell rect {
+  fill: var(--paper);
+  stroke: #8495af;
+  stroke-width: 1.35;
+}
+.picture-cell.group-left rect {
+  fill: #e8efff;
+  stroke: #5673a7;
+}
+.picture-cell.group-right rect {
+  fill: #e4f2ee;
+  stroke: #467668;
+}
+.picture-cell.painted rect {
+  fill: #d5eee4;
+  stroke: #378269;
+}
+.picture-cell.outside rect {
+  fill: #edf0f5;
+  stroke-dasharray: 3 3;
+}
+.picture-cell.active rect {
+  fill: #dbe6ff;
+  stroke: #3157d5;
+  stroke-width: 2.6;
+}
+.picture-cell.detached rect {
+  fill: #fff4e3;
+  stroke: #9c651d;
+  stroke-dasharray: 3 2;
+}
+.picture-value,
+.picture-label,
+.picture-edge text {
+  fill: var(--ink);
+  text-anchor: middle;
+}
+.picture-value {
+  dominant-baseline: central;
+  font-family: var(--mono);
+  font-weight: 650;
+}
+.picture-label {
+  fill: var(--muted);
+  font-family: var(--font, sans-serif);
+}
+.picture-edge line {
+  stroke: #576c8b;
+  stroke-width: 1.8;
+}
+.picture-edge.detached line {
+  stroke: #9c651d;
+  stroke-dasharray: 4 3;
+}
+.picture-arrow {
+  fill: #576c8b;
+}
+.picture-edge text {
+  font-size: 13px;
+  font-family: var(--mono);
+  paint-order: stroke fill;
+  stroke: var(--paper);
+  stroke-width: 4px;
+}
+.figure-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.figure-grid figure {
+  min-width: 0;
+  margin: 0;
+  display: grid;
+  align-content: start;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--paper);
+}
+.figure-number {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  padding: 10px 13px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green);
+}
+.figure-number span {
+  color: var(--muted);
+  font-weight: 500;
+}
+.figure-graphic {
+  display: grid;
+  align-items: center;
+  min-width: 0;
+  min-height: 96px;
+  padding: 10px 7px;
+}
+.figure-graphic svg {
+  max-height: 190px;
+}
+.figure-grid figcaption {
+  padding: 12px 13px;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.figure-grid figcaption p {
+  margin: 0.45rem 0;
+  color: var(--muted);
+}
+.figure-grid figcaption a,
+.figure-inspect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+.figure-grid figcaption .figure-data {
+  font-size: 0.84rem;
+  color: var(--ink);
+}
+.study-figures {
+  margin-block: 1.8rem;
+}
+.study-figures h2,
+.chapter-figures h3 {
+  margin-bottom: 0.45rem;
+}
+.study-figures > p {
+  color: var(--muted);
+  margin: 0 0 0.85rem;
+}
+.chapter-figures {
+  margin-block: 1.25rem;
+}
+.trace-state > .trace-picture {
+  margin-block: 10px;
+}
+.trace-stack-path {
+  margin-block: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid var(--green);
+  background: var(--subtle);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1150px) {
+  .learning-shell .figure-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .learning-shell .figure-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .figure-graphic {
+    min-height: 74px;
+    padding-inline: 12px;
+  }
+}
+.picture-cell.secondary rect {
+  fill: #e8f3ee;
+  stroke: #557d6c;
+}
+@media (min-width: 641px) {
+  .study-figures .figure-graphic {
+    height: 132px;
+  }
+  .study-figures .figure-graphic svg {
+    max-height: 112px;
+  }
+}

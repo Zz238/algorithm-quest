@@ -1,0 +1,66 @@
+name: Validate course and build review preview
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: course-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm ci
+      - name: Lint, test and build
+        run: |
+          npm run lint
+          npm run format:check
+          npm run check
+          npm run check:examples
+          npm run check:java
+          npm run check:cloud
+          npm run check:comments
+          npm run check:reading
+          npm run check:analytics
+          npm run test:components
+          npm run build
+          git diff --exit-code
+      - name: Upload offline review copy
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: algorithm-quest-offline-preview
+          path: offline.html
+          if-no-files-found: error
+          retention-days: 14
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Check layout, navigation and offline behavior
+        run: npm run test:browser
+      - name: Upload browser test report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: course-browser-report
+          path: playwright-report
+          if-no-files-found: ignore

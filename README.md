@@ -180,20 +180,27 @@ GitHub图标来自官方Primer Octicons，图标及Morphicons的许可证记录�
 ## 文件与后续扩展
 
 ```text
-src/App.vue                 页面、世界地图、章节和统一章末闯关
+src/App.vue                 应用外壳、账号与页面入口
+src/pages/                   课程目录、小节、搜索、术语、学习记录和私人笔记
+src/course-route.js          旧链接兼容与非法参数校验
+src/useCourseNavigation.js   路由、焦点和阅读位置恢复
+src/useLearningProgress.js   阅读、练习、独立完成、复习和打卡
+src/course-search.js         课程、题目、术语、代码与本机私人笔记的统一索引
 src/data/course.js          课程顺序、前置关系、题解与旧进度兼容
 src/data/units/*.js         72节原创讲解、术语、案例、误区与216道练习
-src/data/base-course.js     原有代码与章末题数据
+src/data/base-course.js     章节元数据、章末题及集中 Java 示例表
 src/data/extra-codes.js     新增的基础Java示例与整体讲解
 src/data/code-guides.js     每份 Java 示例的整体用途、输入输出与推演过程
 src/data/terms.js           Java 词典
 src/components/LessonFoundation.vue  基础讲解与完整案例
 src/components/LessonPractice.vue    三阶练习与反馈
 src/components/TraceLab.vue          可自定义输入的逐条实验
-src/components/Visualizer.vue        其它概念图解
-src/components/CodeReader.vue  逐行代码讲解
-src/traces.js               32种具体执行追踪
-src/visuals.js              其它概念图解的演示步骤
+src/components/StudyFigures.vue      小节的关键状态图解
+src/components/ChapterFigures.vue    各章导读的三张概念图
+src/components/CodeReader.vue        行导航、术语、全屏阅读与下载
+src/traces.js / src/concept-traces.js  实验执行状态
+src/lesson-demos.js / src/trace-picture.js  实验输入映射与 SVG 绘图
+src/local-saves.js / src/progress-backup.js 存档诊断、导入预览与重置范围
 src/practice.js             按题目输出类型检查练习答案
 src/logic.js                输出检查、参考算法、进度数据校验
 scripts/content.py         已停用的旧生成器，保留作历史资料
@@ -215,31 +222,38 @@ supabase/migrations/      数据表、RLS 和数据格式约束
 supabase/tests/           回滚式数据库隔离验证
 scripts/offline.mjs        生成单文件离线版
 public/answers/            适用于力扣编辑区的完整答案
-java-validation/           带 Main 和辅助类型的独立 Java 验证文件
+scripts/generate-java-examples.mjs  按需导出独立 Main.java 文件
 ```
 
-教学文字与练习请编辑 src/data/units/*.js；顺序、章末题在 course.js；实际前置、预备课、变式在 data/learning-path.js、java-starter.js 和 learning-practice.js。旧 content.py 已显式停用，防止覆盖新版课程。已有阅读、笔记、收藏、奖励和打卡会保留；新版练习通过状态独立保存在 mastery 字段。第5章改用LC1051，旧版闯关奖励保留，但新版题目需重新完成且不重复奖励。
+教学正文与小节练习只编辑 src/data/units/*.js；章节排序在 course.js，章末题的题干与案例在 base-course.js（LC1051 特例在 course.js）。课程只保存 codeKey，代码在集中表中维护。实际前置、预备课、变式在 data/learning-path.js、java-starter.js 和 learning-practice.js。旧 content.py 是历史资料，不参与构建，不能用来生成当前课程。已有阅读、笔记、收藏、奖励和打卡会保留；新版练习通过状态独立保存在 mastery 字段。第5章改用LC1051，旧版闯关奖励保留，但新版题目需重新完成且不重复奖励。
 
-新增大章节时，请保持相同 boss 数据结构：题号与链接、题意、关联、步骤、证明、复杂度、易错点、两个输入输出情境、思路问题、提示、完整逐行 Java 代码；并为新题补充 logic.js 的参考实现与 check.mjs 验证。界面会自动按同一结构显示。
+新增大章节时，请保持相同 boss 数据结构：题号与链接、题意、关联、步骤、证明、复杂度、易错点、两个输入输出情境、思路问题、提示、完整逐行 Java 代码；并为新题补充 logic.js 的参考实现、明确的演示模式和输入字段映射。两组章末输入的演示输出都要通过 check-branch-curriculum.mjs。
 
 下载 ZIP 后，可将整个项目解压到自己的项目文件夹，再按上面的步骤启动。
 
 ## 验证
 
 ```bash
+npm run lint
+npm run format:check
 npm run check
 npm run check:examples
-node scripts/check-starter-java.mjs
+npm run check:java
+npm run test:components
 npm run check:cloud
 npm run check:comments
 npm run check:reading
 ```
 
-基础内容与参考算法检查只需要 Node。如果系统有带 jdk.compiler 模块的 JDK，还会编译全部 Java 示例，并执行十二道章末答案的 24 个情境。没有 JDK 时会明确提示跳过可选 Java 编译验证，网站仍能正常使用。
+基础内容与参考算法检查只需要 Node。检查命令只读源码；Java 编译和运行使用临时目录。只跑 Node 检查可使用 `npm run check -- --skip-java`。
+
+浏览器回归：构建后执行 `npx playwright install chromium` 和 `npm run test:browser`。检查课程路由、七种视口、笔记与备份流程以及 `file://` 离线版。分支 CI 的 **algorithm-quest-offline-preview** 产物可以解压后直接打开，预览版不会启用正式站的登录与统计。
+
+如果系统有带 jdk.compiler 模块的 JDK，还会编译全部 Java 示例，并执行十二道章末答案的 24 个情境。没有 JDK 时会明确提示跳过可选 Java 编译验证，网站仍能正常使用。
 
 `npm run check:examples` 会使用 JDK 运行 44 份代码讲解的示例，并检查输出；没有 JDK 时会提示跳过。
 
-`java-validation/LC题号/Main.java` 可单独编译运行：在对应文件夹执行 `javac Main.java`，然后 `java Main`。这些文件包含测试需要的 main 和 TreeNode；提交力扣请使用网页中的 Solution 答案，避免重复定义平台类型。
+运行 `npm run generate:java` 后，`java-validation/LC题号/Main.java` 可单独编译运行：在对应文件夹执行 `javac Main.java`，然后 `java Main`。这些文件包含测试需要的 main 和 TreeNode；提交力扣请使用网页中的 Solution 答案，避免重复定义平台类型。
 
 ## 参考与来源
 
@@ -261,3 +275,7 @@ npm run check:reading
 桌面宽度达到 1280px 时，私人学习笔记固定在课程右侧，并为正文预留空间。更窄屏幕使用右侧“笔记”按钮打开编辑面板；可以点遮罩或按 Esc 关闭。每节最多 5000 字，Enter 换行，输入立即保存到本机；登录后继续使用现有云同步。既有笔记无需重新导入，公开讨论保持独立。
 
 课程逐节对应关系见 [CURRICULUM_REVIEW.md](CURRICULUM_REVIEW.md)。运行 `node scripts/check-learning-continuity.mjs` 可核对章节导读、生活例子、演示数据和关键预期结果；它已纳入 `npm run check` 与 GitHub Pages 部署检查。
+
+## 图解与学习体验分支
+
+课程维护说明及建议的对应验收见 [BRANCH_REVIEW.md](BRANCH_REVIEW.md)。图解使用和实验相同的默认输入和步骤状态，避免两个版本的例子各自维护。点击图解的按钮可用该组示例定位实验。正式站只从主分支部署。

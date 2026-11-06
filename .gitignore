@@ -7,3 +7,5 @@ java-validation/
 .openai/
 .env
 .env.*
+test-results/
+playwright-report/
