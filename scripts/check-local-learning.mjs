@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parseRoute, lessonIds, routeTitle } from '../src/course-route.js';
 import { COURSE_TERMS, searchCourse, termLessons } from '../src/course-search.js';
 import { GUEST_DOCUMENT_KEY, GUEST_KEY, documentFromProgress } from '../src/cloud-progress.js';
@@ -105,3 +106,27 @@ assert.deepEqual(
   'An older compatibility key must never resurrect replaced progress.',
 );
 console.log('Route validation, private search, backup conflict modes and damaged-save recovery passed.');
+
+const theme = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
+const controls = readFileSync(new URL('../src/learning-ux.css', import.meta.url), 'utf8');
+const color = (source, name) => new RegExp('--' + name + ':\\s*(#[a-f0-9]{6})', 'i').exec(source)?.[1];
+function luminance(hex) {
+  const [r, g, b] = hex
+    .slice(1)
+    .match(/../g)
+    .map((pair) => parseInt(pair, 16) / 255)
+    .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const ratio = (foreground, background) => {
+  const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+};
+for (const name of ['paper', 'background', 'subtle']) {
+  assert(ratio(color(theme, 'muted'), color(theme, name)) >= 4.5, 'Small text contrast on ' + name);
+  assert(
+    ratio(color(controls, 'control-line'), color(theme, name)) >= 3,
+    'Control boundary contrast on ' + name,
+  );
+}
+console.log('Text and control-boundary contrast checked on all three reading surfaces.');
