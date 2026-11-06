@@ -58,10 +58,16 @@ test('notes are searchable and back/forward restores reading position with focus
     .poll(() => page.locator('#lesson-figures').evaluate((e) => e.getBoundingClientRect().top))
     .toBeLessThan(240);
   const y = await page.evaluate(() => window.scrollY);
-  await page
+  const searchButton = page
     .getByRole('navigation', { name: '主导航' })
-    .getByRole('button', { name: '搜索', exact: true })
-    .click();
+    .getByRole('button', { name: '搜索', exact: true });
+  const button = await searchButton.boundingBox();
+  expect(button).not.toBeNull();
+  expect(button.y).toBeGreaterThanOrEqual(0);
+  expect(button.y + button.height).toBeLessThan(120);
+  // The header is already visible and sticky. Locator.click may scroll the
+  // document while bringing the header's original position into its viewport.
+  await page.mouse.click(button.x + button.width / 2, button.y + button.height / 2);
   await page.getByRole('searchbox').fill('专用 879');
   await expect(page.locator('.result-group').getByRole('heading', { name: /私人笔记/ })).toBeVisible();
   await page.goBack();

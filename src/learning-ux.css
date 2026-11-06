@@ -61,7 +61,7 @@ textarea::placeholder {
   background: var(--paper);
   padding: 9px 14px;
   border: 1px solid var(--control-line);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transform: translateY(-160%);
 }
 .skip-content:focus {
@@ -126,7 +126,7 @@ h1[tabindex='-1'],
   gap: 3px;
   padding: 10px 36px 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--paper);
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -179,7 +179,7 @@ h1[tabindex='-1'],
 .record-skill {
   padding: 15px 20px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: var(--subtle);
 }
 .record-skill h2 {
@@ -194,13 +194,13 @@ h1[tabindex='-1'],
 .backup-preview {
   padding: 15px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: var(--subtle);
   margin-block: 12px;
 }
 .backup-preview fieldset {
   border: 1px solid var(--control-line);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 9px 12px;
   margin-block: 10px;
   min-inline-size: 0;
@@ -234,7 +234,7 @@ h1[tabindex='-1'],
 .confirm-action,
 .code-full-dialog {
   border: 1px solid var(--control-line);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   color: var(--ink);
   background: var(--paper);
   max-width: calc(100% - 24px);
