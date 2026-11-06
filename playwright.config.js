@@ -1,0 +1,15 @@
+import { defineConfig, devices } from '@playwright/test';
+export default defineConfig({
+  testDir: 'tests/browser',
+  timeout: 60_000,
+  fullyParallel: true,
+  workers: process.env.CI ? 2 : undefined,
+  reporter: [['list'], ['html', { open: 'never' }]],
+  use: { baseURL: 'http://127.0.0.1:4173', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  projects: [{ name: 'Chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer: {
+    command: 'npm run preview -- --port 4173 --strictPort',
+    url: 'http://127.0.0.1:4173',
+    reuseExistingServer: !process.env.CI,
+  },
+});
