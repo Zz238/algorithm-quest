@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import AnswerInput from './AnswerInput.vue';
 import { scoreAnswer, hintFor, practiceAnswer } from '../answering.js';
+import { jumpTo } from '../useCourseNavigation.js';
 const props = defineProps({
   question: Object,
   state: Object,
@@ -69,10 +70,20 @@ function check() {
   const result = scoreAnswer(q.value, s.value, { codeKey: props.codeKey, problem: props.problem });
   s.value.passed = result.ok;
   s.value.feedback = result.message;
-  s.value.issue = result.ok ? '' : result.format ? 'format' : q.value.kind;
-  if (!result.ok && !result.format)
+  s.value.issue = result.ok
+    ? ''
+    : result.format
+      ? 'format'
+      : result.unverified
+        ? 'unverified'
+        : q.value.kind;
+  if (!result.ok && !result.format && !result.unverified && q.value.focus) {
+    const key = q.value.focus.key;
+    s.value.concepts[key] = (s.value.concepts[key] || 0) + 1;
+  }
+  if (!result.ok && !result.format && !result.unverified)
     s.value.errors[q.value.kind] = (s.value.errors[q.value.kind] || 0) + 1;
-  if (result.format) return;
+  if (result.format || result.unverified) return;
   s.value.attempts++;
   emit('attempt', {
     ok: result.ok,
@@ -176,16 +187,33 @@ function check() {
       class="mini-feedback"
       :class="{
         correct: s.passed,
-        error: !s.passed && s.issue !== 'format',
-        format: s.issue === 'format',
+        error: !s.passed && !['format', 'unverified'].includes(s.issue),
+        format: ['format', 'unverified'].includes(s.issue),
       }"
       role="status"
     >
       <strong>{{
-        s.passed ? '答对了。' : s.issue === 'format' ? '还有一项需要填写或调整。' : '再试一次。'
+        s.passed
+          ? '答对了。'
+          : s.issue === 'format'
+            ? '还有一项需要填写或调整。'
+            : s.issue === 'unverified'
+              ? '需要运行验证。'
+              : '再试一次。'
       }}</strong>
       {{ s.feedback }}
     </p>
+    <div
+      v-if="s.feedback && !s.passed && q.focus && !['format', 'unverified'].includes(s.issue)"
+      class="feedback-recovery"
+    >
+      <p>
+        <strong>回顾：{{ q.focus.label }}</strong> · {{ q.focus.explanation }}
+      </p>
+      <button v-if="codeKey" class="text-button" type="button" @click="jumpTo(q.focus.section)">
+        回到对应概念与图解 →
+      </button>
+    </div>
     <p v-if="s.attempts > 1 || s.hints" class="micro practice-history">
       核对 {{ s.attempts }} 次 · 已看 {{ s.hints }} 层提示
     </p>

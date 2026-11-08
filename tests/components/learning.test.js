@@ -4,6 +4,10 @@ import { nextTick } from 'vue';
 import CodeReader from '../../src/components/CodeReader.vue';
 import GlossaryPage from '../../src/pages/GlossaryPage.vue';
 import TraceLab from '../../src/components/TraceLab.vue';
+import CourseLink from '../../src/components/CourseLink.vue';
+import PracticeCard from '../../src/components/PracticeCard.vue';
+import { answerState } from '../../src/answering.js';
+import { draftKey, readDraft } from '../../src/study-drafts.js';
 import { GUEST_DOCUMENT_KEY, GUEST_KEY } from '../../src/cloud-progress.js';
 import { freshProgress } from '../../src/logic.js';
 import { useCloudProgress } from '../../src/useCloudProgress.js';
@@ -22,6 +26,53 @@ afterEach(() => {
 });
 
 describe('learning components', () => {
+  it('preserves native modified links while normal activation uses the course transition', async () => {
+    const wrapper = render(CourseLink, {
+      props: { to: '/learn/6/0' },
+      slots: { default: '对象与引用' },
+    });
+    expect(wrapper.get('a').attributes('href')).toBe('#/learn/6/0');
+    await wrapper.get('a').trigger('click', { button: 0, ctrlKey: true });
+    expect(wrapper.emitted('navigate')).toBeUndefined();
+    await wrapper.get('a').trigger('click', { button: 0 });
+    expect(wrapper.emitted('navigate')).toEqual([['/learn/6/0']]);
+  });
+
+  it('does not turn unverified Java expressions into recorded mistakes', async () => {
+    const question = {
+      kind: 'code',
+      question: '数组冒泡一轮，填写右侧边界。',
+      template: 'i ___ end',
+      answer: 'i < end',
+      explanation: '右侧比较访问 i+1。',
+    };
+    const state = answerState(question);
+    const wrapper = render(PracticeCard, { props: { question, state } });
+    await wrapper.get('input').setValue('!(i >= end)');
+    await wrapper.get('.mini-actions .primary').trigger('click');
+    expect(state.issue).toBe('unverified');
+    expect(state.attempts).toBe(0);
+    expect(state.errors).toEqual({});
+    expect(wrapper.emitted('attempt')).toBeUndefined();
+    expect(wrapper.get('.mini-feedback').classes()).not.toContain('error');
+  });
+
+  it('persists a reference target on first entry without requiring a further slider move', async () => {
+    const wrapper = render(TraceLab, {
+      props: {
+        mode: 'index',
+        topic: '4-2',
+        owner: 'target-test',
+        initial: { array: '1,2,3', i: 0 },
+        location: { section: 'lesson-experiment', step: 4, input: { array: '7,8,9', i: 0 } },
+      },
+    });
+    expect(wrapper.get('.trace-output').text()).toContain('8');
+    const saved = readDraft(draftKey('target-test', '4-2', 'trace'), localStorage);
+    expect(saved.step).toBe(4);
+    expect(saved.applied.array).toBe('7,8,9');
+  });
+
   it('keeps one tab stop for the Java lines and moves the explanation with the arrow key', async () => {
     const wrapper = render(CodeReader, {
       attachTo: document.body,

@@ -1,6 +1,7 @@
 import { chapters } from './data/course.js';
 import { JAVA_BY_ID } from './data/java-starter.js';
 import { TRANSFER_BY_ID } from './data/learning-practice.js';
+import { splitStudyTarget } from './study-target.js';
 
 export const allLessons = chapters.flatMap((c) => c.lessons);
 export const lessonIds = allLessons.map((l) => l.id);
@@ -19,7 +20,7 @@ const staticRoutes = new Map([
   ['/trial', 'trial'],
 ]);
 
-export function parseRoute(input, terms = {}) {
+function parseBaseRoute(input, terms = {}) {
   const path = input === '' ? '/' : input === '/checkin' ? '/account' : input;
   const fallback = { path, view: 'not-found', chapter: null, lesson: null, index: null, topic: null };
   if (staticRoutes.has(path)) return { ...fallback, view: staticRoutes.get(path) };
@@ -56,6 +57,22 @@ export function parseRoute(input, terms = {}) {
     }
   }
   return fallback;
+}
+
+export function parseRoute(input, terms = {}) {
+  const split = splitStudyTarget(input);
+  if (!split)
+    return {
+      path: input,
+      view: 'not-found',
+      chapter: null,
+      lesson: null,
+      index: null,
+      topic: null,
+      target: null,
+    };
+  const route = parseBaseRoute(split.path, terms);
+  return { ...route, target: route.view === 'not-found' ? null : split.target };
 }
 
 const TITLES = {

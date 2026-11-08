@@ -26,6 +26,7 @@ import './check-learning-continuity.mjs';
 import './check-study.mjs';
 import './check-branch-curriculum.mjs';
 import './check-local-learning.mjs';
+import './check-learning-flow.mjs';
 import { caseProgram, tree } from './java-programs.mjs';
 import { CODE_GUIDES } from '../src/data/code-guides.js';
 assert.equal(chapters.length, 12);

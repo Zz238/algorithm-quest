@@ -4,11 +4,15 @@ import { chapters, requiredLessons } from '../data/course.js';
 import { courseStages } from '../useLearningProgress.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import SearchResults from '../components/SearchResults.vue';
+import CourseLink from '../components/CourseLink.vue';
 defineProps({
   summary: Object,
   notes: Object,
   hasStarted: Boolean,
   continuePath: String,
+  orderedPath: String,
+  resume: Object,
+  preparedCount: Number,
   continueLabel: String,
   resumeTitle: String,
   chapterRead: Function,
@@ -40,33 +44,54 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
       </div>
       <aside class="hero-next" aria-labelledby="resume-title">
         <div class="resume-top">
-          <span>{{ hasStarted ? '接着上次的进度' : '从这里开始' }}</span
-          ><span class="resume-percentage">{{ summary.completion }}%</span>
+          <span>{{ resume ? '回到上次的任务' : '零基础推荐起点' }}</span
+          ><span class="resume-percentage">{{
+            continuePath.startsWith('/java/') ? preparedCount + '/12' : summary.completion + '%'
+          }}</span>
         </div>
         <div
           class="reading-progress"
           role="progressbar"
-          aria-label="基础阅读进度"
-          :aria-valuenow="summary.reads"
+          :aria-label="continuePath.startsWith('/java/') ? 'Java 起步进度' : '基础阅读进度'"
+          :aria-valuenow="continuePath.startsWith('/java/') ? preparedCount : summary.reads"
           :aria-valuemin="0"
-          :aria-valuemax="summary.core"
+          :aria-valuemax="continuePath.startsWith('/java/') ? 12 : summary.core"
         >
-          <i :style="{ width: summary.completion + '%' }"></i>
+          <i
+            :style="{
+              width:
+                (continuePath.startsWith('/java/') ? (preparedCount / 12) * 100 : summary.completion) +
+                '%',
+            }"
+          ></i>
         </div>
         <h2 id="resume-title">{{ resumeTitle }}</h2>
-        <p>
+        <p v-if="resume" class="resume-place">上次停在：{{ resume.label }} · 本机记录</p>
+        <p v-else>
           {{
             continuePath.startsWith('/java/')
               ? '没有写过程序？先跟着做一个能看见结果的小例子。'
               : '先读讲解，再动手推演。可以按自己的节奏练习。'
           }}
         </p>
-        <button class="primary start" :aria-busy="navigating" @click="navigate(continuePath)">
+        <CourseLink
+          class="primary start"
+          :aria-busy="navigating"
+          :to="continuePath"
+          @navigate="navigate"
+        >
           {{ hasStarted ? continueLabel || '继续学习' : '开始学习' }}
-          <span aria-hidden="true">→</span></button
+          <span aria-hidden="true">→</span></CourseLink
         ><small
           >基础已读 {{ summary.reads }} / {{ summary.core }} · 选学 {{ summary.electiveReads }} /
           {{ summary.electives }}</small
+        >
+        <CourseLink
+          v-if="resume && orderedPath !== continuePath"
+          class="text-button ordered-next"
+          :to="orderedPath"
+          @navigate="navigate"
+          >按课程顺序继续 →</CourseLink
         >
       </aside>
     </section>
@@ -100,18 +125,29 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
         ><input v-model="query" type="search" placeholder="搜索课程、题号、术语或笔记"
       /></label>
     </section>
-    <div class="study-home-links">
-      <button @click="navigate('/java')">
-        <strong>Java 零基础预备课</strong><span>12 节短课，从第一行打印开始 →</span></button
-      ><button @click="navigate('/learn/1/0')">
-        <strong>先用纸笔学算法</strong><span>从输入、输出和步骤开始 →</span></button
-      ><button @click="navigate('/review')">
-        <strong>复习与阶段练习</strong
-        ><span>{{ summary.due ? summary.due + ' 项待复习' : '试一道换了场景的题' }} →</span></button
-      ><button @click="navigate('/trial')">
-        <strong>我该从哪一节开始？</strong><span>用三个小任务找到适合的起点 →</span>
-      </button>
-    </div>
+    <section class="starting-route" aria-label="入门路线">
+      <h3>第一次写程序，按这条路线开始</h3>
+      <ol>
+        <li>
+          <CourseLink to="/java/print" @navigate="navigate">先学打印、变量和判断</CourseLink
+          ><span>先完成 3 节起步课，做出看得见的小结果。</span>
+        </li>
+        <li>
+          <CourseLink to="/learn/1/0" @navigate="navigate">再用纸笔理解算法</CourseLink
+          ><span>从输入、输出和状态开始，接上下面的主线。</span>
+        </li>
+        <li>
+          <CourseLink to="/java" @navigate="navigate">其余 Java 短课按需补</CourseLink
+          ><span>循环、引用、二维数组会在用到前提醒；已练过可先做题确认。</span>
+        </li>
+      </ol>
+      <div class="study-actions">
+        <CourseLink to="/trial" @navigate="navigate">已经学过一些？用 3 个任务判断起点 →</CourseLink
+        ><CourseLink v-if="hasStarted" to="/review" @navigate="navigate"
+          >复习与阶段作品{{ summary.due ? ' · ' + summary.due + ' 项待做' : '' }} →</CourseLink
+        >
+      </div>
+    </section>
     <SearchResults v-if="query.trim()" :query="query" :notes="notes" @navigate="navigate" />
     <div v-else class="course-path">
       <section v-for="w in courseGroups" :key="w.index" class="course-group">
@@ -124,14 +160,15 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
           </div>
         </header>
         <div class="chapter-grid">
-          <button
+          <CourseLink
             v-for="c in w.chapters"
             :key="c.id"
             class="chapter-card"
-            @click="navigate('/learn/' + c.id + '/0')"
+            :to="'/learn/' + c.id + '/0'"
+            @navigate="navigate"
           >
             <div class="chapter-card-top">
-              <span>第 {{ String(c.id).padStart(2, '0') }} 章</span><span aria-hidden="true">↗</span>
+              <span>第 {{ String(c.id).padStart(2, '0') }} 章</span><span aria-hidden="true">→</span>
             </div>
             <span class="chapter-card-title">{{ c.title }}</span>
             <p>{{ c.subtitle }}</p>
@@ -144,7 +181,7 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
             <div class="chapter-progress" aria-hidden="true">
               <i :style="{ width: (chapterRead(c) / requiredLessons(c).length) * 100 + '%' }"></i>
             </div>
-          </button>
+          </CourseLink>
         </div>
       </section>
     </div>

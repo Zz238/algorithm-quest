@@ -22,10 +22,10 @@
 .chapter-close { display: grid; place-items: center; min-width: 35px; min-height: 35px; padding: 7px; border-color: transparent; background: var(--subtle); }
 .chapter-panel-list { list-style: none; padding: 12px 10px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; min-height: 0; }
 .chapter-panel-list li + li { margin-top: 3px; }
-.chapter-panel-list button { display: grid; grid-template-columns: 23px minmax(0,1fr); gap: 10px; position: relative; width: 100%; padding: 13px 11px; text-align: left; border: 1px solid transparent; background: transparent; }
-.chapter-panel-list button:hover { background: var(--subtle); border-color: transparent; }
-.chapter-panel-list button[aria-current=page] { background: var(--soft); border-color: #dce5ff; }
-.chapter-panel-list button:focus { border-color: var(--selection-border); }
+.chapter-panel-list :is(button,.course-link) { display: grid; grid-template-columns: 23px minmax(0,1fr); gap: 10px; position: relative; width: 100%; padding: 13px 11px; text-align: left; border: 1px solid transparent; background: transparent; }
+.chapter-panel-list :is(button,.course-link):hover { background: var(--subtle); border-color: transparent; }
+.chapter-panel-list :is(button,.course-link)[aria-current=page] { background: var(--soft); border-color: #dce5ff; }
+.chapter-panel-list :is(button,.course-link):focus { border-color: var(--selection-border); }
 .chapter-menu-number { color: #8c9bb1; font-family: var(--mono); font-size: 11px; padding-top: 4px; }
 .chapter-panel-list strong { display: block; font-size: 14px; line-height: 1.8; font-weight: 500; overflow-wrap: anywhere; }
 .chapter-panel-list small { display: block; margin-top: 5px; font-size: 12px; color: var(--muted); }
@@ -52,7 +52,7 @@
   .chapter-panel-heading h2 { font-size: 17px; }
   .chapter-panel-heading .eyebrow { font-size: 10px; }
   .chapter-panel-list { padding-left: 7px; padding-right: 7px; }
-  .chapter-panel-list button { padding: 12px 8px; gap: 7px; grid-template-columns: 19px minmax(0,1fr); }
+  .chapter-panel-list :is(button,.course-link) { padding: 12px 8px; gap: 7px; grid-template-columns: 19px minmax(0,1fr); }
   .chapter-panel-list strong { font-size: 13px; }
   .chapter-panel-help { padding-left: 15px; padding-right: 15px; }
   .has-chapter-menu .lesson-content,.has-chapter-menu .boss-content { padding-left: 15px; padding-right: 15px; }

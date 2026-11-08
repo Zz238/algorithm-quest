@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { buildTrace, traceDefaults, parseTraceArray } from '../traces';
-import { useStudyDraft } from '../study-drafts.js';
+import { useStudyDraft, writeDraft, draftKey, browserStorage } from '../study-drafts.js';
 import { nextPrediction } from '../trace-prediction.js';
 import TracePicture from './TracePicture.vue';
+import { frameChanges, phaseLabel, phaseStops, tracePresets } from '../trace-tools.js';
 const props = defineProps({
   mode: String,
   plain: Boolean,
@@ -14,7 +15,9 @@ const props = defineProps({
   codeAvailable: { type: Boolean, default: true },
   comparison: Boolean,
   allowEdit: { type: Boolean, default: true },
+  location: Object,
 });
+const emit = defineEmits(['note']);
 const arrayModes = [
   'index',
   'copy',
@@ -45,11 +48,12 @@ function cleanConfig(raw) {
   return config;
 }
 const draft = useStudyDraft(props.owner, props.topic || 'temporary-' + props.mode, 'trace', (raw) => ({
-  input: cleanConfig(raw?.input),
-  applied: cleanConfig(raw?.applied),
-  step: Number.isInteger(raw?.step) ? raw.step : 0,
+  input: props.location?.example ? initial() : cleanConfig(props.location?.input || raw?.input),
+  applied: props.location?.example ? initial() : cleanConfig(props.location?.input || raw?.applied),
+  step: props.location?.step ?? (Number.isInteger(raw?.step) ? raw.step : 0),
   predict: !!raw?.predict,
   code: !!raw?.code,
+  speed: [0.5, 1, 2].includes(raw?.speed) ? raw.speed : 1,
 }));
 function make(config) {
   const input = { ...config, variant: props.variant };
@@ -100,6 +104,9 @@ function predictNext() {
     : '再看当前状态和这一轮的边界。需要时可以切回自由推演。';
 }
 const frame = computed(() => trace.value.frames[at.value]);
+const changes = computed(() => frameChanges(trace.value.frames[at.value - 1], frame.value));
+const phases = computed(() => phaseStops(props.mode, trace.value.frames));
+const presets = computed(() => tracePresets(props.mode));
 const display = (v) => (typeof v === 'string' ? v : JSON.stringify(v));
 function showExampleStep(index) {
   stop();
@@ -149,7 +156,43 @@ function play() {
   timer = setInterval(() => {
     if (at.value < trace.value.frames.length - 1) at.value++;
     else stop();
-  }, 1800);
+  }, 1800 / draft.speed);
+}
+watch(
+  () => draft.speed,
+  () => {
+    if (playing.value) {
+      stop();
+      play();
+    }
+  },
+);
+watch(at, () => window.dispatchEvent(new Event('study-activity')), { flush: 'post' });
+function preset(input) {
+  Object.assign(config.value, initial(), input);
+  apply();
+}
+function locate(index) {
+  stop();
+  if (!draft.predict) at.value = Number(index);
+}
+function keyboard(event) {
+  if (
+    event.target.closest('button,input,textarea,select,a,[contenteditable]') ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.isComposing
+  )
+    return;
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    event.preventDefault();
+    next(event.key === 'ArrowRight' ? 1 : -1);
+  }
+  if (event.key === ' ' && !draft.predict) {
+    event.preventDefault();
+    play();
+  }
 }
 watch(
   () => [props.mode, props.initial, props.variant],
@@ -160,9 +203,23 @@ watch(
   },
 );
 onUnmounted(stop);
+onMounted(() => {
+  if (props.location)
+    writeDraft(
+      draftKey(props.owner, props.topic || 'temporary-' + props.mode, 'trace'),
+      draft,
+      browserStorage(),
+    );
+});
 </script>
 <template>
-  <section class="trace-lab" aria-label="逐条操作实验">
+  <section
+    class="trace-lab"
+    aria-label="逐条操作实验"
+    :data-trace-step="at"
+    tabindex="0"
+    @keydown="keyboard"
+  >
     <div class="section-bar">
       <div>
         <h3>逐条操作实验</h3>
@@ -235,10 +292,22 @@ onUnmounted(stop);
       /></label>
       <button type="submit">应用输入并重来</button>
     </form>
+    <div v-if="allowEdit && presets.length" class="trace-presets">
+      <span>换个小输入验证：</span
+      ><button v-for="[name, input] in presets" :key="name" type="button" @click="preset(input)">
+        {{ name }}
+      </button>
+    </div>
     <p v-if="error" class="trace-error" role="alert">{{ error }}</p>
     <div class="trace-current" :aria-live="playing ? 'off' : 'polite'">
       <span class="eyebrow">当前动作 · 执行后的状态</span>
       <h4>{{ frame.statement }}</h4>
+      <span v-if="phaseLabel(mode, frame)" class="trace-phase">{{ phaseLabel(mode, frame) }}</span>
+    </div>
+    <div v-if="changes.length" class="trace-changes" aria-label="本步的变化">
+      <span v-for="change in changes" :key="change.name"
+        ><b>{{ change.name }}</b> <code>{{ change.before }} → {{ change.after }}</code></span
+      >
     </div>
     <div class="trace-state">
       <TracePicture :frame="frame" :mode="mode" />
@@ -312,6 +381,44 @@ onUnmounted(stop);
       >
         从头推演
       </button>
+      <label class="trace-speed"
+        >播放速度
+        <select v-model.number="draft.speed" aria-label="实验播放速度">
+          <option :value="0.5">0.5×</option>
+          <option :value="1">1×</option>
+          <option :value="2">2×</option>
+        </select></label
+      >
+    </div>
+    <div class="trace-tools study-actions">
+      <label v-if="phases.length"
+        >阶段定位
+        <select
+          aria-label="实验阶段定位"
+          :disabled="draft.predict"
+          @change="locate($event.target.value)"
+        >
+          <option value="" selected disabled>跳到某阶段的第一次出现</option>
+          <option v-for="item in phases" :key="item.index" :value="item.index">
+            第 {{ item.index + 1 }} 步 · {{ item.name }}
+          </option>
+        </select></label
+      ><button
+        v-if="topic"
+        class="text-button"
+        type="button"
+        @click="
+          emit('note', {
+            section: 'lesson-experiment',
+            step: at,
+            input: cleanConfig(draft.applied),
+            label: '实验第 ' + (at + 1) + ' 步',
+            prompt: '这一步：' + frame.statement + '\n我的理解：',
+          })
+        "
+      >
+        记下当前这一步
+      </button>
     </div>
     <label class="timeline"
       ><span>定位步骤</span
@@ -324,5 +431,6 @@ onUnmounted(stop);
         @input="stop"
         aria-label="逐条实验步骤"
     /></label>
+    <p class="trace-keyboard micro">聚焦实验区后，← / → 单步，空格播放或暂停；输入框内照常输入。</p>
   </section>
 </template>

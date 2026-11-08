@@ -1,8 +1,10 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { noteReferences } from '../study-target.js';
 const props = defineProps({
   modelValue: String,
   open: Boolean,
+  pinned: Boolean,
   lessonTitle: String,
   contextLabel: String,
   user: Object,
@@ -11,7 +13,15 @@ const props = defineProps({
   localPending: Boolean,
   initializing: Boolean,
 });
-const emit = defineEmits(['update:modelValue', 'update:open', 'modal-change', 'library']);
+const emit = defineEmits([
+  'update:modelValue',
+  'update:open',
+  'modal-change',
+  'wide-change',
+  'pin',
+  'navigate',
+  'library',
+]);
 const compact = ref(false),
   headerHeight = ref(80),
   editor = ref(null),
@@ -22,7 +32,11 @@ const content = computed({
   set: (value) => emit('update:modelValue', value.slice(0, 5000)),
 });
 const modal = computed(() => compact.value && props.open);
-const visible = computed(() => !compact.value || props.open);
+const visible = computed(() => (!compact.value && props.pinned) || props.open);
+const references = computed(() => noteReferences(props.modelValue || ''));
+watch([visible, compact], () => emit('wide-change', visible.value && !compact.value), {
+  immediate: true,
+});
 const status = computed(() => {
   if (props.initializing) return '正在加载笔记…';
   if (!props.storageOK) return '本机保存不可用，请导出学习记录';
@@ -44,6 +58,7 @@ let media,
   locked = false;
 function close() {
   emit('update:open', false);
+  if (!compact.value) emit('pin', false);
 }
 function restoreScroll() {
   if (locked) {
@@ -62,15 +77,32 @@ watch(modal, async (value) => {
   if (value) editor.value?.focus({ preventScroll: true });
   else if (compact.value) trigger.value?.focus({ preventScroll: true });
 });
+watch(visible, async (value) => {
+  await nextTick();
+  if (!value) trigger.value?.focus({ preventScroll: true });
+});
+watch(
+  () => props.open,
+  async (value) => {
+    if (value) {
+      await nextTick();
+      editor.value?.focus({ preventScroll: true });
+    }
+  },
+);
 function keydown(event) {
-  if (!modal.value || event.isComposing) return;
+  if (!visible.value || event.isComposing) return;
   if (event.key === 'Escape') {
     event.preventDefault();
     close();
     return;
   }
-  if (event.key !== 'Tab') return;
-  const items = [...panel.value.querySelectorAll('button:not(:disabled),textarea:not(:disabled)')];
+  if (!modal.value || event.key !== 'Tab') return;
+  const items = [
+    ...panel.value.querySelectorAll(
+      'button:not(:disabled),textarea:not(:disabled),a[href],summary,select',
+    ),
+  ].filter((el) => el.getClientRects().length);
   if (!items.length) {
     event.preventDefault();
     panel.value.focus();
@@ -113,7 +145,7 @@ onUnmounted(() => {
 <template>
   <div class="lesson-notes" :style="{ '--notes-header-height': headerHeight + 'px' }" @keydown="keydown">
     <button
-      v-if="compact"
+      v-if="!visible"
       ref="trigger"
       class="lesson-notes-trigger"
       :aria-expanded="open"
@@ -155,7 +187,18 @@ onUnmounted(() => {
             <span class="eyebrow">{{ contextLabel }}</span>
             <h2 id="lesson-notes-title">学习笔记</h2>
           </div>
-          <button v-if="compact" class="notes-close" aria-label="关闭学习笔记" @click="close">
+          <button
+            v-if="!compact"
+            class="text-button notes-pin"
+            :aria-pressed="pinned"
+            @click="
+              emit('pin', !pinned);
+              emit('update:open', !pinned);
+            "
+          >
+            {{ pinned ? '取消固定' : '固定展开' }}
+          </button>
+          <button class="notes-close" aria-label="关闭学习笔记" @click="close">
             <svg
               viewBox="0 0 24 24"
               width="20"
@@ -173,6 +216,19 @@ onUnmounted(() => {
         <p class="lesson-notes-help">
           仅自己可见 · 输入后自动保存{{ user ? '并同步到账号' : '在当前浏览器' }}
         </p>
+        <div class="note-prompts" aria-label="笔记复盘提示">
+          <button
+            v-for="prompt in ['这一步改了谁？', '我原先以为……', '换一组数据还成立吗？']"
+            :key="prompt"
+            class="text-button"
+            @click="
+              content = content + (content ? '\n' : '') + prompt;
+              editor?.focus();
+            "
+          >
+            {{ prompt }}
+          </button>
+        </div>
         <label class="sr-only" for="lesson-private-note">本节私人笔记</label>
         <textarea
           id="lesson-private-note"
@@ -191,6 +247,19 @@ onUnmounted(() => {
             >{{ status }}</span
           ><span id="lesson-note-count">{{ content.length }} / 5000</span>
         </div>
+        <details v-if="references.length" class="note-reference-list">
+          <summary>笔记关联的 {{ references.length }} 处内容</summary>
+          <a
+            v-for="(link, i) in references"
+            :key="i"
+            :href="'#' + link.path"
+            @click.exact.prevent="
+              close();
+              emit('navigate', link.path);
+            "
+            >{{ link.label }} →</a
+          >
+        </details>
         <button class="text-button notes-library-link" type="button" @click="emit('library')">
           打开全部笔记 →
         </button>

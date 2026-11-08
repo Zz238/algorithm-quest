@@ -5,20 +5,43 @@ import { answerState } from '../answering.js';
 import { useStudyDraft } from '../study-drafts.js';
 import RunnableJava from './RunnableJava.vue';
 import PracticeCard from './PracticeCard.vue';
+import CourseLink from './CourseLink.vue';
+import { JAVA_START } from '../data/reading-guide.js';
+import { lessonRoute } from '../data/course.js';
 const props = defineProps({ unitId: String, progress: Object, owner: String, disabled: Boolean });
 const emit = defineEmits(['navigate', 'prepared', 'wrong']);
 const unit = JAVA_BY_ID[props.unitId];
 const completed = computed(
   () => coreJava.filter((u) => props.progress.learning.prepared.includes(u.id)).length,
 );
-const nextCore = computed(() => coreJava.find((u) => !props.progress.learning.prepared.includes(u.id)));
+const nextCore = computed(() =>
+  coreJava.find((u) => JAVA_START.includes(u.id) && !props.progress.learning.prepared.includes(u.id)),
+);
 const sequence = coreJava.findIndex((u) => u.id === unit?.id);
-const next = sequence >= 0 ? coreJava[sequence + 1] : null;
+const next = sequence >= 0 && sequence < 2 ? coreJava[sequence + 1] : null;
 const links = {
   'java-call-stack': '/learn/8/0',
   'java-two-loops': '/learn/5/2',
   'java-last-step': '/learn/11/1',
 };
+const destinations = {
+  'java-for': '3-2',
+  'java-while': '3-3',
+  'java-method': '2-4',
+  'java-array': '2-5',
+  'java-string': '4-2',
+  'java-object': '6-1',
+  'java-reference': '6-5',
+  'java-list': '7-1',
+  'java-grid': '10-5',
+};
+const onward = computed(() =>
+  next
+    ? javaRoute(next.id)
+    : destinations[unit?.id]
+      ? lessonRoute(destinations[unit.id])
+      : links[unit?.id] || '/learn/1/0',
+);
 const draft = unit
   ? useStudyDraft(props.owner, unit.id, 'starter', (r) => ({
       step: Math.max(0, Math.min(unit.steps.length - 1, Number(r?.step) || 0)),
@@ -52,10 +75,10 @@ function attempted(r) {
           ><button @click="emit('navigate', '/trial')">不确定从哪开始？先试三组小题</button>
         </div>
       </div>
-      <h2>12 节 Java 预备课</h2>
+      <h2>先完成这 3 节，再进入算法主线</h2>
       <ol class="study-route-list">
-        <li v-for="(u, i) in coreJava" :key="u.id">
-          <button @click="emit('navigate', javaRoute(u.id))">
+        <li v-for="(u, i) in coreJava.filter((u) => JAVA_START.includes(u.id))" :key="u.id">
+          <CourseLink :to="javaRoute(u.id)" @navigate="emit('navigate', $event)">
             <span
               ><b>{{ i + 1 }}.</b> {{ u.title }}</span
             ><small
@@ -64,9 +87,24 @@ function attempted(r) {
               }}
               →</small
             >
-          </button>
+          </CourseLink>
         </li>
       </ol>
+      <h2>其余 9 节，遇到时再补</h2>
+      <p>主线会在用到这些写法之前提供入口。已学过可以直接做一道确认题，不必重复读完整讲解。</p>
+      <ul class="study-route-list">
+        <li v-for="u in coreJava.filter((u) => !JAVA_START.includes(u.id))" :key="u.id">
+          <CourseLink :to="javaRoute(u.id)" @navigate="emit('navigate', $event)"
+            ><span>{{ u.title }}</span
+            ><small
+              >{{
+                progress.learning.prepared.includes(u.id) ? '已练过' : u.minutes + ' 分钟左右'
+              }}
+              →</small
+            ></CourseLink
+          >
+        </li>
+      </ul>
       <h2>学到后面再回来看</h2>
       <p>这些短课分别接到冒泡、递归和动态规划。课程会在用到之前提醒你。</p>
       <ul class="study-route-list">
@@ -100,7 +138,13 @@ function attempted(r) {
         <h2>把例子换成程序里的意思</h2>
         <p>{{ unit.idea }}</p>
       </section>
-      <section class="study-step-box" aria-label="Java 小步实验">
+      <section
+        id="java-experiment"
+        class="study-step-box study-anchor"
+        aria-label="Java 小步实验"
+        data-study-section
+        data-study-label="Java 小步实验"
+      >
         <div class="study-block-head">
           <h2>一步一步看</h2>
           <small>{{ draft.step + 1 }} / {{ unit.steps.length }}</small>
@@ -150,10 +194,7 @@ function attempted(r) {
       <div class="study-actions">
         <button v-if="sequence > 0" @click="emit('navigate', javaRoute(coreJava[sequence - 1].id))">
           ← 上一节</button
-        ><button
-          class="primary"
-          @click="emit('navigate', next ? javaRoute(next.id) : links[unit.id] || '/learn/1/0')"
-        >
+        ><button class="primary" @click="emit('navigate', onward)">
           {{ next ? '下一节预备课' : '进入对应算法小节' }} →</button
         ><button @click="emit('navigate', '/review/' + unit.id)">做一道变式</button>
       </div>

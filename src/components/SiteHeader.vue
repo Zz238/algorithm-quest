@@ -3,13 +3,19 @@ import { computed } from 'vue';
 import { accountProfile } from '../account-profile.js';
 import UserAvatar from './UserAvatar.vue';
 import GitHubIcon from './GitHubIcon.vue';
+import CourseLink from './CourseLink.vue';
 const props = defineProps({ user: Object, view: String });
 const emit = defineEmits(['navigate']);
 const profile = computed(() => accountProfile(props.user));
 </script>
 <template>
   <header class="header">
-    <button class="brand" aria-label="算法之旅，回到课程目录" @click="emit('navigate', '/')">
+    <CourseLink
+      class="brand"
+      to="/"
+      aria-label="算法之旅，回到课程目录"
+      @navigate="emit('navigate', $event)"
+    >
       <svg class="brand-symbol" viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <rect width="32" height="32" rx="6" fill="currentColor" />
         <path
@@ -20,36 +26,40 @@ const profile = computed(() => accountProfile(props.user));
           stroke-linejoin="round"
         /></svg
       ><span>算法之旅<small>ALGO QUEST</small></span>
-    </button>
+    </CourseLink>
     <nav aria-label="主导航">
-      <button
+      <CourseLink
         :class="{ active: ['home', 'learn', 'boss', 'java'].includes(view) }"
         :aria-current="['home', 'learn', 'boss', 'java'].includes(view) ? 'page' : undefined"
-        @click="emit('navigate', '/')"
+        :to="'/'"
+        @navigate="emit('navigate', $event)"
       >
         课程目录
-      </button>
-      <button
+      </CourseLink>
+      <CourseLink
         :class="{ active: view === 'search' }"
         :aria-current="view === 'search' ? 'page' : undefined"
-        @click="emit('navigate', '/search')"
+        :to="'/search'"
+        @navigate="emit('navigate', $event)"
       >
         搜索
-      </button>
-      <button
+      </CourseLink>
+      <CourseLink
         :class="{ active: view === 'glossary' }"
         :aria-current="view === 'glossary' ? 'page' : undefined"
-        @click="emit('navigate', '/glossary')"
+        :to="'/glossary'"
+        @navigate="emit('navigate', $event)"
       >
         术语手册
-      </button>
-      <button
+      </CourseLink>
+      <CourseLink
         :class="{ active: ['progress', 'review', 'trial', 'notes'].includes(view) }"
         :aria-current="['progress', 'review', 'trial', 'notes'].includes(view) ? 'page' : undefined"
-        @click="emit('navigate', '/progress')"
+        :to="'/progress'"
+        @navigate="emit('navigate', $event)"
       >
         学习记录
-      </button>
+      </CourseLink>
     </nav>
     <div class="header-actions">
       <a

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { reviewVariant } from '../data/learning-practice.js';
-import { answerState, signature } from '../answering.js';
+import { answerState, signature, withLessonFeedback } from '../answering.js';
 import { useStudyDraft } from '../study-drafts.js';
 import PracticeCard from './PracticeCard.vue';
 const props = defineProps({
@@ -31,7 +31,9 @@ const state = useStudyDraft(props.owner, props.topic, 'variant-' + props.mode, (
       : [],
   };
 });
-const question = computed(() => reviewVariant(props.topic, state.seed));
+const question = computed(() =>
+  withLessonFeedback(props.topic, reviewVariant(props.topic, state.seed), -1),
+);
 const seen = computed(() => state.seen.includes(signature(question.value)));
 function help() {
   const id = signature(question.value);

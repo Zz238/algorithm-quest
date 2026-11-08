@@ -1,4 +1,5 @@
 import { JAVA_BY_ID } from './java-starter.js';
+import { EXTRA_JAVA_TASKS } from './java-writing-tasks.js';
 const output = (question, answer, explanation, hint) => ({
   kind: 'output',
   question,
@@ -925,6 +926,7 @@ export const WRITING_DRILLS = {
 };
 
 export const JAVA_TASKS = {
+  ...EXTRA_JAVA_TASKS,
   '2-4': {
     title: '自己写一个相加方法',
     task: '完成 sum，交回两个整数的和。运行后会验证普通值、负数和0。',
@@ -996,7 +998,7 @@ export function taskProgram(task, body) {
   const checks = task.cases
     .map(([call, want], i) => `        verify(${i + 1}, ${call}, ${want});`)
     .join('\n');
-  return `public class Main {
+  return `${task.imports ? task.imports + '\n\n' : ''}public class Main {
 ${task.support ? task.support + '\n' : ''}    ${task.signature} {
 ${body
   .split('\n')

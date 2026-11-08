@@ -1,6 +1,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { chapters, lessonRoute, requiredLessons } from './data/course.js';
 import { coreJava, javaRoute } from './data/java-starter.js';
+import { JAVA_START } from './data/reading-guide.js';
 import { allLessons } from './course-route.js';
 import { LEVELS, experience, localDateKey, recordCheckin, recordLessonReading } from './logic.js';
 import {
@@ -40,7 +41,9 @@ export function useLearningProgress(progress, cloud, toast) {
   const goal = computed(() => dailyGoal(progress));
   const signedToday = computed(() => progress.checkins.includes(today.value));
   const continuePath = computed(() => {
-    const java = coreJava.find((u) => !progress.learning.prepared.includes(u.id));
+    const java = coreJava.find(
+      (u) => JAVA_START.includes(u.id) && !progress.learning.prepared.includes(u.id),
+    );
     if (!progress.lessons.length && !progress.mastery.length && java) return javaRoute(java.id);
     const next = core.find((l) => !progress.lessons.includes(l.id));
     return next ? lessonRoute(next.id) : due.value ? '/review' : '/progress';

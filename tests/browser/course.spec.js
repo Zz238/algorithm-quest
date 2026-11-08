@@ -49,18 +49,20 @@ test('notes are searchable and back/forward restores reading position with focus
   await page.setViewportSize({ width: 1440, height: 950 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/learn/6/2');
+  await page.getByRole('button', { name: '打开学习笔记' }).click();
+  await page.getByRole('button', { name: '固定展开', exact: true }).click();
   const note = page.getByLabel('本节私人笔记');
   await note.fill('周日复习专用 879：先接住后半段');
   await expect(page.getByText('已保存在本机', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '图解', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+  await page.getByRole('button', { name: '概念与图解', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
   await expect
     .poll(() => page.locator('#lesson-figures').evaluate((e) => e.getBoundingClientRect().top))
     .toBeLessThan(240);
   const y = await page.evaluate(() => window.scrollY);
   const searchButton = page
     .getByRole('navigation', { name: '主导航' })
-    .getByRole('button', { name: '搜索', exact: true });
+    .getByRole('link', { name: '搜索', exact: true });
   const button = await searchButton.boundingBox();
   expect(button).not.toBeNull();
   expect(button.y).toBeGreaterThanOrEqual(0);
@@ -89,11 +91,16 @@ test('import preview does not change data until confirmed, and notes reset leave
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify({ version: 1, lessons: ['1-1'], notes: { '1-1': '旧笔记' } })),
   };
+  await page.getByText('备份、恢复与重置', { exact: true }).click();
   await page.locator('input[type="file"]').setInputFiles(payload);
   await expect(page.getByRole('heading', { name: '导入预览' })).toBeVisible();
   await expect(page.getByText('旧笔记', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '确认合并' }).click();
+  await expect(page.getByRole('heading', { name: '我的笔记 · 1' })).toBeVisible();
+  await page.getByRole('link', { name: '搜索、整理或导出全部笔记' }).click();
   await expect(page.getByText('旧笔记', { exact: true })).toBeVisible();
+  await page.getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '学习记录' }).click();
+  await page.getByText('备份、恢复与重置', { exact: true }).click();
   await page.getByText('重置学习数据', { exact: true }).click();
   await page.getByRole('button', { name: '仅清空笔记' }).click();
   await page.getByRole('button', { name: '确认重置' }).click();
@@ -118,7 +125,7 @@ for (const [width, height] of [
     async ({ page }) => {
       await page.setViewportSize({ width, height });
       await page.goto('/#/learn/4/1');
-      await page.getByRole('button', { name: '图解', exact: true }).click();
+      await page.getByRole('button', { name: '概念与图解', exact: true }).click();
       await page.getByRole('button', { name: '用本节示例查看实验第 5 步' }).click();
       await expect(page.locator('.trace-output')).toHaveText(/本次结果\s*2/);
       expect(
@@ -146,12 +153,14 @@ test('downloaded HTML works as file:// without network and can save a note and d
   await page.goto(pathToFileURL(path.resolve('offline.html')).href + '#/learn/6/2');
   await expect(page.locator('.study-figures figure')).toHaveCount(3);
   await page.setViewportSize({ width: 1440, height: 950 });
+  await page.getByRole('button', { name: '打开学习笔记' }).click();
+  await page.getByRole('button', { name: '固定展开', exact: true }).click();
   await page.getByLabel('本节私人笔记').fill('离线笔记');
   await page.reload();
   await expect(page.getByLabel('本节私人笔记')).toHaveValue('离线笔记');
   await page.getByRole('button', { name: '打开全部笔记' }).click();
   await expect(page.getByRole('heading', { name: '私人学习笔记' })).toBeVisible();
-  await page.getByRole('button', { name: '回小节编辑' }).click();
+  await page.getByRole('link', { name: '回小节编辑' }).click();
   await page.locator('details.code-stage > summary').click();
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: '下载方法版', exact: true }).click();
