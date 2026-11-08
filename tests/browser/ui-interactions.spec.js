@@ -111,3 +111,17 @@ test('reduced motion keeps all actions usable with static feedback', async ({ pa
       .evaluate((el) => getComputedStyle(el).transitionDuration),
   ).toBe('0s');
 });
+
+test('a saved-reading notice can be dismissed without disturbing the lesson', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/#/learn/4/1');
+  await page.getByRole('button', { name: '只记录已读', exact: true }).click();
+  await expect(page.locator('.ui-toast')).toBeVisible();
+  await page.getByRole('button', { name: '关闭提示', exact: true }).click();
+  await expect(page.locator('.ui-toast')).not.toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: '下标小实验：a[i+1] 先算哪里，再读什么', exact: true }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});

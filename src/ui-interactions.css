@@ -494,7 +494,12 @@ details.study-details[open] > :not(summary) {
   }
   .ui-search-clear {
     min-height: 44px;
-    width: 36px;
+    width: 44px;
+  }
+  .notes-close.ui-button,
+  .chapter-close {
+    width: 44px;
+    min-height: 44px;
   }
   .search-block > .ui-search-group {
     width: 100%;

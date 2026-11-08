@@ -104,6 +104,8 @@ function download() {
   downloadText(props.filename, text() + '\n');
 }
 async function copy() {
+  copied.value = false;
+  clearTimeout(copyTimer);
   if (navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(text());

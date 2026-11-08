@@ -48,6 +48,10 @@ const drawerOpen = ref(false),
 const hasChapterMenu = computed(() => !!chapter.value);
 const notice = ref('');
 let toastTimer;
+function dismissNotice() {
+  clearTimeout(toastTimer);
+  notice.value = '';
+}
 function toast(message) {
   notice.value = message;
   clearTimeout(toastTimer);
@@ -253,14 +257,7 @@ onUnmounted(() => {
       <Transition name="ui-toast"
         ><div v-if="notice" class="toast ui-toast" role="status">
           <UiIcon name="info" /><span>{{ notice }}</span
-          ><button
-            type="button"
-            aria-label="关闭提示"
-            @click="
-              notice = '';
-              clearTimeout(toastTimer);
-            "
-          >
+          ><button type="button" aria-label="关闭提示" @click="dismissNotice">
             <UiIcon name="close" :size="16" />
           </button></div
       ></Transition>
