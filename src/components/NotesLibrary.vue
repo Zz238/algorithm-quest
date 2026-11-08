@@ -5,6 +5,7 @@ import { downloadText } from '../download.js';
 import ConfirmAction from './ConfirmAction.vue';
 import { noteReferences } from '../study-target.js';
 import CourseLink from './CourseLink.vue';
+import UiSearchField from './ui/UiSearchField.vue';
 const props = defineProps({ notes: Object, saveStatus: String, disabled: Boolean });
 const emit = defineEmits(['navigate', 'remove']);
 const query = ref(''),
@@ -38,9 +39,7 @@ function exportNotes() {
       <button v-if="notes.length" type="button" @click="exportNotes">导出全部笔记 Markdown</button>
     </div>
     <p v-if="saveStatus" class="micro" role="status">{{ saveStatus }}</p>
-    <label class="mini-output"
-      ><span>搜索笔记</span><input type="search" v-model="query" placeholder="搜索课程标题或笔记内容"
-    /></label>
+    <UiSearchField v-model="query" label="搜索笔记" placeholder="搜索课程标题或笔记内容" />
     <p v-if="!items.length" role="status">
       {{ query.trim() ? '没有匹配的笔记。' : '还没有私人笔记。学习时可以在右侧记下自己的理解。' }}
     </p>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, nextTick, onUnmounted } from 'vue';
-import { MorphIcon } from 'morphicons/vue';
+import UiIcon from './ui/UiIcon.vue';
 import CourseLink from './CourseLink.vue';
 const props = defineProps({
   open: Boolean,
@@ -12,8 +12,7 @@ const emit = defineEmits(['update:open', 'navigate']);
 const trigger = ref(null),
   panel = ref(null),
   closeButton = ref(null);
-const menuIcon = 'M4 6h16M4 12h16M4 18h16',
-  closeIcon = 'M6 6l12 12M18 6 6 18';
+
 let previousOverflow,
   locked = false;
 function setOpen(value) {
@@ -71,13 +70,7 @@ onUnmounted(restoreScroll);
       aria-controls="chapter-panel"
       @click="setOpen(!open)"
     >
-      <MorphIcon
-        :icon="open ? closeIcon : menuIcon"
-        :size="21"
-        :stroke-width="2"
-        spring="smooth"
-        reduced-motion="user"
-      /><span>{{ open ? '收起' : '章节' }}</span>
+      <UiIcon :name="open ? 'close' : 'menu'" :size="21" /><span>{{ open ? '收起' : '章节' }}</span>
     </button>
     <Transition name="chapter-backdrop"
       ><div v-if="open" class="chapter-backdrop" aria-hidden="true" @click="setOpen(false)"></div
@@ -106,17 +99,7 @@ onUnmounted(restoreScroll);
             aria-label="关闭章节导航"
             @click="setOpen(false)"
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="m6 6 12 12M18 6 6 18" />
-            </svg>
+            <UiIcon name="close" :size="20" />
           </button>
         </div>
         <ol class="chapter-panel-list">

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, useId } from 'vue';
 import TracePicture from './TracePicture.vue';
+import UiButton from './ui/UiButton.vue';
 defineProps({ frame: Object, mode: String, title: String });
 const dialog = ref(null),
   shown = ref(false),
@@ -24,9 +25,14 @@ function close() {
       >连线表示关系，箭头表示方向</span
     >
   </div>
-  <button type="button" class="text-button figure-zoom" :aria-label="'放大图解：' + title" @click="open">
-    放大查看
-  </button>
+  <UiButton
+    class="figure-zoom"
+    variant="ghost"
+    icon="expand"
+    :aria-label="'放大图解：' + title"
+    @click="open"
+    >放大查看</UiButton
+  >
   <dialog
     ref="dialog"
     class="figure-dialog"
@@ -36,7 +42,7 @@ function close() {
   >
     <header>
       <h2 :id="heading">{{ title }}</h2>
-      <button type="button" autofocus @click="close">关闭图解</button>
+      <UiButton icon="close" autofocus @click="close">关闭图解</UiButton>
     </header>
     <div class="study-actions">
       <label

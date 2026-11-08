@@ -5,6 +5,8 @@ import { courseStages } from '../useLearningProgress.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import SearchResults from '../components/SearchResults.vue';
 import CourseLink from '../components/CourseLink.vue';
+import UiIcon from '../components/ui/UiIcon.vue';
+import UiSearchField from '../components/ui/UiSearchField.vue';
 defineProps({
   summary: Object,
   notes: Object,
@@ -75,13 +77,13 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
           }}
         </p>
         <CourseLink
-          class="primary start"
+          class="primary start ui-action-link"
           :aria-busy="navigating"
           :to="continuePath"
           @navigate="navigate"
         >
           {{ hasStarted ? continueLabel || '继续学习' : '开始学习' }}
-          <span aria-hidden="true">→</span></CourseLink
+          <span class="ui-action-arrow" aria-hidden="true"><UiIcon name="next" /></span></CourseLink
         ><small
           >基础已读 {{ summary.reads }} / {{ summary.core }} · 选学 {{ summary.electiveReads }} /
           {{ summary.electives }}</small
@@ -109,21 +111,13 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
         <h2>课程目录</h2>
         <p class="muted">按顺序打好基础，选学内容留到熟练后再看。</p>
       </div>
-      <label class="search-field"
-        ><svg
-          viewBox="0 0 24 24"
-          width="19"
-          height="19"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.7"
-          aria-hidden="true"
-        >
-          <circle cx="10.5" cy="10.5" r="6.5" />
-          <path d="m16 16 4 4" /></svg
-        ><span class="sr-only">搜索课程与笔记</span
-        ><input v-model="query" type="search" placeholder="搜索课程、题号、术语或笔记"
-      /></label>
+      <UiSearchField
+        v-model="query"
+        label="搜索课程与笔记"
+        hide-label
+        placeholder="搜索课程、题号、术语或笔记"
+        maxlength="100"
+      />
     </section>
     <section class="starting-route" aria-label="入门路线">
       <h3>第一次写程序，按这条路线开始</h3>

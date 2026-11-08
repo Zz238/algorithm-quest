@@ -28,7 +28,7 @@ SOFTWARE.
 
 ## Morphicons — MIT License
 
-`morphicons` 2.0.2 用于章节按钮的菜单/关闭图标过渡，图标路径在本项目中定义；组件启用 `reducedMotion="user"`。
+`morphicons` 2.0.2 用于菜单/关闭、播放/暂停、复制/完成、笔记固定/取消固定等状态过渡。所有新增小图标路径在本项目 `src/ui-icons.js` 中定义；统一通过 `UiIcon.vue` 启用 `reducedMotion="user"`。GitHub 标志继续使用官方 Octicons，不参与变形。
 
 来源：https://github.com/guillermolg00/morphicons
 
@@ -68,6 +68,42 @@ SOFTWARE.
 MIT License
 
 Copyright - 2026 WhiteNervosa (WhiteNervosa)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## 2026-11-08 · Uiverse 交互组件参考与适配
+
+本轮把社区元素中的交互方式适配为项目内可复用的 Vue 控件，保留蓝白配色和原有圆角、焦点规则。未照搬整页布局，也未使用远程脚本：
+
+| 来源 | 作者 | 适配内容 |
+| --- | --- | --- |
+| https://uiverse.io/cssbuttons-io/wonderful-baboon-62 | cssbuttons-io（cssbuttons.io） | 按压缩放与按钮内容层；缩小幅度调整为 0.975，使用本站单色操作色 |
+| https://uiverse.io/Galahhad/breezy-wolverine-23 | Galahhad（Galahad） | 搜索图标、输入状态与容器反馈；保留可见/关联标签，增加清空并返回输入焦点 |
+| https://uiverse.io/cbolson/calm-wasp-75 | cbolson（Chris Bolson） | 原生 checkbox 的自定义外观、勾选过渡与焦点反馈；本项目使用 SVG 勾线并保留完整标签点击区 |
+
+这些页面标明 UI 元素采用 MIT 许可。下列许可文本适用于相应适配来源；本站分段切换、点击反馈、状态展示与组合方式独立实现。
+
+Copyright - 2026 cssbuttons-io (cssbuttons.io)
+
+Copyright - 2026 Galahhad (Galahad)
+
+Copyright - 2026 cbolson (Chris Bolson)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

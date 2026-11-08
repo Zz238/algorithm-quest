@@ -1,10 +1,11 @@
 <script setup>
-import { computed, nextTick, ref, useId, watch } from 'vue';
+import { computed, nextTick, ref, useId, watch, onUnmounted } from 'vue';
 import { TERMS } from '../data/terms.js';
 import { CODE_GUIDES } from '../data/code-guides.js';
 import { runnableExample } from '../data/java-samples.js';
 import { downloadText } from '../download.js';
 import RunnableJava from './RunnableJava.vue';
+import UiButton from './ui/UiButton.vue';
 
 const props = defineProps({
   program: { type: Object, required: true },
@@ -71,6 +72,8 @@ watch(
     line.value = 0;
     term.value = '';
     status.value = '';
+    copied.value = false;
+    clearTimeout(copyTimer);
   },
 );
 function choose(i, t = '') {
@@ -86,14 +89,27 @@ async function lineKey(event, i) {
   source.value?.querySelector('[data-line-button="' + line.value + '"]')?.focus();
 }
 const text = () => props.program.lines.join('\n');
+const copied = ref(false);
+let copyTimer;
+function copiedFeedback() {
+  copied.value = true;
+  status.value = '已复制';
+  clearTimeout(copyTimer);
+  copyTimer = setTimeout(() => {
+    copied.value = false;
+  }, 2400);
+}
+onUnmounted(() => clearTimeout(copyTimer));
 function download() {
   downloadText(props.filename, text() + '\n');
 }
 async function copy() {
+  copied.value = false;
+  clearTimeout(copyTimer);
   if (navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(text());
-      status.value = '已复制';
+      copiedFeedback();
       return;
     } catch {
       /* Fall back to a selectable field. */
@@ -107,16 +123,16 @@ async function copy() {
   const previous = document.activeElement;
   (full.value ? dialog.value : document.body).append(box);
   box.select();
-  let copied = false;
+  let didCopy = false;
   try {
-    copied = document.execCommand('copy');
+    didCopy = document.execCommand('copy');
   } catch {
     /* Clipboard is not available. */
   }
   box.remove();
   previous?.focus({ preventScroll: true });
-  if (copied) {
-    status.value = '已复制';
+  if (didCopy) {
+    copiedFeedback();
     return;
   }
   if (source.value) {
@@ -139,8 +155,10 @@ function expand() {
     <div class="section-bar">
       <h3>{{ title }}</h3>
       <div class="code-header-actions">
-        <button @click="copy">复制</button>
-        <button @click="download">{{ filename === 'Main.java' ? '下载示例' : '下载方法版' }}</button>
+        <UiButton :icon="copied ? 'check' : 'copy'" @click="copy">复制</UiButton>
+        <UiButton icon="download" @click="download">{{
+          filename === 'Main.java' ? '下载示例' : '下载方法版'
+        }}</UiButton>
         <small role="status">{{ status }}</small>
       </div>
     </div>
@@ -173,7 +191,7 @@ function expand() {
       <button type="button" :aria-pressed="wrap" @click="wrap = !wrap">
         {{ wrap ? '关闭自动换行' : '开启自动换行' }}
       </button>
-      <button type="button" @click="expand">全屏阅读代码</button>
+      <UiButton icon="expand" @click="expand">全屏阅读代码</UiButton>
     </div>
     <dialog ref="dialog" class="code-full-dialog" :aria-labelledby="fullTitle" @close="full = false">
       <div class="section-bar">
@@ -182,8 +200,8 @@ function expand() {
           <button @click="wrap = !wrap" :aria-pressed="wrap">
             {{ wrap ? '关闭自动换行' : '开启自动换行' }}
           </button>
-          <button @click="copy">复制</button>
-          <button autofocus @click="dialog.close()">返回课程</button>
+          <UiButton :icon="copied ? 'check' : 'copy'" @click="copy">复制</UiButton>
+          <UiButton icon="close" autofocus @click="dialog.close()">返回课程</UiButton>
           <small role="status">{{ status }}</small>
         </div>
       </div>

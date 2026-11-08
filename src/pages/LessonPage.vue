@@ -21,6 +21,7 @@ import LessonOutline from '../components/LessonOutline.vue';
 import CourseLink from '../components/CourseLink.vue';
 import ContentFeedback from '../components/ContentFeedback.vue';
 import TraceLab from '../components/TraceLab.vue';
+import UiButton from '../components/ui/UiButton.vue';
 import VariantPractice from '../components/VariantPractice.vue';
 
 const props = defineProps({
@@ -253,13 +254,17 @@ boolean equal = (a == b);</code></pre>
       </p>
     </div>
     <div class="lesson-actions">
-      <button
+      <UiButton
+        icon="previous"
         @click="navigate('/learn/' + chapter.id + '/' + Math.max(0, lessonIndex - 1))"
         :disabled="lessonIndex === 0"
       >
-        ← 上一节</button
-      ><button @click="emit('read', false)" :disabled="disabled">只记录已读</button
-      ><button class="primary" @click="emit('read', true)" :disabled="disabled">记录阅读并继续 →</button>
+        上一节</UiButton
+      >
+      <UiButton @click="emit('read', false)" :disabled="disabled">只记录已读</UiButton>
+      <UiButton variant="primary" trailing-icon="next" @click="emit('read', true)" :disabled="disabled"
+        >记录阅读并继续</UiButton
+      >
     </div>
     <section class="chapter-bridge">
       <h2>这一节之后</h2>
