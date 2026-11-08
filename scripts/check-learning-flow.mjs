@@ -46,6 +46,15 @@ for (const chapter of chapters) {
   assert.equal(CHAPTER_PREVIEWS[chapter.id].length, 3);
   assert(CHAPTER_BRIDGES[chapter.id].length > 30);
   for (const lesson of chapter.lessons) {
+    const link = noteReferences(
+      referenceText(lesson.title, '/learn/' + chapter.id + '/0', 'lesson-concept-0'),
+    );
+    assert.equal(
+      link.length,
+      1,
+      'Brackets in a lesson title must not break its note reference: ' + lesson.id,
+    );
+    assert(link[0].label.includes(lesson.title));
     const picked = figureSteps(runDemo(lessonDemo(lesson)).frames, lesson.id);
     const positions = figurePlacement(lesson).slice(0, picked.length);
     assert.equal(positions.length, picked.length);

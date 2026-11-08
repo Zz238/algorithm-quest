@@ -67,7 +67,8 @@ export function referenceText(title, path, section, options = {}) {
 // Only our own bounded hash links become clickable. User HTML is always plain text.
 export function noteReferences(body) {
   const result = [];
-  const expression = /\[([^\]\n]{1,180})\]\(#([^\s)]+)\)/g;
+  // Lesson names can themselves contain brackets, e.g. a[i+1].
+  const expression = /\[([^\n]{1,180}?)\]\(#([^\s)]+)\)/g;
   for (const match of body.matchAll(expression)) {
     const target = splitStudyTarget(match[2]);
     if (target?.target) result.push({ label: match[1], path: match[2] });

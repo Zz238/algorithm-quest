@@ -57,7 +57,7 @@ test('notes are searchable and back/forward restores reading position with focus
   await page.getByRole('button', { name: '概念与图解', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
   await expect
-    .poll(() => page.locator('#lesson-figures').evaluate((e) => e.getBoundingClientRect().top))
+    .poll(() => page.locator('#lesson-concepts').evaluate((e) => e.getBoundingClientRect().top))
     .toBeLessThan(240);
   const y = await page.evaluate(() => window.scrollY);
   const searchButton = page
