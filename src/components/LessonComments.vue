@@ -2,6 +2,9 @@
 import { ref, computed, toRef } from 'vue';
 import { useLessonComments } from '../useLessonComments.js';
 import { COMMENT_LIMIT, commentLength, isSendKey } from '../comments.js';
+import UiSegments from './ui/UiSegments.vue';
+import UiButton from './ui/UiButton.vue';
+import UiStatus from './ui/UiStatus.vue';
 const props = defineProps({ lessonId: { type: String, required: true }, user: Object, service: Object });
 const emit = defineEmits(['login']);
 const model = useLessonComments(toRef(props, 'lessonId'), toRef(props, 'user'), props.service);
@@ -61,19 +64,31 @@ function sort(value) {
       <h3>
         <strong>{{ total }}</strong> 条公开评论
       </h3>
-      <div class="comment-sort" aria-label="评论排序">
-        <button :aria-pressed="order === 'oldest'" @click="sort('oldest')">最早</button
-        ><button :aria-pressed="order === 'newest'" @click="sort('newest')">最新</button>
-      </div>
+      <UiSegments
+        class="comment-sort"
+        :model-value="order"
+        label="评论排序"
+        :options="[
+          { value: 'oldest', label: '最早' },
+          { value: 'newest', label: '最新' },
+        ]"
+        :disabled="loading"
+        @update:model-value="sort"
+      />
     </div>
     <button v-if="!composerOpen" type="button" class="text-button" @click="composerOpen = true">
       {{ total ? '参与本节讨论' : '本节还没有讨论，写下问题或补充' }} →
     </button>
     <form v-if="composerOpen" class="comment-composer" @submit.prevent="send">
       <div class="composer-tabs" aria-label="讨论编辑模式">
-        <button type="button" :aria-pressed="!preview" @click="preview = false">写评论</button
-        ><button type="button" :aria-pressed="preview" @click="preview = true">预览</button
-        ><span class="composer-label">公开 · 本节交流</span>
+        <UiSegments
+          v-model="preview"
+          label="写评论或预览"
+          :options="[
+            { value: false, label: '写评论' },
+            { value: true, label: '预览' },
+          ]"
+        /><span class="composer-label">公开 · 本节交流</span>
         <button type="button" @click="composerOpen = false">收起输入区</button>
       </div>
       <div v-if="!preview" class="comment-input-wrap">
@@ -105,11 +120,20 @@ function sort(value) {
         </div>
         <span class="comment-length" :class="{ exceeded: length > COMMENT_LIMIT }"
           >{{ length }} / {{ COMMENT_LIMIT }}</span
-        ><button v-if="user" class="primary send-comment" type="submit" :disabled="!canSend">
-          {{ sending ? '发送中…' : '发送评论 →' }}</button
-        ><button v-else class="primary send-comment" type="button" @click="emit('login')">
-          使用 GitHub 登录
-        </button>
+        ><UiButton
+          v-if="user"
+          variant="primary"
+          icon="send"
+          class="send-comment"
+          type="submit"
+          :loading="sending"
+          :disabled="!canSend"
+        >
+          {{ sending ? '发送中…' : '发送评论' }}</UiButton
+        >
+        <UiButton v-else variant="primary" class="send-comment" @click="emit('login')"
+          >使用 GitHub 登录</UiButton
+        >
       </div>
       <p v-if="!available" class="comment-notice">
         离线版可使用私人学习笔记，公开评论请在正式网站使用。
@@ -121,7 +145,9 @@ function sort(value) {
       <p>{{ loadError }}</p>
       <button @click="refresh" :disabled="loading">重新加载评论</button>
     </div>
-    <p v-if="loading && !items.length" class="comment-empty">正在加载本节评论…</p>
+    <p v-if="loading && !items.length" class="comment-empty">
+      <UiStatus loading>正在加载本节评论…</UiStatus>
+    </p>
     <p v-else-if="!items.length && !loadError" class="comment-empty">
       还没有评论。可以留下你的问题，或公开分享这一节的解题思路。
     </p>

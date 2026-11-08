@@ -4,6 +4,8 @@ import { buildTrace, traceDefaults, parseTraceArray } from '../traces';
 import { useStudyDraft, writeDraft, draftKey, browserStorage } from '../study-drafts.js';
 import { nextPrediction } from '../trace-prediction.js';
 import TracePicture from './TracePicture.vue';
+import UiButton from './ui/UiButton.vue';
+import UiSegments from './ui/UiSegments.vue';
 import { frameChanges, phaseLabel, phaseStops, tracePresets } from '../trace-tools.js';
 const props = defineProps({
   mode: String,
@@ -229,34 +231,37 @@ onMounted(() => {
     </div>
     <p class="trace-intro">每次只看一个动作。图和变量栏显示的是这一步执行后的状态。</p>
     <div class="trace-mode study-actions">
-      <button type="button" :aria-pressed="!draft.predict" @click="draft.predict = false">
-        自由推演</button
-      ><button type="button" :aria-pressed="draft.predict" @click="draft.predict = true">
-        先预测再走</button
-      ><button
+      <UiSegments
+        v-model="draft.predict"
+        label="实验推演模式"
+        :options="[
+          { value: false, label: '自由推演' },
+          { value: true, label: '先预测再走' },
+        ]"
+      />
+      <UiButton
         v-if="plain && codeAvailable && trace.code.length"
         type="button"
+        variant="ghost"
+        :icon="draft.code ? 'close' : 'code'"
         :aria-pressed="draft.code"
         @click="draft.code = !draft.code"
       >
         {{ draft.code ? '收起联动代码' : '看对应代码' }}
-      </button>
+      </UiButton>
     </div>
-    <div v-if="comparison" class="study-actions trace-orders" role="group" aria-label="二叉树遍历顺序">
-      <button
-        v-for="[id, name] in [
-          ['preorder', '前序 · 根左右'],
-          ['inorder', '中序 · 左根右'],
-          ['postorder', '后序 · 左右根'],
-        ]"
-        :key="id"
-        type="button"
-        :aria-pressed="(config.order || 'preorder') === id"
-        @click="changeOrder(id)"
-      >
-        {{ name }}
-      </button>
-    </div>
+    <UiSegments
+      v-if="comparison"
+      class="trace-orders"
+      :model-value="config.order || 'preorder'"
+      label="二叉树遍历顺序"
+      :options="[
+        { value: 'preorder', label: '前序 · 根左右' },
+        { value: 'inorder', label: '中序 · 左根右' },
+        { value: 'postorder', label: '后序 · 左右根' },
+      ]"
+      @update:model-value="changeOrder"
+    />
     <p v-if="comparison" class="trace-intro">
       三种顺序用同一棵树。切换后，访问步骤和下方的小段代码会一起改变；完整 Java 示例以默认的前序为例。
     </p>
@@ -290,7 +295,7 @@ onMounted(() => {
       <label v-if="mode === 'stack'"
         >括号字符串<input v-model="config.text" aria-label="实验括号字符串"
       /></label>
-      <button type="submit">应用输入并重来</button>
+      <UiButton type="submit" icon="restart">应用输入并重来</UiButton>
     </form>
     <div v-if="allowEdit && presets.length" class="trace-presets">
       <span>换个小输入验证：</span
@@ -365,22 +370,31 @@ onMounted(() => {
       <p v-if="predictionFeedback" role="status">{{ predictionFeedback }}</p>
     </div>
     <div class="trace-controls">
-      <button @click="next(-1)" :disabled="at === 0">← 上一条</button
-      ><button
-        class="primary"
+      <UiButton icon="previous" @click="next(-1)" :disabled="at === 0">上一条</UiButton>
+      <UiButton
+        variant="primary"
+        trailing-icon="next"
         @click="next(1)"
         :disabled="at === trace.frames.length - 1 || (prediction && !predicted)"
       >
-        下一条 →</button
-      ><button @click="play" :disabled="draft.predict">{{ playing ? '暂停' : '自动播放' }}</button
-      ><button
+        下一条</UiButton
+      >
+      <UiButton
+        :icon="playing ? 'pause' : 'play'"
+        :aria-pressed="playing"
+        @click="play"
+        :disabled="draft.predict"
+        >{{ playing ? '暂停' : '自动播放' }}</UiButton
+      >
+      <UiButton
+        icon="restart"
         @click="
           stop();
           at = 0;
         "
       >
         从头推演
-      </button>
+      </UiButton>
       <label class="trace-speed"
         >播放速度
         <select v-model.number="draft.speed" aria-label="实验播放速度">

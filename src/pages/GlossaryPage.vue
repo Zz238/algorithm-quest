@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { filterTerms } from '../course-search.js';
 import TermDetails from '../components/TermDetails.vue';
+import UiSearchField from '../components/ui/UiSearchField.vue';
 const props = defineProps({ initialTerm: String });
 const emit = defineEmits(['navigate']);
 const query = ref(''),
@@ -16,16 +17,13 @@ watch(matches, (entries) => {
     <span class="eyebrow">术语查询</span>
     <h1>术语手册</h1>
     <p class="page-lead">查一个词的意思，也可以回到讲过这个词的小节。</p>
-    <label class="mini-output" for="glossary-search"
-      ><span>搜索术语</span>
-      <input
-        id="glossary-search"
-        v-model="query"
-        placeholder="例如：int、返回值、队列"
-        type="search"
-        maxlength="100"
-      />
-    </label>
+    <UiSearchField
+      id="glossary-search"
+      v-model="query"
+      label="搜索术语"
+      maxlength="100"
+      placeholder="例如：int、返回值、队列"
+    />
     <div class="glossary-layout">
       <div class="term-list">
         <p v-if="!matches.length" class="empty-state" role="status">

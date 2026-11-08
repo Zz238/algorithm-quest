@@ -1,6 +1,9 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { noteReferences } from '../study-target.js';
+import UiIcon from './ui/UiIcon.vue';
+import UiButton from './ui/UiButton.vue';
+import UiStatus from './ui/UiStatus.vue';
 const props = defineProps({
   modelValue: String,
   open: Boolean,
@@ -153,17 +156,7 @@ onUnmounted(() => {
       :aria-label="open ? '收起学习笔记' : '打开学习笔记'"
       @click="emit('update:open', !open)"
     >
-      <svg
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.7"
-        aria-hidden="true"
-      >
-        <path d="M14 4H5v16h14v-9M10 14l1-4 8-8 3 3-8 8-4 1Z" /></svg
-      ><span>笔记</span>
+      <UiIcon name="note" :size="20" /><span>笔记</span>
     </button>
     <Transition name="notes-backdrop"
       ><div v-if="modal" class="lesson-notes-backdrop" aria-hidden="true" @click="close"></div
@@ -187,9 +180,11 @@ onUnmounted(() => {
             <span class="eyebrow">{{ contextLabel }}</span>
             <h2 id="lesson-notes-title">学习笔记</h2>
           </div>
-          <button
+          <UiButton
             v-if="!compact"
-            class="text-button notes-pin"
+            class="notes-pin"
+            variant="ghost"
+            :icon="pinned ? 'unpin' : 'pin'"
             :aria-pressed="pinned"
             @click="
               emit('pin', !pinned);
@@ -197,20 +192,14 @@ onUnmounted(() => {
             "
           >
             {{ pinned ? '取消固定' : '固定展开' }}
-          </button>
-          <button class="notes-close" aria-label="关闭学习笔记" @click="close">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="m6 6 12 12M18 6 6 18" />
-            </svg>
-          </button>
+          </UiButton>
+          <UiButton
+            class="notes-close"
+            variant="ghost"
+            icon="close"
+            aria-label="关闭学习笔记"
+            @click="close"
+          />
         </header>
         <p class="lesson-notes-context">{{ lessonTitle }}</p>
         <p class="lesson-notes-help">
@@ -241,10 +230,12 @@ onUnmounted(() => {
           aria-describedby="lesson-note-status lesson-note-count"
         ></textarea>
         <div class="lesson-notes-status">
-          <span
+          <UiStatus
+            :loading="initializing || localPending || syncStatus === 'syncing'"
+            :kind="!storageOK || syncStatus === 'error' ? 'warning' : 'saved'"
             id="lesson-note-status"
             :class="{ 'save-warning': !storageOK || syncStatus === 'error' }"
-            >{{ status }}</span
+            >{{ status }}</UiStatus
           ><span id="lesson-note-count">{{ content.length }} / 5000</span>
         </div>
         <details v-if="references.length" class="note-reference-list">

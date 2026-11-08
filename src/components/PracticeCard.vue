@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import AnswerInput from './AnswerInput.vue';
+import UiButton from './ui/UiButton.vue';
 import { scoreAnswer, hintFor, practiceAnswer } from '../answering.js';
 import { jumpTo } from '../useCourseNavigation.js';
 const props = defineProps({
@@ -176,11 +177,20 @@ function check() {
     /></label>
     <AnswerInput v-else :answer="q.answer" :model-value="s.value" @update:model-value="set" />
     <div class="mini-actions">
-      <button type="button" class="primary" :disabled="disabled || s.passed" @click="check">
-        {{ s.passed ? (s.helped || priorHelp ? '参考后完成' : '已答对') : '检查答案' }}</button
-      ><button v-if="!s.passed && s.hints < 3" type="button" @click="requestHint">
-        {{ s.hints ? '下一层提示' : '给我一点提示' }}</button
-      ><button type="button" @click="reveal">{{ s.revealed ? '收起思路' : '查看思路与答案' }}</button>
+      <UiButton
+        variant="primary"
+        :icon="s.passed ? 'check' : undefined"
+        :disabled="disabled || s.passed"
+        @click="check"
+      >
+        {{ s.passed ? (s.helped || priorHelp ? '参考后完成' : '已答对') : '检查答案' }}</UiButton
+      >
+      <UiButton v-if="!s.passed && s.hints < 3" @click="requestHint">
+        {{ s.hints ? '下一层提示' : '给我一点提示' }}</UiButton
+      >
+      <UiButton variant="ghost" @click="reveal">{{
+        s.revealed ? '收起思路' : '查看思路与答案'
+      }}</UiButton>
     </div>
     <p
       v-if="s.feedback"

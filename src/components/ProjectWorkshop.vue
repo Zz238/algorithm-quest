@@ -4,6 +4,8 @@ import { useStudyDraft } from '../study-drafts.js';
 import { downloadText } from '../download.js';
 import { PROJECT_TASKS, PROJECT_BOUNDARIES } from '../data/stage-projects.js';
 import JavaWriteTask from './JavaWriteTask.vue';
+import UiCheckbox from './ui/UiCheckbox.vue';
+import UiButton from './ui/UiButton.vue';
 const props = defineProps({ project: Object, owner: String, seed: Number });
 const draft = useStudyDraft(props.owner, props.project.id, 'project-plan', (raw) => ({
   goal: typeof raw?.goal === 'string' ? raw.goal.slice(0, 1200) : '',
@@ -67,16 +69,13 @@ function exportPlan() {
       </ul>
     </details>
     <JavaWriteTask :task="task" :topic="project.id" :owner="owner" />
-    <label class="project-self-check"
-      ><input
-        v-model="draft.checked"
-        type="checkbox"
-      />我已核对输入输出、解释选择理由，并尝试了一组不同数据。</label
+    <UiCheckbox v-model="draft.checked" class="project-self-check"
+      >我已核对输入输出、解释选择理由，并尝试了一组不同数据。</UiCheckbox
     >
     <p v-if="draft.checked" role="status">
       已保存你的自评。本机编译运行的结果需要你自己核对，网站没有执行这段 Java。
     </p>
-    <button type="button" @click="exportPlan">导出这份作品说明 Markdown</button>
+    <UiButton icon="download" @click="exportPlan">导出这份作品说明 Markdown</UiButton>
     <p class="micro">工作单和代码草稿仅保存在当前浏览器；与账号中的练习进度分别保存。</p>
   </section>
 </template>

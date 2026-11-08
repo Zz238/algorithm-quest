@@ -4,6 +4,7 @@ import { accountProfile } from '../account-profile.js';
 import UserAvatar from './UserAvatar.vue';
 import GitHubIcon from './GitHubIcon.vue';
 import CourseLink from './CourseLink.vue';
+import UiButton from './ui/UiButton.vue';
 const props = defineProps({ user: Object, view: String });
 const emit = defineEmits(['navigate']);
 const profile = computed(() => accountProfile(props.user));
@@ -84,14 +85,15 @@ const profile = computed(() => accountProfile(props.user));
       >
         <UserAvatar :user="user" /><span class="account-name">{{ profile.name }}</span>
       </button>
-      <button
+      <UiButton
         v-else
+        variant="primary"
         class="login-trigger"
         :aria-current="view === 'login' ? 'page' : undefined"
         @click="emit('navigate', '/login')"
       >
         登录
-      </button>
+      </UiButton>
     </div>
   </header>
 </template>

@@ -26,6 +26,7 @@ import LessonPage from './pages/LessonPage.vue';
 import NotesPage from './pages/NotesPage.vue';
 import RecordPage from './pages/RecordPage.vue';
 import SearchPage from './pages/SearchPage.vue';
+import UiIcon from './components/ui/UiIcon.vue';
 
 const props = defineProps({ progressServices: Object, commentsService: Object });
 const { progress, storageOK, storageIssue, recoveries, localPending, localVersion, cloud } =
@@ -249,7 +250,20 @@ onUnmounted(() => {
         <template v-else>浏览器暂时无法保存。可以继续学习，关闭前请先导出进度。</template>
         <button class="text-button" @click="go('/progress')">打开学习记录</button>
       </div>
-      <div v-if="notice" class="toast" role="status">{{ notice }}</div>
+      <Transition name="ui-toast"
+        ><div v-if="notice" class="toast ui-toast" role="status">
+          <UiIcon name="info" /><span>{{ notice }}</span
+          ><button
+            type="button"
+            aria-label="关闭提示"
+            @click="
+              notice = '';
+              clearTimeout(toastTimer);
+            "
+          >
+            <UiIcon name="close" :size="16" />
+          </button></div
+      ></Transition>
       <div
         id="main-content"
         :key="path + ':' + owner + ':' + localVersion"
