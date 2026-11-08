@@ -179,7 +179,7 @@ function status(chapter) {
       <h2>以前收藏的知识点</h2>
       <div class="saved-lessons">
         <button v-for="id in progress.bookmarks" :key="id" @click="emit('navigate', lessonRoute(id))">
-          {{ findLesson(id)?.title }} <span aria-hidden="true">↗</span>
+          {{ findLesson(id)?.title }} <span aria-hidden="true">→</span>
         </button>
       </div>
     </section>

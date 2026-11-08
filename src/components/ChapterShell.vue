@@ -40,7 +40,7 @@ const emit = defineEmits(['navigate']);
       <div class="side-tip">
         <strong>本章学习</strong>
         <p>遇到不熟悉的词，可以在术语手册里查找。</p>
-        <button @click="emit('navigate', '/glossary')">打开术语手册 ↗</button>
+        <button @click="emit('navigate', '/glossary')">打开术语手册 →</button>
       </div>
     </aside>
     <slot />
