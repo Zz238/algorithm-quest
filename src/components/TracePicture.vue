@@ -85,7 +85,7 @@ const lines = computed(() =>
         class="picture-label"
         :x="cell.x + cell.width / 2 + 21"
         :y="cell.y + 4"
-        font-size="12"
+        font-size="14"
       >
         {{ cell.side }}
       </text>

@@ -26,6 +26,7 @@ const {
 } = model;
 const preview = ref(false),
   composing = ref(false);
+const composerOpen = ref(false);
 let compositionEnded = -Infinity;
 const length = computed(() => commentLength(draft.value));
 function keydown(event) {
@@ -65,11 +66,15 @@ function sort(value) {
         ><button :aria-pressed="order === 'newest'" @click="sort('newest')">最新</button>
       </div>
     </div>
-    <form class="comment-composer" @submit.prevent="send">
+    <button v-if="!composerOpen" type="button" class="text-button" @click="composerOpen = true">
+      {{ total ? '参与本节讨论' : '本节还没有讨论，写下问题或补充' }} →
+    </button>
+    <form v-if="composerOpen" class="comment-composer" @submit.prevent="send">
       <div class="composer-tabs" aria-label="讨论编辑模式">
         <button type="button" :aria-pressed="!preview" @click="preview = false">写评论</button
         ><button type="button" :aria-pressed="preview" @click="preview = true">预览</button
         ><span class="composer-label">公开 · 本节交流</span>
+        <button type="button" @click="composerOpen = false">收起输入区</button>
       </div>
       <div v-if="!preview" class="comment-input-wrap">
         <label :for="'comment-input-' + lessonId" class="sr-only">本节公开评论</label

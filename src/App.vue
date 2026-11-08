@@ -8,6 +8,8 @@ import { createTrafficTracker } from './analytics.js';
 import { jumpTo, useCourseNavigation } from './useCourseNavigation.js';
 import { useLearningProgress } from './useLearningProgress.js';
 import { useCloudProgress } from './useCloudProgress.js';
+import { useReadingPreferences } from './reading-preferences.js';
+import { referenceText } from './study-target.js';
 import AccountPanel from './components/AccountPanel.vue';
 import BeginnerTrial from './components/BeginnerTrial.vue';
 import ChapterDrawer from './components/ChapterDrawer.vue';
@@ -29,7 +31,12 @@ const props = defineProps({ progressServices: Object, commentsService: Object })
 const { progress, storageOK, storageIssue, recoveries, localPending, localVersion, cloud } =
   useCloudProgress(lessonIds, props.progressServices);
 const owner = computed(() => cloud.state.user?.id || 'guest');
-const { path, current, go, navigating, pageContent } = useCourseNavigation(owner, COURSE_TERMS);
+const { path, current, go, navigating, pageContent, resume, refreshResume } = useCourseNavigation(
+  owner,
+  COURSE_TERMS,
+);
+const readingPrefs = useReadingPreferences();
+const notesWide = ref(false);
 const view = computed(() => current.value.view);
 const chapter = computed(() => current.value.chapter);
 const lesson = computed(() => current.value.lesson);
@@ -65,10 +72,12 @@ const {
   markRead,
   claim,
 } = useLearningProgress(progress, cloud, toast);
-const resumeTitle = computed(() =>
-  routeTitle(parseRoute(continuePath.value)).replace(' · 算法之旅', ''),
+const resumePath = computed(() => resume.value?.path || continuePath.value);
+const resumeTitle = computed(
+  () => resume.value?.title || routeTitle(parseRoute(continuePath.value)).replace(' · 算法之旅', ''),
 );
 const continueLabel = computed(() => {
+  if (resume.value) return '回到上次学习';
   const next = parseRoute(continuePath.value);
   return next.view === 'learn'
     ? '继续：第 ' + next.chapter.id + ' 章第 ' + (next.index + 1) + ' 节'
@@ -78,13 +87,38 @@ const continueLabel = computed(() => {
         ? '开始复习'
         : '查看学习记录';
 });
-const hasStarted = computed(() => !!(progress.lessons.length || progress.learning.prepared.length));
+const hasStarted = computed(
+  () => !!(resume.value || progress.lessons.length || progress.learning.prepared.length),
+);
 const note = computed({
   get: () => progress.notes[lesson.value?.id] || '',
   set: (value) => {
     if (lesson.value && !cloud.state.initializing)
       progress.notes[lesson.value.id] = value.slice(0, 5000);
   },
+});
+function addNote({ section, step, example, input, label, prompt }) {
+  if (!lesson.value || cloud.state.initializing) return;
+  const link = referenceText(lesson.value.title, lessonRoute(lesson.value.id), section, {
+    step,
+    example,
+    input,
+    label,
+  });
+  const extra = link + '\n' + (prompt || '我的理解：');
+  if (note.value.length + extra.length + 2 > 5000) {
+    toast('笔记已接近 5000 字，请先整理内容。');
+    return;
+  }
+  note.value = (note.value ? note.value + '\n\n' : '') + extra;
+  drawerOpen.value = false;
+  notesOpen.value = true;
+}
+watch(drawerOpen, (value) => {
+  if (value) notesOpen.value = false;
+});
+watch(notesOpen, (value) => {
+  if (value) drawerOpen.value = false;
 });
 const saveStatus = computed(() => {
   if (cloud.state.initializing) return '正在加载当前存档…';
@@ -136,6 +170,7 @@ function applyBackup({ value, replace, done }) {
     recordCheckin(progress, localDateKey(), owner.value !== 'guest');
   }
   done(true);
+  if (replace) refreshResume();
   toast(replace ? '已替换当前浏览器的游客记录。' : '已按预览中的规则合并备份。');
 }
 function resetData({ value, scope }) {
@@ -148,6 +183,7 @@ function resetData({ value, scope }) {
   } else if (scope === 'notes') {
     progress.notes = {};
   } else return;
+  if (scope !== 'notes') refreshResume();
   toast(scope === 'notes' ? '已清空当前存档的私人笔记。' : '已重置选定的本机学习数据。');
 }
 
@@ -174,17 +210,17 @@ const traffic = createTrafficTracker({
   referrer: document.referrer,
 });
 function updateTraffic(enabled) {
-  if (enabled) traffic.visit(path.value);
+  if (enabled) traffic.visit(current.value.path);
   else traffic.stop();
 }
 function trafficPreferenceChanged(event) {
   if (event.key === 'algo-quest-traffic-choice-v1') updateTraffic(event.newValue !== 'off');
 }
 onMounted(() => {
-  traffic.visit(path.value);
+  traffic.visit(current.value.path);
   window.addEventListener('storage', trafficPreferenceChanged);
 });
-watch(path, (value) => traffic.visit(value));
+watch(path, () => traffic.visit(current.value.path));
 onUnmounted(() => {
   traffic.cancel();
   window.removeEventListener('storage', trafficPreferenceChanged);
@@ -197,8 +233,9 @@ onUnmounted(() => {
     :class="{
       'has-chapter-menu': hasChapterMenu,
       'chapter-menu-open': drawerOpen,
-      'has-lesson-notes': view === 'learn',
+      'has-lesson-notes': view === 'learn' && notesWide,
     }"
+    :style="{ '--lesson-font-size': readingPrefs.fontSize + 'px' }"
   >
     <div class="app-surface" :inert="drawerOpen || notesModalOpen">
       <a class="skip-content" href="#main-content" @click.prevent="jumpTo('main-content')">跳到正文</a>
@@ -226,7 +263,14 @@ onUnmounted(() => {
           :summary="summary"
           :notes="progress.notes"
           :has-started="hasStarted"
-          :continue-path="continuePath"
+          :continue-path="resumePath"
+          :ordered-path="continuePath"
+          :resume="resume"
+          :prepared-count="
+            progress.learning.prepared.filter(
+              (id) => !['java-call-stack', 'java-two-loops', 'java-last-step'].includes(id),
+            ).length
+          "
           :continue-label="continueLabel"
           :resume-title="resumeTitle"
           :chapter-read="chapterReads"
@@ -277,6 +321,10 @@ onUnmounted(() => {
             :disabled="cloud.state.initializing"
             :user="cloud.state.user"
             :comments-service="props.commentsService"
+            :location="current.target"
+            :font-size="readingPrefs.fontSize"
+            @font="readingPrefs.fontSize = $event"
+            @note="addNote"
             @navigate="go"
             @read="readLesson"
             @mastered="markMastered"
@@ -301,7 +349,7 @@ onUnmounted(() => {
             :cloud="cloud"
             :progress="progress"
             :today="today"
-            @continue="go(continuePath)"
+            @continue="go(resumePath)"
             @goal="changeGoal"
           />
         </main>
@@ -311,7 +359,8 @@ onUnmounted(() => {
           :summary="summary"
           :chapter-read="chapterReads"
           :chapter-cleared="cleared"
-          :continue-path="continuePath"
+          :continue-path="resumePath"
+          :resume="resume"
           :owner="owner"
           :save-status="saveStatus"
           :disabled="cloud.state.initializing"
@@ -371,6 +420,7 @@ onUnmounted(() => {
       :key="'notes-' + owner + '-' + lesson.id"
       v-model="note"
       v-model:open="notesOpen"
+      :pinned="readingPrefs.notesPinned"
       :lesson-title="lesson.title"
       :context-label="'第 ' + chapter.id + ' 章 · 小节 ' + (lessonIndex + 1)"
       :user="cloud.state.user"
@@ -380,6 +430,9 @@ onUnmounted(() => {
       :initializing="cloud.state.initializing"
       :inert="drawerOpen"
       @modal-change="notesModalOpen = $event"
+      @wide-change="notesWide = $event"
+      @pin="readingPrefs.notesPinned = $event"
+      @navigate="go"
       @library="go('/notes')"
     />
     <ChapterDrawer

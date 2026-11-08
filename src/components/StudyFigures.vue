@@ -1,30 +1,30 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, useId } from 'vue';
 import { figureSteps } from '../data/figure-selections.js';
 import { lessonDemo, runDemo } from '../lesson-demos.js';
 import { displayValue } from '../trace-picture.js';
-import TracePicture from './TracePicture.vue';
+import FigureView from './FigureView.vue';
 
-const props = defineProps({ lesson: { type: Object, required: true } });
-const emit = defineEmits(['inspect']);
+const props = defineProps({ lesson: { type: Object, required: true }, positions: Array });
+const emit = defineEmits(['inspect', 'note']);
+const heading = useId();
 const demo = computed(() => lessonDemo(props.lesson));
-const figures = computed(() => figureSteps(runDemo(demo.value).frames, props.lesson.id));
+const figures = computed(() =>
+  figureSteps(runDemo(demo.value).frames, props.lesson.id)
+    .map((value, number) => ({ ...value, number }))
+    .filter((value) => !props.positions || props.positions.includes(value.number)),
+);
 </script>
 
 <template>
-  <section
-    id="lesson-figures"
-    class="study-figures study-anchor"
-    aria-labelledby="lesson-figures-heading"
-  >
-    <h2 id="lesson-figures-heading">关键步骤图解</h2>
-    <p>先从图里找这一步改变了什么。想看中间的每个动作，可以用同一组数据进入实验。</p>
+  <section class="study-figures study-anchor" :aria-labelledby="heading">
+    <h3 :id="heading" class="sr-only">对应的关键步骤图解</h3>
     <div class="figure-grid">
-      <figure v-for="({ frame, index }, i) in figures" :key="index">
+      <figure v-for="{ frame, index, number } in figures" :key="index">
         <div class="figure-number">
-          图 {{ i + 1 }} <span>实验第 {{ index + 1 }} 步</span>
+          图 {{ number + 1 }} <span>实验第 {{ index + 1 }} 步</span>
         </div>
-        <div class="figure-graphic"><TracePicture :frame="frame" :mode="demo.mode" /></div>
+        <FigureView :frame="frame" :mode="demo.mode" :title="frame.statement" />
         <figcaption>
           <strong>{{ frame.statement }}</strong>
           <p>{{ frame.why }}</p>
@@ -41,6 +41,20 @@ const figures = computed(() => figureSteps(runDemo(demo.value).frames, props.les
             :aria-label="'用本节示例查看实验第 ' + (index + 1) + ' 步'"
           >
             在实验里看这一步 <span aria-hidden="true">↓</span>
+          </button>
+          <button
+            class="text-button"
+            type="button"
+            @click="
+              emit('note', {
+                section: 'lesson-experiment',
+                step: index,
+                example: true,
+                label: '实验第 ' + (index + 1) + ' 步',
+              })
+            "
+          >
+            记下这一步
           </button>
         </figcaption>
       </figure>

@@ -331,7 +331,7 @@ h1[tabindex='-1'],
     gap: clamp(8px, 4vw, 24px);
     flex-wrap: wrap;
   }
-  .header nav button {
+  .header nav :is(button, .course-link) {
     min-height: 44px;
   }
   .hero {
@@ -350,7 +350,7 @@ h1[tabindex='-1'],
   .lesson-nav {
     margin-top: 12px;
   }
-  .lesson-nav button,
+  .lesson-nav :is(button, .course-link),
   .trace-controls button,
   .trace-mode button,
   .trace-orders button,
@@ -435,7 +435,7 @@ html {
   }
 }
 @media (pointer: coarse) {
-  .lesson-nav button,
+  .lesson-nav :is(button, .course-link),
   .trace-controls button,
   .trace-mode button,
   .trace-orders button,

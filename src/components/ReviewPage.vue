@@ -13,6 +13,8 @@ import { useStudyDraft } from '../study-drafts.js';
 import { answerState } from '../answering.js';
 import VariantPractice from './VariantPractice.vue';
 import PracticeCard from './PracticeCard.vue';
+import ProjectWorkshop from './ProjectWorkshop.vue';
+import CourseLink from './CourseLink.vue';
 const props = defineProps({
   topic: String,
   owner: String,
@@ -99,6 +101,7 @@ function transferAttempt(r) {
         @attempt="transferAttempt"
       />
       <p v-if="progress.learning.independent.includes(transfer.id)" role="status">已记录独立完成。</p>
+      <ProjectWorkshop :project="transfer" :owner="owner" :seed="work.seed" />
       <details class="study-details">
         <summary>卡住时，可以回顾这一小节</summary>
         <p>{{ related?.foundation.terms[0].meaning }}</p>
@@ -157,15 +160,15 @@ function transferAttempt(r) {
           </li>
         </ul>
       </details>
-      <h2>阶段应用：自己判断该用什么办法</h2>
+      <h2>阶段作品：自己判断、写出过程、验证边界</h2>
       <ul class="study-route-list">
         <li v-for="(t, i) in TRANSFERS" :key="t.id">
-          <button @click="emit('navigate', '/review/' + t.id)">
+          <CourseLink :to="'/review/' + t.id" @navigate="emit('navigate', $event)">
             <span>阶段 {{ i + 1 }} · {{ t.title }}</span
             ><small
               >{{ progress.learning.independent.includes(t.id) ? '已独立完成' : '开始尝试' }} →</small
             >
-          </button>
+          </CourseLink>
         </li>
       </ul>
       <p class="micro">

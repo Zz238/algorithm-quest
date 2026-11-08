@@ -2,17 +2,22 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { createNavigation } from './navigation.js';
 import { parseRoute, routeTitle } from './course-route.js';
 import { browserStorage, draftKey, readDraft, writeDraft } from './study-drafts.js';
+import { SECTION_LABELS } from './study-target.js';
 
 export const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function jumpTo(id) {
+export function jumpTo(id, { instant = false } = {}) {
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) return false;
+  for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+  }
   if (el.tagName === 'DETAILS') el.open = true;
   const heading = el.matches('h1,h2,h3,summary') ? el : el.querySelector('h1,h2,h3,summary') || el;
   if (!heading.matches('a,button,summary,[tabindex]')) heading.tabIndex = -1;
   heading.focus({ preventScroll: true });
-  el.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'instant' : 'smooth' });
+  el.scrollIntoView({ block: 'start', behavior: instant || reducedMotion() ? 'instant' : 'smooth' });
+  return true;
 }
 
 export function useCourseNavigation(owner, terms) {
@@ -29,12 +34,21 @@ export function useCourseNavigation(owner, terms) {
   const navigating = ref(false),
     pageContent = ref(null),
     storage = browserStorage();
+  const resumeKey = (account) => draftKey(account, 'latest', 'resume');
+  function readResume(account) {
+    const value = readDraft(resumeKey(account), storage);
+    const route = value?.path && parseRoute(value.path, terms);
+    return route && (['learn', 'boss'].includes(route.view) || (route.view === 'java' && route.topic))
+      ? value
+      : null;
+  }
+  const resume = ref(readResume(owner.value));
   const nativeRestoration = window.history.scrollRestoration;
   if (nativeRestoration) window.history.scrollRestoration = 'manual';
-  const placeKey = (url, account) => draftKey(account, url, 'reading-position');
+  const placeKey = (url, account) => draftKey(account, parseRoute(url, terms).path, 'reading-position');
   const remembers = (url) =>
     ['learn', 'boss'].includes(parseRoute(url, terms).view) ||
-    (parseRoute(url, terms).view === 'java' && url !== '/java');
+    (parseRoute(url, terms).view === 'java' && !!parseRoute(url, terms).topic);
   let scrollSave, togglesCleanup, headerObserver;
   function savePlace(url = path.value, account = owner.value) {
     if (!remembers(url)) return;
@@ -45,6 +59,21 @@ export function useCourseNavigation(owner, terms) {
       { y: Math.max(0, Math.round(window.scrollY)), disclosures },
       storage,
     );
+    const sections = [...(pageContent.value?.querySelectorAll('[data-study-section]') || [])];
+    const section = sections.filter((e) => e.getBoundingClientRect().top < innerHeight * 0.5).at(-1);
+    const lab = pageContent.value?.querySelector('[data-trace-step]');
+    const step = section?.id === 'lesson-experiment' ? Number(lab?.dataset.traceStep) : null;
+    const route = parseRoute(url, terms);
+    const value = {
+      path: route.path,
+      title: routeTitle(route).replace(' · 算法之旅', ''),
+      label:
+        (section?.dataset.studyLabel || SECTION_LABELS[section?.id] || '讲解') +
+        (Number.isInteger(step) ? ' · 第 ' + (step + 1) + ' 步' : ''),
+      when: Date.now(),
+    };
+    writeDraft(resumeKey(account), value, storage);
+    if (account === owner.value) resume.value = value;
   }
   function onScroll() {
     const url = path.value,
@@ -86,13 +115,17 @@ export function useCourseNavigation(owner, terms) {
     togglesCleanup = () => {
       for (const el of details) el.removeEventListener('toggle', onScroll);
     };
-    window.scrollTo({ top: Number.isFinite(place?.y) ? place.y : 0, behavior: 'instant' });
+    const located =
+      current.value.target?.section && jumpTo(current.value.target.section, { instant: true });
+    if (!located) window.scrollTo({ top: Number.isFinite(place?.y) ? place.y : 0, behavior: 'instant' });
     const target = pageContent.value?.querySelector('h1') || pageContent.value;
     if (target) {
       target.tabIndex = -1;
       target.focus({ preventScroll: true });
     }
     alignNav();
+    // Save the newly entered lesson only after the old page's position was captured.
+    savePlace(url, account);
   }
   const navigation = createNavigation({
     current: () => path.value,
@@ -122,6 +155,7 @@ export function useCourseNavigation(owner, terms) {
   }
   watch(owner, (_next, previous) => {
     savePlace(path.value, previous);
+    resume.value = readResume(owner.value);
     focusPage();
   });
   onMounted(() => {
@@ -129,6 +163,7 @@ export function useCourseNavigation(owner, terms) {
     window.addEventListener('popstate', onHash);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', onHide);
+    window.addEventListener('study-activity', onScroll);
     const header = document.querySelector('.header');
     if (header && typeof ResizeObserver !== 'undefined') {
       const size = () =>
@@ -154,6 +189,10 @@ export function useCourseNavigation(owner, terms) {
     window.removeEventListener('popstate', onHash);
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('pagehide', onHide);
+    window.removeEventListener('study-activity', onScroll);
   });
-  return { path, current, go, navigating, pageContent };
+  const refreshResume = () => {
+    resume.value = readResume(owner.value);
+  };
+  return { path, current, go, navigating, pageContent, resume, refreshResume };
 }

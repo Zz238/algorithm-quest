@@ -3,6 +3,8 @@ import { computed, ref } from 'vue';
 import { findLesson, lessonRoute } from '../data/course.js';
 import { downloadText } from '../download.js';
 import ConfirmAction from './ConfirmAction.vue';
+import { noteReferences } from '../study-target.js';
+import CourseLink from './CourseLink.vue';
 const props = defineProps({ notes: Object, saveStatus: String, disabled: Boolean });
 const emit = defineEmits(['navigate', 'remove']);
 const query = ref(''),
@@ -11,7 +13,7 @@ const query = ref(''),
 const notes = computed(() =>
   Object.entries(props.notes || {})
     .filter(([id, value]) => value.trim() && findLesson(id))
-    .map(([id, body]) => ({ id, body, title: findLesson(id).title })),
+    .map(([id, body]) => ({ id, body, title: findLesson(id).title, references: noteReferences(body) })),
 );
 const items = computed(() => {
   const word = query.value.trim().toLowerCase();
@@ -45,10 +47,19 @@ function exportNotes() {
     <article v-for="item in items" :key="item.id" class="note-library-item">
       <h3>{{ item.title }}</h3>
       <p>{{ item.body }}</p>
+      <div v-if="item.references.length" class="note-reference-list">
+        <CourseLink
+          v-for="(link, i) in item.references"
+          :key="i"
+          :to="link.path"
+          @navigate="emit('navigate', $event)"
+          >{{ link.label }} →</CourseLink
+        >
+      </div>
       <div class="study-actions">
-        <button class="text-button" type="button" @click="emit('navigate', lessonRoute(item.id))">
+        <CourseLink class="text-button" :to="lessonRoute(item.id)" @navigate="emit('navigate', $event)">
           回小节编辑 →
-        </button>
+        </CourseLink>
         <button
           type="button"
           :disabled="disabled"

@@ -109,7 +109,7 @@ function attempted(result) {
       <div class="prerequisite-links">
         <strong>题目用到这些知识</strong
         ><button v-for="id in boss.review" :key="id" @click="emit('navigate', lessonRoute(id))">
-          {{ findLesson(id)?.title }} ↗
+          {{ findLesson(id)?.title }} →
         </button>
       </div>
       <ul>

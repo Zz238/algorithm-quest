@@ -5,6 +5,8 @@ import { studyTime, prerequisites } from '../data/learning-path.js';
 import { JAVA_TASKS } from '../data/learning-practice.js';
 import { lessonDemo } from '../lesson-demos.js';
 import { courseStages } from '../useLearningProgress.js';
+import { JAVA_RECAP, CHAPTER_BRIDGES } from '../data/reading-guide.js';
+import { JAVA_BY_ID, javaRoute } from '../data/java-starter.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import ChapterIntroduction from '../components/ChapterIntroduction.vue';
 import CodeReader from '../components/CodeReader.vue';
@@ -15,7 +17,9 @@ import LessonFoundation from '../components/LessonFoundation.vue';
 import LessonPractice from '../components/LessonPractice.vue';
 import NodeAnatomy from '../components/NodeAnatomy.vue';
 import PrerequisitePanel from '../components/PrerequisitePanel.vue';
-import StudyFigures from '../components/StudyFigures.vue';
+import LessonOutline from '../components/LessonOutline.vue';
+import CourseLink from '../components/CourseLink.vue';
+import ContentFeedback from '../components/ContentFeedback.vue';
 import TraceLab from '../components/TraceLab.vue';
 import VariantPractice from '../components/VariantPractice.vue';
 
@@ -32,8 +36,10 @@ const props = defineProps({
   disabled: Boolean,
   user: Object,
   commentsService: Object,
+  location: Object,
+  fontSize: Number,
 });
-const emit = defineEmits(['navigate', 'read', 'mastered', 'wrong', 'variant', 'login']);
+const emit = defineEmits(['navigate', 'read', 'mastered', 'wrong', 'variant', 'login', 'note', 'font']);
 const navigate = (path) => emit('navigate', path);
 const demo = computed(() => lessonDemo(props.lesson));
 const prior = computed(() => prerequisites(props.lesson, findLesson, lessonRoute));
@@ -47,6 +53,10 @@ const canShowMethod = computed(
       props.progress.mastery.includes('2-4')),
 );
 const lab = ref(null);
+const recap = computed(() => JAVA_BY_ID[JAVA_RECAP[props.lesson.id]]);
+const prepared = computed(
+  () => recap.value && props.progress.learning.prepared.includes(recap.value.id),
+);
 function inspectFigure(index) {
   lab.value?.showExampleStep(index);
   jumpTo('lesson-experiment');
@@ -73,49 +83,98 @@ function inspectFigure(index) {
         lessonIndependent ? '变式已独立完成' : '可挑战一道新题'
       }}</span>
     </div>
-    <nav class="lesson-outline" aria-label="本节目录">
-      <button @click="jumpTo('lesson-story')">生活例子</button
-      ><button @click="jumpTo('lesson-concepts')">概念</button
-      ><button @click="jumpTo('lesson-figures')">图解</button
-      ><button @click="jumpTo('lesson-experiment')">逐步实验</button
-      ><button @click="jumpTo('lesson-practice')">练习</button
-      ><button @click="jumpTo('lesson-challenge')">独立挑战</button>
-    </nav>
-    <PrerequisitePanel :items="prior" :progress="progress" @navigate="navigate" />
+    <div class="lesson-reading-tools">
+      <p>{{ lesson.foundation.goals[0] }}</p>
+      <label
+        >字号
+        <select
+          :value="fontSize"
+          aria-label="正文字号"
+          @change="emit('font', Number($event.target.value))"
+        >
+          <option :value="16">标准</option>
+          <option :value="18">较大</option>
+          <option :value="20">大字</option>
+        </select></label
+      >
+    </div>
+    <LessonOutline :code="canShowMethod" />
+    <aside v-if="prepared" class="prepared-recap">
+      <strong>你已练过相关起步课：{{ recap.title }}</strong>
+      <p>可以直接做题确认理解，也能重新读下面的详细讲解。</p>
+      <button class="text-button" @click="jumpTo('lesson-practice')">先做题确认 →</button
+      ><CourseLink :to="javaRoute(recap.id)" @navigate="navigate">回顾起步课 →</CourseLink>
+    </aside>
     <p v-if="lesson.optional" class="optional-note">
       这是进阶选学。先完成本章基础内容和练习也能闯关，熟练后可再回来学习。
     </p>
-    <ChapterIntroduction
-      :key="'intro-' + lesson.id"
-      :intro="chapter.introduction"
-      :chapter-id="chapter.id"
-      :first="lessonIndex === 0"
-      @navigate="navigate"
-    />
-    <div id="lesson-story" class="study-anchor"><EverydayExample :example="lesson.learning.life" /></div>
-    <LessonFoundation :unit="lesson.foundation" />
+    <div
+      id="lesson-story"
+      class="study-anchor"
+      data-study-section
+      data-study-label="生活例子"
+      data-outline="lesson-story"
+    >
+      <EverydayExample :example="lesson.learning.life" />
+    </div>
     <NodeAnatomy v-if="lesson.id === '6-1'" />
-    <StudyFigures :lesson="lesson" @inspect="inspectFigure" />
-    <p id="lesson-experiment" class="experiment-bridge study-anchor">
-      <strong>接下来在实验里看什么：</strong>{{ lesson.learning.demo.explanation }}
-    </p>
-    <TraceLab
-      ref="lab"
-      :key="lesson.id"
-      :mode="demo.mode"
-      :initial="demo.initial"
-      :variant="demo.variant"
-      :plain="true"
-      :topic="lesson.id"
-      :owner="owner"
-      :comparison="lesson.id === '9-2'"
-      :code-available="canShowMethod"
+    <details class="study-details before-reading" data-study-place="before-reading">
+      <summary>需要先会什么 · 本章为什么学这些</summary>
+      <h2>学完这一节，你能做什么</h2>
+      <ul>
+        <li v-for="goal in lesson.foundation.goals" :key="goal">{{ goal }}</li>
+      </ul>
+      <PrerequisitePanel :items="prior" :progress="progress" @navigate="navigate" /><ChapterIntroduction
+        :key="'intro-' + lesson.id"
+        :intro="chapter.introduction"
+        :chapter-id="chapter.id"
+        :first="lessonIndex === 0"
+        @navigate="navigate"
+      />
+    </details>
+    <LessonFoundation
+      :lesson="lesson"
+      :unit="lesson.foundation"
+      @inspect="inspectFigure"
+      @note="emit('note', $event)"
     />
+    <section
+      id="lesson-experiment"
+      class="experiment-bridge study-anchor"
+      data-study-section
+      data-study-label="逐步实验"
+      data-outline="lesson-experiment"
+    >
+      <h2>把前面的动作连起来</h2>
+      <p>{{ lesson.learning.demo.explanation }}</p>
+      <TraceLab
+        ref="lab"
+        :key="lesson.id"
+        :mode="demo.mode"
+        :initial="demo.initial"
+        :variant="demo.variant"
+        :plain="true"
+        :topic="lesson.id"
+        :owner="owner"
+        :comparison="lesson.id === '9-2'"
+        :code-available="canShowMethod"
+        :location="location"
+        @note="emit('note', $event)"
+      />
+    </section>
     <aside v-if="lesson.showCode || chapter.id === 6" class="cost-note">
       <strong>时间和空间怎么数</strong>
       <p>{{ lesson.complexity }}</p>
     </aside>
-    <details v-if="canShowMethod" class="code-stage" data-study-place="code">
+    <details
+      v-if="canShowMethod"
+      id="lesson-code"
+      class="code-stage study-anchor"
+      data-study-place="code"
+      data-study-section
+      data-study-label="Java 实现"
+      data-outline="lesson-code"
+    >
       <summary>
         {{ lesson.learning.codeLabel || '理解了例子，再看 Java 实现' }} <span aria-hidden="true">⌄</span>
       </summary>
@@ -161,7 +220,14 @@ boolean equal = (a == b);</code></pre>
       :owner="owner"
       :topic="lesson.id"
     />
-    <details id="lesson-challenge" class="study-details study-anchor" data-study-place="challenge">
+    <details
+      id="lesson-challenge"
+      class="study-details study-anchor"
+      data-study-place="challenge"
+      data-study-section
+      data-study-label="独立挑战"
+      data-outline="lesson-challenge"
+    >
       <summary>独立小挑战 · 换一道题试试</summary>
       <VariantPractice
         :topic="lesson.id"
@@ -195,6 +261,17 @@ boolean equal = (a == b);</code></pre>
       ><button @click="emit('read', false)" :disabled="disabled">只记录已读</button
       ><button class="primary" @click="emit('read', true)" :disabled="disabled">记录阅读并继续 →</button>
     </div>
+    <section class="chapter-bridge">
+      <h2>这一节之后</h2>
+      <p>
+        {{
+          lessonIndex === chapter.lessons.length - 1
+            ? CHAPTER_BRIDGES[chapter.id]
+            : '下一节：' + chapter.lessons[lessonIndex + 1].title
+        }}
+      </p>
+    </section>
+    <ContentFeedback :lesson="lesson" :path="lessonRoute(lesson.id)" :owner="owner" />
     <LessonComments
       :lesson-id="lesson.id"
       :user="user"
