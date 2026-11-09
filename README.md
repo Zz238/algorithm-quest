@@ -40,13 +40,6 @@
 
 查看 [14 项改造验收](./BEGINNER_REVIEW.md) 和 [更新记录](./CHANGELOG.md)。
 
-## 访问统计与本机后台（2026-11-03）
-
-新增每日人数与浏览量趋势、热门章节、访问明细（时间、页面、网络出口IP、来源域名），后台只绑定本机 `127.0.0.1:4780`，通过现有 Supabase GitHub 登录核对指定管理员，不使用管理密钥。Windows 双击 `start-admin-windows.bat`，首次安装 Node.js 24 LTS 后无需安装项目依赖即可运行。详见 [后台启动与云端配置](./admin/README.md)。
-
-网站底部新增隐私说明与统计偏好入口，注明“只用作统计网站客流量”、30天IP明细和365天匿名汇总保留期。支持本浏览器停止统计，并遵循 Do Not Track / Global Privacy Control。客流数据与学习记录和笔记分开保存。
-
-客流采集已启用。Supabase 统计迁移、本机精确登录回调与每小时清理任务均已配置，匿名采集、管理员读取和普通账号拒绝检查通过。统计从启用时开始，不补记历史访问。后台仍需在使用者电脑上运行启动文件，详见上面的启动说明。
 
 ## 界面与练习改版（2026-11-02）
 
@@ -203,57 +196,6 @@ npm run preview
 
 GitHub图标来自官方Primer Octicons，图标及Morphicons的许可证记录在 `THIRD_PARTY_NOTICES.md`。
 
-## 文件与后续扩展
-
-```text
-src/App.vue                 应用外壳、账号与页面入口
-src/pages/                   课程目录、小节、搜索、术语、学习记录和私人笔记
-src/course-route.js          旧链接兼容与非法参数校验
-src/useCourseNavigation.js   路由、焦点和阅读位置恢复
-src/useLearningProgress.js   阅读、练习、独立完成、复习和打卡
-src/course-search.js         课程、题目、术语、代码与本机私人笔记的统一索引
-src/data/course.js          课程顺序、前置关系、题解与旧进度兼容
-src/data/units/*.js         72节原创讲解、术语、案例、误区与216道练习
-src/data/base-course.js     章节元数据、章末题及集中 Java 示例表
-src/data/extra-codes.js     新增的基础Java示例与整体讲解
-src/data/code-guides.js     每份 Java 示例的整体用途、输入输出与推演过程
-src/data/terms.js           Java 词典
-src/components/LessonFoundation.vue  基础讲解与完整案例
-src/components/LessonPractice.vue    三阶练习与反馈
-src/components/TraceLab.vue          可自定义输入的逐条实验
-src/components/StudyFigures.vue      小节的关键状态图解
-src/components/ChapterFigures.vue    各章导读的三张概念图
-src/components/CodeReader.vue        行导航、术语、全屏阅读与下载
-src/traces.js / src/concept-traces.js  实验执行状态
-src/lesson-demos.js / src/trace-picture.js  实验输入映射与 SVG 绘图
-src/local-saves.js / src/progress-backup.js 存档诊断、导入预览与重置范围
-src/practice.js             按题目输出类型检查练习答案
-src/logic.js                输出检查、参考算法、进度数据校验
-scripts/content.py         已停用的旧生成器，保留作历史资料
-scripts/check-traces.mjs    可复现随机输入与追踪状态验证
-scripts/check.mjs          内容、参考算法与 Java 验证
-scripts/check-guide-examples.mjs  逐个运行 Java 整体讲解中的示例
-src/useCloudProgress.js    账号生命周期、分账号缓存和自动同步
-src/cloud-progress.js     合并、字段修改时钟与并发版本处理
-src/components/AccountPanel.vue  登录、同步状态、游客合并与学习足迹
-src/components/SiteHeader.vue    账号头像、GitHub建议链接与主导航
-src/components/ReadingActivity.vue  自动打卡进度与贡献日历
-src/components/ChapterDrawer.vue  右侧可折叠章节导航
-src/components/UserAvatar.vue    GitHub头像与失败回退
-src/account-profile.js           GitHub公开资料解析
-src/account.css                 账号入口与学习记录布局
-src/editorial.css               课程目录、阅读层级与侧栏动效
-src/rounded-corners.css          集中管理4/6/8px圆角
-supabase/migrations/      数据表、RLS 和数据格式约束
-supabase/tests/           回滚式数据库隔离验证
-scripts/offline.mjs        生成单文件离线版
-public/answers/            适用于力扣编辑区的完整答案
-scripts/generate-java-examples.mjs  按需导出独立 Main.java 文件
-```
-
-教学正文与小节练习只编辑 src/data/units/*.js；章节排序在 course.js，章末题的题干与案例在 base-course.js（LC1051 特例在 course.js）。课程只保存 codeKey，代码在集中表中维护。实际前置、预备课、变式在 data/learning-path.js、java-starter.js 和 learning-practice.js。旧 content.py 是历史资料，不参与构建，不能用来生成当前课程。已有阅读、笔记、收藏、奖励和打卡会保留；新版练习通过状态独立保存在 mastery 字段。第5章改用LC1051，旧版闯关奖励保留，但新版题目需重新完成且不重复奖励。
-
-新增大章节时，请保持相同 boss 数据结构：题号与链接、题意、关联、步骤、证明、复杂度、易错点、两个输入输出情境、思路问题、提示、完整逐行 Java 代码；并为新题补充 logic.js 的参考实现、明确的演示模式和输入字段映射。两组章末输入的演示输出都要通过 check-branch-curriculum.mjs。
 
 下载 ZIP 后，可将整个项目解压到自己的项目文件夹，再按上面的步骤启动。
 
