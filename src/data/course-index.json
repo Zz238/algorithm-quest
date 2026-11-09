@@ -1,0 +1,1186 @@
+{
+  "chapters": [
+    {
+      "id": 1,
+      "title": "程序与算法",
+      "subtitle": "先把一件小事说清楚",
+      "world": 0,
+      "boss": {
+        "title": "一维数组的动态和",
+        "lc": 1480
+      },
+      "lessons": [
+        {
+          "id": "1-1",
+          "title": "算法、输入与输出：先说清要解决什么",
+          "optional": false
+        },
+        {
+          "id": "1-2",
+          "title": "数据和位置：认识一排有编号的格子",
+          "optional": false
+        },
+        {
+          "id": "1-5",
+          "title": "执行顺序与状态：计算机会按哪一步走",
+          "optional": false
+        },
+        {
+          "id": "1-3",
+          "title": "快慢怎么比较：从数操作次数开始",
+          "optional": false
+        },
+        {
+          "id": "1-4",
+          "title": "手动累计：为什么下一步要接着旧结果算",
+          "optional": false
+        },
+        {
+          "id": "1-6",
+          "title": "回顾与边界：怎样知道办法真的可用",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Java 识字课",
+      "subtitle": "把代码里的每个词拆开看",
+      "world": 0,
+      "boss": {
+        "title": "两数相加",
+        "lc": 2235
+      },
+      "lessons": [
+        {
+          "id": "2-1",
+          "title": "Java 程序入口：从 main 走到输出",
+          "optional": false
+        },
+        {
+          "id": "2-2",
+          "title": "变量与类型：名字保存什么，值怎样更新",
+          "optional": false
+        },
+        {
+          "id": "2-3",
+          "title": "赋值、比较与逻辑：分清 = 和 ==",
+          "optional": false
+        },
+        {
+          "id": "2-4",
+          "title": "方法与返回值：把输入交进去，把结果拿回来",
+          "optional": false
+        },
+        {
+          "id": "2-5",
+          "title": "把数组写成 Java：先会创建、再会读表达式",
+          "optional": false
+        },
+        {
+          "id": "2-6",
+          "title": "阅读与改写：把一小段程序完整说出来",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "变量、判断与循环",
+      "subtitle": "让计算机按规则重复",
+      "world": 0,
+      "boss": {
+        "title": "把数字变成零",
+        "lc": 1342
+      },
+      "lessons": [
+        {
+          "id": "3-1",
+          "title": "if 与 else：只有一个分支会怎样改变状态",
+          "optional": false
+        },
+        {
+          "id": "3-2",
+          "title": "for 循环：初始化、判断、执行、更新",
+          "optional": false
+        },
+        {
+          "id": "3-3",
+          "title": "while 与终止：循环怎样走到结束",
+          "optional": false
+        },
+        {
+          "id": "3-5",
+          "title": "相邻访问的边界：i++ 与 i+1 各做什么",
+          "optional": false
+        },
+        {
+          "id": "3-4",
+          "title": "跟踪表：把循环每一轮说清楚",
+          "optional": false
+        },
+        {
+          "id": "3-6",
+          "title": "整数运算与条件回顾：先拆开，再组合",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "数组、字符串与查找",
+      "subtitle": "格子、编号，以及排除不可能",
+      "world": 1,
+      "boss": {
+        "title": "二分查找",
+        "lc": 704
+      },
+      "lessons": [
+        {
+          "id": "4-1",
+          "title": "数组基础：长度、下标、访问与查找",
+          "optional": false
+        },
+        {
+          "id": "4-5",
+          "title": "下标小实验：a[i+1] 先算哪里，再读什么",
+          "optional": false
+        },
+        {
+          "id": "4-6",
+          "title": "修改、移动与复制：一条赋值不会完成交换",
+          "optional": false
+        },
+        {
+          "id": "4-2",
+          "title": "字符串与双指针：从两端检查回文",
+          "optional": false
+        },
+        {
+          "id": "4-3",
+          "title": "顺序查找：返回位置，并说明什么时候失败",
+          "optional": false
+        },
+        {
+          "id": "4-4",
+          "title": "二分查找：有序性让我们安全排除一半",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "排序基础：交换、冒泡与插入",
+      "subtitle": "一次只聚焦一种移动规则",
+      "world": 1,
+      "boss": {
+        "title": "高度检查器",
+        "lc": 1051
+      },
+      "lessons": [
+        {
+          "id": "5-5",
+          "title": "排序先学目标：什么叫排好了",
+          "optional": false
+        },
+        {
+          "id": "5-6",
+          "title": "只练交换：temp 为什么不能省",
+          "optional": false
+        },
+        {
+          "id": "5-1",
+          "title": "冒泡排序：先走完一轮相邻比较",
+          "optional": false
+        },
+        {
+          "id": "5-2",
+          "title": "插入排序：拿起、右移、回填，一条一条看",
+          "optional": false
+        },
+        {
+          "id": "5-3",
+          "title": "回顾与对比：冒泡交换，插入移动",
+          "optional": false
+        },
+        {
+          "id": "5-4",
+          "title": "排序应用：为什么身高检查不是数交换次数",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "链表、栈与队列",
+      "subtitle": "连接关系和进出的先后",
+      "world": 1,
+      "boss": {
+        "title": "有效的括号",
+        "lc": 20
+      },
+      "lessons": [
+        {
+          "id": "6-5",
+          "title": "对象与引用：卡片本身，和找到卡片的便签",
+          "optional": false
+        },
+        {
+          "id": "6-1",
+          "title": "认识链表节点：Node、value 和 next 各是什么",
+          "optional": false
+        },
+        {
+          "id": "6-2",
+          "title": "插入一个节点：先接住后面的卡片，再改前面的去向",
+          "optional": false
+        },
+        {
+          "id": "6-3",
+          "title": "栈：像叠盘子一样，只从最上面取放",
+          "optional": false
+        },
+        {
+          "id": "6-4",
+          "title": "队列：像排队取号一样，先来的人先处理",
+          "optional": false
+        },
+        {
+          "id": "6-6",
+          "title": "括号匹配：最近打开的，必须最先关上",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "哈希表与快速定位",
+      "subtitle": "用一个键找到一个值",
+      "world": 2,
+      "boss": {
+        "title": "两数之和",
+        "lc": 1
+      },
+      "lessons": [
+        {
+          "id": "7-1",
+          "title": "键与值：用一个名字查一条记录",
+          "optional": false
+        },
+        {
+          "id": "7-2",
+          "title": "计数表：从默认0开始累计",
+          "optional": false
+        },
+        {
+          "id": "7-5",
+          "title": "Set去重：只问出现过，不必数几次",
+          "optional": false
+        },
+        {
+          "id": "7-3",
+          "title": "两数之和：把配对变成查找搭档",
+          "optional": false
+        },
+        {
+          "id": "7-4",
+          "title": "哈希碰撞：快查找也有前提和成本",
+          "optional": false
+        },
+        {
+          "id": "7-6",
+          "title": "先查还是先写：用重复值验证表的含义",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "递归、分治与回溯",
+      "subtitle": "缩小问题，走下去，再回来",
+      "world": 2,
+      "boss": {
+        "title": "子集",
+        "lc": 78
+      },
+      "lessons": [
+        {
+          "id": "8-1",
+          "title": "递归：先有停止条件，再缩小问题",
+          "optional": false
+        },
+        {
+          "id": "8-5",
+          "title": "调用栈：一层返回后，回到哪一条",
+          "optional": false
+        },
+        {
+          "id": "8-2",
+          "title": "分治与归并：拆小、分别排好、再合并",
+          "optional": false
+        },
+        {
+          "id": "8-3",
+          "title": "回溯：做选择、往下走、回来撤销",
+          "optional": false
+        },
+        {
+          "id": "8-4",
+          "title": "子集与start：避免把同一组合走两次",
+          "optional": false
+        },
+        {
+          "id": "8-6",
+          "title": "选学：快速排序的分区，不急着和归并一起背",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "树、二叉搜索树与堆",
+      "subtitle": "层次关系，以及优先处理谁",
+      "world": 2,
+      "boss": {
+        "title": "二叉树的最大深度",
+        "lc": 104
+      },
+      "lessons": [
+        {
+          "id": "9-5",
+          "title": "先画一棵树：根、孩子、叶子与空位置",
+          "optional": false
+        },
+        {
+          "id": "9-1",
+          "title": "树的深度：先问左右孩子，再加当前这一层",
+          "optional": false
+        },
+        {
+          "id": "9-2",
+          "title": "遍历顺序：先只练前序，再与中后序对照",
+          "optional": false
+        },
+        {
+          "id": "9-6",
+          "title": "层序遍历：一层的队列长度要先记下来",
+          "optional": false
+        },
+        {
+          "id": "9-3",
+          "title": "二叉搜索树：关系约束覆盖整个子树",
+          "optional": false
+        },
+        {
+          "id": "9-4",
+          "title": "选学：堆与优先队列，先取最小不等于全部有序",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "图、搜索与路径",
+      "subtitle": "从一个点走向相连的世界",
+      "world": 3,
+      "boss": {
+        "title": "图像渲染",
+        "lc": 733
+      },
+      "lessons": [
+        {
+          "id": "10-1",
+          "title": "图的基本语言：顶点、边、方向与权重",
+          "optional": false
+        },
+        {
+          "id": "10-5",
+          "title": "把图存起来：邻接表逐项读给你看",
+          "optional": false
+        },
+        {
+          "id": "10-2",
+          "title": "BFS：发现就标记，用队列保存下一批",
+          "optional": false
+        },
+        {
+          "id": "10-6",
+          "title": "DFS：沿一条路深入，结束后返回",
+          "optional": false
+        },
+        {
+          "id": "10-3",
+          "title": "网格染色：这份程序使用BFS连接同色区域",
+          "optional": false
+        },
+        {
+          "id": "10-4",
+          "title": "选学：非负权最短路，Dijkstra为何先处理最近的点",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "贪心与动态规划",
+      "subtitle": "当前怎么选，已经算过什么",
+      "world": 3,
+      "boss": {
+        "title": "爬楼梯",
+        "lc": 70
+      },
+      "lessons": [
+        {
+          "id": "11-1",
+          "title": "贪心：先找反例，再问局部选择是否可靠",
+          "optional": false
+        },
+        {
+          "id": "11-2",
+          "title": "动态规划起步：先写dp[i]到底是什么意思",
+          "optional": false
+        },
+        {
+          "id": "11-3",
+          "title": "记忆化：把算过的小问题答案留下来",
+          "optional": false
+        },
+        {
+          "id": "11-5",
+          "title": "从整张表到两个变量：更新顺序为什么重要",
+          "optional": false
+        },
+        {
+          "id": "11-6",
+          "title": "DP回顾：含义、初值、转移、顺序、验证",
+          "optional": false
+        },
+        {
+          "id": "11-4",
+          "title": "选学：0/1背包，倒序是为了不重复拿同一件",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "综合挑战与独立解题",
+      "subtitle": "读题、选方法、验证答案",
+      "world": 3,
+      "boss": {
+        "title": "买卖股票的最佳时机",
+        "lc": 121
+      },
+      "lessons": [
+        {
+          "id": "12-1",
+          "title": "独立读题：输入、输出、限制和合法操作",
+          "optional": false
+        },
+        {
+          "id": "12-5",
+          "title": "先做慢的正确办法，再与一次扫描对照",
+          "optional": false
+        },
+        {
+          "id": "12-2",
+          "title": "不变式：min和best怎样代表所有过去方案",
+          "optional": false
+        },
+        {
+          "id": "12-3",
+          "title": "测试设计：最小、重复、下降与极端",
+          "optional": false
+        },
+        {
+          "id": "12-4",
+          "title": "完整题解：从自己的思路走到可执行答案",
+          "optional": false
+        },
+        {
+          "id": "12-6",
+          "title": "基础路线总回顾：看到新题先做哪些选择",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "java": [
+    {
+      "id": "java-print",
+      "title": "第一次运行：把一句话显示出来"
+    },
+    {
+      "id": "java-variable",
+      "title": "变量和赋值：盒子里的数会换"
+    },
+    {
+      "id": "java-condition",
+      "title": "比较和分支：先问真假，再走一条路"
+    },
+    {
+      "id": "java-for",
+      "title": "for 循环：判断、执行、更新，再判断"
+    },
+    {
+      "id": "java-while",
+      "title": "while 循环：先确定怎样停下来"
+    },
+    {
+      "id": "java-method",
+      "title": "方法和返回值：把结果交回给调用者"
+    },
+    {
+      "id": "java-array",
+      "title": "数组和下标：先算位置，再读格子"
+    },
+    {
+      "id": "java-string",
+      "title": "字符串：先会找一个字符"
+    },
+    {
+      "id": "java-object",
+      "title": "类和对象：用一份表格创建两张卡片"
+    },
+    {
+      "id": "java-reference",
+      "title": "引用和 null：便签与对象是两回事"
+    },
+    {
+      "id": "java-list",
+      "title": "列表：增加、读取、删除，先单独练"
+    },
+    {
+      "id": "java-grid",
+      "title": "二维数组：先找行，再找列"
+    },
+    {
+      "id": "java-call-stack",
+      "title": "方法回来的位置：先跟两层调用"
+    },
+    {
+      "id": "java-two-loops",
+      "title": "两层循环：外层一轮，内层走完"
+    },
+    {
+      "id": "java-last-step",
+      "title": "先列小答案：最后一步从哪来"
+    }
+  ],
+  "terms": [
+    "!",
+    "!=",
+    "%",
+    "%=",
+    "&&",
+    "(",
+    ")",
+    "++",
+    "+=",
+    ",",
+    "-",
+    "--",
+    "->",
+    ".",
+    "0/1选择",
+    ":",
+    ";",
+    "<",
+    "<=",
+    "=",
+    "==",
+    ">",
+    ">=",
+    "ArrayDeque",
+    "ArrayList",
+    "Arrays",
+    "BFS",
+    "BST",
+    "Character",
+    "DFS",
+    "Deque",
+    "Deque<Integer>",
+    "HashMap",
+    "Integer",
+    "List",
+    "Main",
+    "Map",
+    "Math",
+    "Node",
+    "PriorityQueue",
+    "Queue",
+    "String",
+    "System",
+    "TreeNode",
+    "[",
+    "]",
+    "add",
+    "answer",
+    "args",
+    "best",
+    "boolean",
+    "break",
+    "char",
+    "charAt",
+    "charAt(i)",
+    "class",
+    "contains",
+    "containsKey",
+    "continue",
+    "dist",
+    "double",
+    "else",
+    "expected",
+    "false",
+    "for",
+    "get",
+    "getOrDefault",
+    "head",
+    "head 与 p",
+    "i",
+    "i++",
+    "i+1",
+    "if",
+    "import",
+    "int",
+    "int[]",
+    "isEmpty",
+    "j",
+    "length",
+    "main",
+    "max",
+    "min",
+    "new",
+    "next",
+    "null",
+    "nums",
+    "offer",
+    "offerLast",
+    "out",
+    "p",
+    "path",
+    "poll",
+    "pollFirst",
+    "pop",
+    "pop 与 peek",
+    "println",
+    "private",
+    "public",
+    "push",
+    "put",
+    "remove",
+    "return",
+    "size",
+    "start",
+    "static",
+    "target",
+    "this",
+    "toCharArray",
+    "true",
+    "value",
+    "void",
+    "while",
+    "{",
+    "||",
+    "}",
+    "一轮",
+    "下一层队列",
+    "下标",
+    "不匹配位置",
+    "不同下标",
+    "中序与后序",
+    "中点mid",
+    "临时next",
+    "临时变量temp",
+    "交换",
+    "优先队列",
+    "优先队列项",
+    "优化",
+    "余数 %",
+    "依赖顺序",
+    "候选区间",
+    "值value",
+    "元素",
+    "元素类型",
+    "全局最优",
+    "分区",
+    "分支",
+    "分治",
+    "分类检查",
+    "创建与复制",
+    "初始值",
+    "初始化",
+    "初始状态",
+    "别名",
+    "前序",
+    "前缀",
+    "前驱",
+    "剪枝",
+    "匹配",
+    "压栈",
+    "去重",
+    "参数",
+    "双指针",
+    "反例",
+    "反例检验",
+    "发现",
+    "取余 %",
+    "变量",
+    "只读访问",
+    "叶子",
+    "合并",
+    "合法方案",
+    "后缀",
+    "哈希",
+    "哈希碰撞",
+    "四邻接",
+    "回到上一层",
+    "基准pivot",
+    "基础情况",
+    "堆调整",
+    "处理",
+    "失败标记-1",
+    "子树",
+    "字段 field",
+    "孩子",
+    "完整答案",
+    "容量状态dp[c]",
+    "对拍",
+    "对照答案",
+    "对象 object",
+    "小顶堆",
+    "局部选择",
+    "层序",
+    "嵌套",
+    "已排序前缀",
+    "已见表seen",
+    "已访问状态",
+    "引用 reference",
+    "引用别名",
+    "循环不变式",
+    "循环体",
+    "循环结束状态",
+    "思路",
+    "插入之后",
+    "搜索路径",
+    "撤销",
+    "数组",
+    "整数除法 /",
+    "新节点 n",
+    "旧后继",
+    "旧阶段",
+    "时间复杂度",
+    "映射Map",
+    "暴力枚举",
+    "更新",
+    "更新前状态",
+    "更新式",
+    "最大深度",
+    "最小反例",
+    "最小规模",
+    "有序前提",
+    "有序部分",
+    "期待栈",
+    "未排序右边界end",
+    "未计算标记",
+    "权重weight",
+    "条件",
+    "松弛",
+    "构造方法",
+    "栈 stack",
+    "栈顶",
+    "树高h",
+    "核对规则",
+    "根root",
+    "格子坐标",
+    "正确性理由",
+    "比较",
+    "比较 ==",
+    "测试用例",
+    "滚动状态",
+    "点号 .",
+    "状态",
+    "状态dp[i]",
+    "状态依赖",
+    "状态含义",
+    "独立副本",
+    "目标target",
+    "目标函数",
+    "相邻元素",
+    "相邻对",
+    "短路 &&",
+    "短路与 &&",
+    "短路判断",
+    "碰撞",
+    "稳定",
+    "空间优化前提",
+    "空间换时间",
+    "签名",
+    "算法",
+    "类 class",
+    "类型",
+    "索引表达式",
+    "累计值",
+    "约束",
+    "组合",
+    "结构匹配",
+    "编译错误",
+    "节点 node",
+    "补数need",
+    "表达式求值",
+    "覆盖",
+    "覆盖顺序",
+    "规模 n",
+    "计数器",
+    "记忆化memo",
+    "访问前置条件",
+    "访问标记seen",
+    "语句",
+    "调用",
+    "调用帧",
+    "赋值 =",
+    "越界",
+    "跟踪行",
+    "跟踪表",
+    "转移",
+    "辅助数组",
+    "输入",
+    "输出",
+    "边edge",
+    "边界输入",
+    "迁移",
+    "返回值",
+    "连通同色区域",
+    "退栈",
+    "选择树",
+    "递归",
+    "递归关系",
+    "递归子区间",
+    "递归答案",
+    "逻辑错误",
+    "遍历",
+    "邻居",
+    "邻接表",
+    "重复值",
+    "键key",
+    "问题分解",
+    "队列 queue",
+    "队首与队尾",
+    "阶段",
+    "随机访问",
+    "集合Set",
+    "非递减",
+    "顶点vertex",
+    "顺序扫描",
+    "频次",
+    "额外空间",
+    "默认值"
+  ],
+  "coding": [
+    {
+      "id": "code-greeting",
+      "title": "返回一句问候",
+      "topic": "java-print"
+    },
+    {
+      "id": "code-increase",
+      "title": "把旧值增加三",
+      "topic": "java-variable"
+    },
+    {
+      "id": "code-even",
+      "title": "判断是否为偶数",
+      "topic": "java-condition"
+    },
+    {
+      "id": "code-maximum-two",
+      "title": "选择较大的整数",
+      "topic": "3-1"
+    },
+    {
+      "id": "code-absolute",
+      "title": "把距离变成非负数",
+      "topic": "3-1"
+    },
+    {
+      "id": "code-sum-to",
+      "title": "从1累计到n",
+      "topic": "java-for"
+    },
+    {
+      "id": "code-count-even",
+      "title": "数出数组中的偶数",
+      "topic": "3-4"
+    },
+    {
+      "id": "code-factorial-loop",
+      "title": "用循环计算阶乘",
+      "topic": "java-while"
+    },
+    {
+      "id": "code-digit-sum",
+      "title": "逐位求数字之和",
+      "topic": "3-3"
+    },
+    {
+      "id": "code-array-copy",
+      "title": "创建独立的数组副本",
+      "topic": "4-6"
+    },
+    {
+      "id": "code-array-max",
+      "title": "找到数组最大值",
+      "topic": "4-1"
+    },
+    {
+      "id": "code-reverse-array",
+      "title": "从两端反转数组",
+      "topic": "4-2"
+    },
+    {
+      "id": "code-palindrome",
+      "title": "判断文字是否回文",
+      "topic": "4-2"
+    },
+    {
+      "id": "code-count-character",
+      "title": "统计字母a的次数",
+      "topic": "java-string"
+    },
+    {
+      "id": "code-binary-search",
+      "title": "独立写出二分查找",
+      "topic": "4-4"
+    },
+    {
+      "id": "code-sorted-check",
+      "title": "检查是否已经排好",
+      "topic": "5-5"
+    },
+    {
+      "id": "code-swap-ends",
+      "title": "交换第一格和最后一格",
+      "topic": "5-6"
+    },
+    {
+      "id": "code-insertion-sort",
+      "title": "独立完成插入排序",
+      "topic": "5-2"
+    },
+    {
+      "id": "code-node-value",
+      "title": "创建并读取一个对象",
+      "topic": "java-object"
+    },
+    {
+      "id": "code-chain-length",
+      "title": "沿next数完一条链",
+      "topic": "6-1"
+    },
+    {
+      "id": "code-reference-change",
+      "title": "两个名字找到同一个对象",
+      "topic": "java-reference"
+    },
+    {
+      "id": "code-stack-last",
+      "title": "用栈取最后加入的数",
+      "topic": "6-3"
+    },
+    {
+      "id": "code-queue-first",
+      "title": "用队列取最早到达的数",
+      "topic": "6-4"
+    },
+    {
+      "id": "code-bracket-pairs",
+      "title": "检查一类括号能否配对",
+      "topic": "6-6"
+    },
+    {
+      "id": "code-unique-count",
+      "title": "用Set统计不同整数",
+      "topic": "7-5"
+    },
+    {
+      "id": "code-duplicate",
+      "title": "判断是否存在重复值",
+      "topic": "7-5"
+    },
+    {
+      "id": "code-two-sum",
+      "title": "找出和为目标的两个位置",
+      "topic": "7-3"
+    },
+    {
+      "id": "code-merge-two",
+      "title": "合并两个有序数组",
+      "topic": "8-2"
+    },
+    {
+      "id": "code-power-recursion",
+      "title": "递归计算2的n次方",
+      "topic": "8-1"
+    },
+    {
+      "id": "code-recursive-count",
+      "title": "递归数链表节点",
+      "topic": "8-5"
+    },
+    {
+      "id": "code-subsets-count",
+      "title": "用选或不选数出子集",
+      "topic": "8-4"
+    },
+    {
+      "id": "code-tree-size",
+      "title": "数出树中的全部节点",
+      "topic": "9-2"
+    },
+    {
+      "id": "code-bst-find",
+      "title": "沿搜索树查找",
+      "topic": "9-3"
+    },
+    {
+      "id": "code-heap-smallest",
+      "title": "从优先队列取最小值",
+      "topic": "9-4"
+    },
+    {
+      "id": "code-grid-count",
+      "title": "逐行统计二维数组",
+      "topic": "java-grid"
+    },
+    {
+      "id": "code-list-sum",
+      "title": "累计可增长列表",
+      "topic": "java-list"
+    },
+    {
+      "id": "code-fibonacci-table",
+      "title": "把已算过的答案放进表",
+      "topic": "11-3"
+    },
+    {
+      "id": "code-stairs-rolling",
+      "title": "用两个旧值计算走法",
+      "topic": "11-5"
+    },
+    {
+      "id": "code-prefix-sums",
+      "title": "进阶衔接：建立前缀和表",
+      "topic": "4-6"
+    },
+    {
+      "id": "code-window-sum",
+      "title": "进阶衔接：固定窗口的最大和",
+      "topic": "4-2"
+    },
+    {
+      "id": "code-range-sum",
+      "title": "计算一个闭区间的总和",
+      "topic": "4-6"
+    },
+    {
+      "id": "code-word-frequency",
+      "title": "工程练习：统计目标单词",
+      "topic": "7-2"
+    },
+    {
+      "id": "code-safe-parse",
+      "title": "工程练习：安全读取整数",
+      "topic": "2-2"
+    },
+    {
+      "id": "code-string-builder",
+      "title": "工程练习：拼接编号清单",
+      "topic": "4-2"
+    },
+    {
+      "id": "code-object-total",
+      "title": "工程练习：让对象保存订单",
+      "topic": "java-object"
+    },
+    {
+      "id": "code-first-mismatch",
+      "title": "测试练习：找第一个差异",
+      "topic": "12-3"
+    },
+    {
+      "id": "code-core-5-1",
+      "title": "自己写：把冒泡的一轮扩展到整个数组",
+      "topic": "5-1"
+    },
+    {
+      "id": "code-core-7-2",
+      "title": "自己写：用计数表回答出现次数",
+      "topic": "7-2"
+    },
+    {
+      "id": "code-core-8-1",
+      "title": "自己写：递归累计到停止条件",
+      "topic": "8-1"
+    },
+    {
+      "id": "code-core-9-1",
+      "title": "自己写：计算二叉树的最大深度",
+      "topic": "9-1"
+    },
+    {
+      "id": "code-core-10-2",
+      "title": "自己写：用 BFS 数出能到达的地点",
+      "topic": "10-2"
+    },
+    {
+      "id": "code-core-11-2",
+      "title": "自己写：按状态表计算爬楼梯走法",
+      "topic": "11-2"
+    },
+    {
+      "id": "code-core-2-4",
+      "title": "自己写一个相加方法",
+      "topic": "2-4"
+    },
+    {
+      "id": "code-core-3-2",
+      "title": "自己写一个循环累计",
+      "topic": "3-2"
+    },
+    {
+      "id": "code-core-4-3",
+      "title": "独立完成顺序查找",
+      "topic": "4-3"
+    },
+    {
+      "id": "code-core-6-2",
+      "title": "动手写：在节点后插入新节点",
+      "topic": "6-2"
+    },
+    {
+      "id": "code-core-12-4",
+      "title": "独立完成一次交易的最佳收益",
+      "topic": "12-4"
+    },
+    {
+      "id": "code-core-transfer-1",
+      "title": "把采购记录变成预算小工具",
+      "topic": "transfer-1"
+    },
+    {
+      "id": "code-core-transfer-2",
+      "title": "给取餐窗口写“下一位是谁”",
+      "topic": "transfer-2"
+    },
+    {
+      "id": "code-core-transfer-3",
+      "title": "给简化目录写最大层数工具",
+      "topic": "transfer-3"
+    },
+    {
+      "id": "code-core-transfer-4",
+      "title": "把书签方案写成状态表",
+      "topic": "transfer-4"
+    }
+  ]
+}

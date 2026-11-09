@@ -1,17 +1,16 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { codes, findLesson, lessonRoute } from '../data/course.js';
+import { chapters, codes, findLesson, lessonRoute } from '../data/course.js';
 import { studyTime, prerequisites } from '../data/learning-path.js';
-import { JAVA_TASKS } from '../data/learning-practice.js';
 import { lessonDemo } from '../lesson-demos.js';
-import { courseStages } from '../useLearningProgress.js';
+import { codingForTopic } from '../data/coding-catalog.js';
 import { JAVA_RECAP, CHAPTER_BRIDGES } from '../data/reading-guide.js';
 import { JAVA_BY_ID, javaRoute } from '../data/java-starter.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import ChapterIntroduction from '../components/ChapterIntroduction.vue';
 import CodeReader from '../components/CodeReader.vue';
 import EverydayExample from '../components/EverydayExample.vue';
-import JavaWriteTask from '../components/JavaWriteTask.vue';
+import LessonCoding from '../components/LessonCoding.vue';
 import LessonComments from '../components/LessonComments.vue';
 import LessonFoundation from '../components/LessonFoundation.vue';
 import LessonPractice from '../components/LessonPractice.vue';
@@ -40,21 +39,23 @@ const props = defineProps({
   location: Object,
   fontSize: Number,
 });
+const lesson = computed(() => findLesson(props.lesson.id));
+const chapter = computed(() => chapters.find((c) => c.id === props.chapter.id));
 const emit = defineEmits(['navigate', 'read', 'mastered', 'wrong', 'variant', 'login', 'note', 'font']);
 const navigate = (path) => emit('navigate', path);
-const demo = computed(() => lessonDemo(props.lesson));
-const prior = computed(() => prerequisites(props.lesson, findLesson, lessonRoute));
-const lessonMastered = computed(() => props.progress.mastery.includes(props.lesson.id));
-const lessonIndependent = computed(() => props.progress.learning.independent.includes(props.lesson.id));
+const demo = computed(() => lessonDemo(lesson.value));
+const prior = computed(() => prerequisites(lesson.value, findLesson, lessonRoute));
+const lessonMastered = computed(() => props.progress.mastery.includes(lesson.value.id));
+const lessonIndependent = computed(() => props.progress.learning.independent.includes(lesson.value.id));
 const canShowMethod = computed(
   () =>
-    props.lesson.showCode &&
-    (props.lesson.id !== '2-3' ||
+    lesson.value.showCode &&
+    (lesson.value.id !== '2-3' ||
       props.progress.learning.prepared.includes('java-method') ||
       props.progress.mastery.includes('2-4')),
 );
 const lab = ref(null);
-const recap = computed(() => JAVA_BY_ID[JAVA_RECAP[props.lesson.id]]);
+const recap = computed(() => JAVA_BY_ID[JAVA_RECAP[lesson.value.id]]);
 const prepared = computed(
   () => recap.value && props.progress.learning.prepared.includes(recap.value.id),
 );
@@ -65,10 +66,6 @@ function inspectFigure(index) {
 </script>
 <template>
   <article class="lesson-content" :data-lesson="lesson.id">
-    <div class="breadcrumb">
-      {{ courseStages[chapter.world] }} / 第 {{ chapter.id }} 章 / 小节 {{ lessonIndex + 1 }}
-      <span v-if="lesson.optional">· 选学</span>
-    </div>
     <div class="lesson-title">
       <div>
         <span class="eyebrow">{{ studyTime(lesson) }}</span>
@@ -99,7 +96,7 @@ function inspectFigure(index) {
         </select></label
       >
     </div>
-    <LessonOutline :code="canShowMethod" />
+    <LessonOutline :code="canShowMethod" :coding="codingForTopic(lesson.id).length > 0" />
     <aside v-if="prepared" class="prepared-recap">
       <strong>你已练过相关起步课：{{ recap.title }}</strong>
       <p>可以直接做题确认理解，也能重新读下面的详细讲解。</p>
@@ -215,12 +212,7 @@ boolean equal = (a == b);</code></pre>
       @mastered="emit('mastered', $event)"
       @wrong="emit('wrong', $event)"
     />
-    <JavaWriteTask
-      v-if="JAVA_TASKS[lesson.id]"
-      :task="JAVA_TASKS[lesson.id]"
-      :owner="owner"
-      :topic="lesson.id"
-    />
+    <LessonCoding :topic="lesson.id" :owner="owner" :disabled="disabled" @navigate="navigate" />
     <details
       id="lesson-challenge"
       class="study-details study-anchor"

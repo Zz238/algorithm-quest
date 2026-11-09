@@ -1,7 +1,16 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { chapters, lessonRoute } from './data/course.js';
-import { COURSE_TERMS } from './course-search.js';
+import {
+  computed,
+  defineAsyncComponent,
+  onErrorCaptured,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  watch,
+} from 'vue';
+import { chapters, lessonRoute } from './data/course-index.js';
+import { COURSE_TERMS } from './data/course-index.js';
 import { lessonIds, parseRoute, routeTitle } from './course-route.js';
 import { localDateKey, recordCheckin } from './logic.js';
 import { createTrafficTracker } from './analytics.js';
@@ -10,27 +19,77 @@ import { useLearningProgress } from './useLearningProgress.js';
 import { useCloudProgress } from './useCloudProgress.js';
 import { useReadingPreferences } from './reading-preferences.js';
 import { referenceText } from './study-target.js';
-import AccountPanel from './components/AccountPanel.vue';
-import BeginnerTrial from './components/BeginnerTrial.vue';
-import ChapterDrawer from './components/ChapterDrawer.vue';
-import ChapterExercise from './components/ChapterExercise.vue';
-import ChapterShell from './components/ChapterShell.vue';
-import JavaStarter from './components/JavaStarter.vue';
-import LessonNotes from './components/LessonNotes.vue';
-import PrivacyNotice from './components/PrivacyNotice.vue';
-import ReviewPage from './components/ReviewPage.vue';
+import PageLoading from './components/PageLoading.vue';
+import PageLoadError from './components/PageLoadError.vue';
+import SiteBreadcrumbs from './components/SiteBreadcrumbs.vue';
+import { CODING_SERVICE, recordCoding } from './coding-progress.js';
+import { recordStudyActivity } from './study-state.js';
+const lazy = (loader) =>
+  defineAsyncComponent({
+    loader,
+    loadingComponent: PageLoading,
+    errorComponent: PageLoadError,
+    delay: 100,
+  });
+const CareerPage = lazy(() => import('./pages/CareerPage.vue'));
+const PracticePage = lazy(() => import('./pages/PracticePage.vue'));
+const AccountPanel = lazy(() => import('./components/AccountPanel.vue'));
+const BeginnerTrial = lazy(() => import('./components/BeginnerTrial.vue'));
+const ChapterDrawer = lazy(() => import('./components/ChapterDrawer.vue'));
+const ChapterExercise = lazy(() => import('./components/ChapterExercise.vue'));
+const ChapterShell = lazy(() => import('./components/ChapterShell.vue'));
+const JavaStarter = lazy(() => import('./components/JavaStarter.vue'));
+const LessonNotes = lazy(() => import('./components/LessonNotes.vue'));
+const PrivacyNotice = lazy(() => import('./components/PrivacyNotice.vue'));
+const ReviewPage = lazy(() => import('./components/ReviewPage.vue'));
 import SiteHeader from './components/SiteHeader.vue';
-import CatalogPage from './pages/CatalogPage.vue';
-import GlossaryPage from './pages/GlossaryPage.vue';
-import LessonPage from './pages/LessonPage.vue';
-import NotesPage from './pages/NotesPage.vue';
-import RecordPage from './pages/RecordPage.vue';
-import SearchPage from './pages/SearchPage.vue';
+const CatalogPage = lazy(() => import('./pages/CatalogPage.vue'));
+const GlossaryPage = lazy(() => import('./pages/GlossaryPage.vue'));
+const LessonPage = lazy(() => import('./pages/LessonPage.vue'));
+const NotesPage = lazy(() => import('./pages/NotesPage.vue'));
+const RecordPage = lazy(() => import('./pages/RecordPage.vue'));
+const SearchPage = lazy(() => import('./pages/SearchPage.vue'));
 import UiIcon from './components/ui/UiIcon.vue';
+const JavaPlayground = lazy(() => import('./pages/JavaPlayground.vue'));
 
 const props = defineProps({ progressServices: Object, commentsService: Object });
+const renderError = ref('');
+const development = import.meta.env.DEV;
+onErrorCaptured((error) => {
+  renderError.value = error.message;
+  return false;
+});
+function reloadPage() {
+  window.location.reload();
+}
 const { progress, storageOK, storageIssue, recoveries, localPending, localVersion, cloud } =
   useCloudProgress(lessonIds, props.progressServices);
+provide(CODING_SERVICE, {
+  progress,
+  navigate: (path) => go(path),
+  owner: computed(() => cloud.state.user?.id || 'guest'),
+  disabled: computed(() => cloud.state.initializing),
+  record(id, result, topic) {
+    if (cloud.state.initializing) return;
+    recordCoding(progress, id, result);
+    if (result.passed && topic) recordStudyActivity(progress, topic, localDateKey());
+    recordCheckin(progress, localDateKey(), !!cloud.state.user);
+  },
+  career(id, checked) {
+    if (!cloud.state.initializing)
+      progress.learning.career[id] = {
+        checked,
+        at: Math.max(Date.now(), (progress.learning.career[id]?.at || 0) + 1),
+      };
+  },
+  choose(id) {
+    if (!cloud.state.initializing)
+      progress.learning.routeChoice = {
+        id,
+        at: Math.max(Date.now(), (progress.learning.routeChoice?.at || 0) + 1),
+      };
+  },
+});
 const owner = computed(() => cloud.state.user?.id || 'guest');
 const { path, current, go, navigating, pageContent, resume, refreshResume } = useCourseNavigation(
   owner,
@@ -141,6 +200,7 @@ const saveStatus = computed(() => {
   );
 });
 watch([path, owner], () => {
+  renderError.value = '';
   drawerOpen.value = false;
   notesOpen.value = false;
   notesModalOpen.value = false;
@@ -244,7 +304,13 @@ onUnmounted(() => {
   >
     <div class="app-surface" :inert="drawerOpen || notesModalOpen">
       <a class="skip-content" href="#main-content" @click.prevent="jumpTo('main-content')">跳到正文</a>
-      <SiteHeader :user="cloud.state.user" :view="view" @navigate="go" />
+      <SiteHeader
+        :user="cloud.state.user"
+        :view="view"
+        :course-path="['home', 'learn', 'boss', 'java'].includes(view) ? '/' : resumePath"
+        @navigate="go"
+      />
+      <SiteBreadcrumbs :route="current" @navigate="go" />
       <div v-if="storageIssue === 'corrupt' || !storageOK" class="storage-warning" role="status">
         <template v-if="storageIssue === 'corrupt'"
           >发现无法读取的本机存档。可在学习记录下载原件。{{
@@ -269,14 +335,21 @@ onUnmounted(() => {
         :class="{ 'is-navigating': navigating }"
         tabindex="-1"
       >
+        <main v-if="renderError" class="study-page">
+          <h1>这一页暂时没有打开</h1>
+          <p>草稿仍保存在本机。可以重新加载，或回到课程目录继续学习。</p>
+          <p v-if="development" role="alert">{{ renderError }}</p>
+          <button @click="reloadPage">重新加载</button><button @click="go('/')">回到课程目录</button>
+        </main>
         <CatalogPage
-          v-if="view === 'home'"
+          v-else-if="view === 'home'"
           :summary="summary"
           :notes="progress.notes"
           :has-started="hasStarted"
           :continue-path="resumePath"
           :ordered-path="continuePath"
           :resume="resume"
+          :selected-chapter="current.selectedChapter"
           :prepared-count="
             progress.learning.prepared.filter(
               (id) => !['java-call-stack', 'java-two-loops', 'java-last-step'].includes(id),
@@ -310,6 +383,23 @@ onUnmounted(() => {
           @wrong="markWrong"
         />
         <BeginnerTrial v-else-if="view === 'trial'" :owner="owner" @navigate="go" />
+        <JavaPlayground v-else-if="view === 'playground'" :owner="owner" />
+        <CareerPage
+          v-else-if="view === 'careers'"
+          :route-id="current.routeId"
+          :stage-id="current.stageId"
+          :owner="owner"
+          :disabled="cloud.state.initializing"
+          @navigate="go"
+        />
+        <PracticePage
+          v-else-if="view === 'practice' || view === 'practice-review'"
+          :task-id="current.topic"
+          :review="view === 'practice-review'"
+          :owner="owner"
+          :disabled="cloud.state.initializing"
+          @navigate="go"
+        />
         <ChapterShell
           v-else-if="hasChapterMenu"
           :view="view"
@@ -420,7 +510,8 @@ onUnmounted(() => {
             <a href="https://visualgo.net/en/sorting/" target="_blank" rel="noopener">VisuAlgo</a> 与
             <a href="https://opendsa.cs.vt.edu/" target="_blank" rel="noopener">OpenDSA</a>，语法参考
             <a href="https://dev.java/learn/" target="_blank" rel="noopener">Java 官方教程</a>。
-            本站讲解、题目与交互均独立编写。网页演示内置算法步骤；完整 Java 示例可下载到本机运行。
+            本站讲解、题目与交互均独立编写。网页演示内置算法步骤；编程任务使用 CheerpJ
+            在浏览器隔离环境中编译运行，也可下载到本机继续。
             游客进度保存在当前浏览器，登录后可同步到账号。
           </p>
         </details>

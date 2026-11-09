@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import { parseAst } from 'rollup/parseAst';
 
-const dist = path.resolve('dist');
+const dist = path.resolve(process.argv[2] || 'dist');
 const mime = {
   png: 'image/png',
   svg: 'image/svg+xml',
@@ -34,11 +35,20 @@ export function buildOffline() {
   html = html.replace(/<script\b([^>]*\bsrc="([^"]+)"[^>]*)><\/script>/g, (_tag, attrs, url) => {
     if (!attrs.includes('type="module"')) throw new Error('Unexpected external script: ' + url);
     const js = readAsset(url, 'utf8');
-    if (
-      /(?:^|\n)\s*import\s+(?:[\w{*]|["'])[^;]+\bfrom\b/m.test(js) ||
-      /\bimport\(\s*["']\.\.?\//.test(js)
-    ) {
-      throw new Error('Offline entry still imports another bundle: ' + url);
+    const nodes = [parseAst(js)];
+    while (nodes.length) {
+      const node = nodes.pop();
+      if (!node || typeof node !== 'object') continue;
+      if (
+        node.type === 'ImportDeclaration' ||
+        node.type === 'ImportExpression' ||
+        ((node.type === 'ExportAllDeclaration' || node.type === 'ExportNamedDeclaration') && node.source)
+      )
+        throw new Error('Offline entry still imports another bundle: ' + url);
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) nodes.push(...value);
+        else if (value && typeof value === 'object') nodes.push(value);
+      }
     }
     modules++;
     return '<script type="module">' + js.replace(/<\/script/gi, '<\\/script') + '</script>';

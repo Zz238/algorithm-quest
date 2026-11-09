@@ -4,6 +4,15 @@
 
 正式网站：https://zz238.github.io/algorithm-quest/
 
+## Java 在线实践与职业路线（2026-11-08，功能分支）
+
+- 新增 CheerpJ Java17 在线编译、运行示例、全部测试、错误定位、停止与超时保护；只有点击运行才加载环境。
+- 61项编程任务、16项复习变式，合计274组JDK测试；新学可改写完整示例，复习先独立编写。
+- 独立的Java后端和算法工程师职业路线，各7阶段；配套Spring项目、SQL工作单、Python/Notebook与推荐服务。
+- 新增全站面包屑、跨标签学习位置恢复、编程与职业内容搜索、文档式阶段导航。
+- Vite按需分包，默认构建只生成完整dist；首页JavaScript gzip约399KB降至143KB。
+- 开发与验收说明见 [JAVA_PRACTICE_CAREER_REVIEW.md](./JAVA_PRACTICE_CAREER_REVIEW.md)。当前功能等待分支预览确认后合并。
+
 ## 组件交互优化（独立分支）
 
 基于 Uiverse 的按钮、输入和勾选交互，将 6 类 Vue 控件统一用于实验、代码、搜索、笔记与阶段项目。Morphicons 联动播放/暂停、复制/完成等真实状态；保留蓝白配色、原边框规则、触控和减少动态效果。全部控件可以离线使用。
@@ -16,7 +25,7 @@
 - 先完成打印、变量、判断 3 节 Java 起步课；其余 9 节及 3 节衔接课在主线需要时补学。已练过的内容可直接做题确认。
 - 72 节先讲生活例子，把 215 张算法状态图放到对应概念旁，再进行完整实验与 Java 阅读。图解可放大；详细导读与复盘可展开。
 - 右侧笔记可收起／固定，提供保存状态及内容定位链接；字号与固定偏好保存在本设备。段落链接、实验输入及步数可从笔记直接恢复。
-- 15 项完整 Java 编写任务含 4 个阶段项目及 57 组测试，下载 `Main.java` 在本机运行；网站不执行学生输入的 Java。
+- 编程练习库提供61项任务及16项复习变式，可在线真实编译运行，也可下载 `Main.java` 在本机验证。
 - 最近任务、练习草稿、实验、阅读位置与项目计划保存在当前浏览器并按账号隔离；原有进度、私人笔记和复习记录继续按既有机制同步。不会将本机阅读偏好或实验输入加入客流统计。
 
 [本轮改动与验收](./LEARNING_FLOW_REVIEW.md) · [真实零基础试学方案](./docs/BEGINNER_STUDY.md)。真人试学待招募后实施。
@@ -94,13 +103,13 @@ Fork 或更换部署域名时，应使用自己的 Supabase 项目，并同步�
 
 - 使用 Node.js 24，`npm ci` 安装锁定依赖。
 - `vite.config.js` 的相对资源路径配合 hash 路由，支持仓库子目录访问及刷新，不需要服务器重写规则。
-- 下载源代码后执行 `npm ci`、`npm run dev` 可本地修改；`npm run build` 会生成 dist 和 offline.html。
+- 下载源代码后执行 `npm ci`、`npm run dev` 可本地修改；`npm run build` 生成完整的 Vite dist；可选离线版另用 `npm run build:offline` 生成。
 - 原站点与GitHub Pages的浏览器来源不同，阅读、练习和打卡不会自动迁移。先在原站“学习记录”导出JSON，再在新站导入即可。
 - 后续修改课程或样式并推送 main，会自动更新线上网站。
 
 ## 离线使用
 
-构建后双击根目录的 **offline.html**，可离线阅读全部课程、看图解、查看 Java 逐行说明、闯关和记笔记。这里已经打包了 Vue、样式和课程，不会从 CDN 加载依赖。
+可选执行 `npm run build:offline` 后，双击根目录的 **offline.html**，可离线阅读全部课程、看图解、查看 Java 逐行说明、闯关和记笔记。这里已经打包了 Vue、样式和课程，不会从 CDN 加载依赖。
 
 离线版将入口脚本、样式和图解内嵌在一个文件中。持续集成检查 `file://` 下的笔记保存及 Java 下载；若你的浏览器限制本地保存或模块，请按下面的 npm 启动方式使用。
 
@@ -130,7 +139,7 @@ npm run build
 npm run preview
 ```
 
-`dist/` 是生产构建目录。构建同时生成根目录 `offline.html`。dist 使用 JavaScript 模块，建议通过 `npm run preview` 访问；双击打开请使用专门的 offline.html。
+`dist/` 是生产构建目录。默认构建不会生成单文件HTML；离线兼容版由 `npm run build:offline` 单独生成。dist 使用 JavaScript 模块，建议通过 `npm run preview` 访问；双击打开请使用专门的 offline.html。
 
 ## 十二章与章末题
 
@@ -167,7 +176,7 @@ npm run preview
 - 算法小白 0 / 算法学徒 100 / 算法探索者 300 / 算法能手 700 / 算法高手 1500 / 算法大牛 3000。
 - 算法大牛还需要全部 12 章通关。称号表示本课程学习进度。
 
-网站检查的是输出预测与思路选择，不会执行或编译你输入的 Java。完整答案可以复制到力扣 Java 编辑区提交。Java 代码下载不需要联网。
+章节基础题检查输出预测与思路选择；编程任务通过CheerpJ在浏览器真实编译和执行Java，首次加载需要联网。判题用于学习自测，不作为防作弊考试。完整答案也可复制到力扣提交，Java代码下载不需要联网。
 
 ## 账号入口与每日阅读打卡
 
@@ -264,7 +273,7 @@ npm run check:reading
 
 基础内容与参考算法检查只需要 Node。检查命令只读源码；Java 编译和运行使用临时目录。只跑 Node 检查可使用 `npm run check -- --skip-java`。
 
-浏览器回归：构建后执行 `npx playwright install chromium` 和 `npm run test:browser`。检查课程路由、七种视口、笔记与备份流程以及 `file://` 离线版。分支 CI 的 **algorithm-quest-offline-preview** 产物可以解压后直接打开，预览版不会启用正式站的登录与统计。
+浏览器回归：构建后执行 `npx playwright install chromium` 和 `npm run test:browser`。检查课程路由、七种视口、笔记与备份流程以及 `file://` 离线版。分支 CI 的 **algorithm-quest-vite-preview** 包含完整Vite dist，应使用HTTP服务预览，预览版不会启用正式站的登录与统计。
 
 如果系统有带 jdk.compiler 模块的 JDK，还会编译全部 Java 示例，并执行十二道章末答案的 24 个情境。没有 JDK 时会明确提示跳过可选 Java 编译验证，网站仍能正常使用。
 

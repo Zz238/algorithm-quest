@@ -53,7 +53,7 @@ export function mergeGuestDocument(account,guest,ids,device='device',now=Date.no
  merged.notes={...local.notes,...current.progress.notes};merged.bookmarks=sortedUnion(current.progress.bookmarks,local.bookmarks);
  return updateDocument(current,merged,ids,device,now);
 }
-export function hasProgress(progress){return !!(progress.lessons.length||progress.mastery.length||progress.bosses.length||progress.checkins.length||progress.bookmarks.length||Object.values(progress.notes).some(Boolean)||Object.keys(progress.dailyRead).length||progress.learning?.prepared.length||progress.learning?.independent.length||Object.keys(progress.learning?.review||{}).length||progress.learning?.goal);}
+export function hasProgress(progress){return !!(progress.lessons.length||progress.mastery.length||progress.bosses.length||progress.checkins.length||progress.bookmarks.length||Object.values(progress.notes).some(Boolean)||Object.keys(progress.dailyRead).length||progress.learning?.prepared.length||progress.learning?.independent.length||Object.keys(progress.learning?.review||{}).length||progress.learning?.goal||Object.keys(progress.learning?.coding||{}).length||Object.keys(progress.learning?.career||{}).length||progress.learning?.routeChoice);}
 export function storageRead(storage,key,fallback){try{const text=storage?.getItem(key);return text?JSON.parse(text):fallback;}catch{return fallback;}}
 export function readGuest(storage,ids,device){
  const raw=storageRead(storage,GUEST_KEY,freshProgress());let progress;try{progress=cleanProgress(raw,ids);}catch{progress=freshProgress();}

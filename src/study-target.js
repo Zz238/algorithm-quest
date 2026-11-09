@@ -4,9 +4,14 @@ export const SECTION_LABELS = {
   'lesson-figures': '图解回顾',
   'lesson-experiment': '逐步实验',
   'lesson-code': 'Java 实现',
+  'lesson-coding': '动手编程',
   'lesson-practice': '练习',
   'lesson-challenge': '独立挑战',
   'java-experiment': 'Java 小步实验',
+  'career-concepts': '职业概念',
+  'career-steps': '跟随操作',
+  'career-practice': '职业实践',
+  'career-check': '阶段自检',
 };
 const sectionOK = (value) =>
   Object.hasOwn(SECTION_LABELS, value) || /^lesson-concept-[0-9]{1,2}$/.test(value);
@@ -18,7 +23,7 @@ export function splitStudyTarget(raw) {
   const params = new URLSearchParams(query);
   const allowed = new Set(['at', 'step', 'example', 'input']);
   if ([...params.keys()].some((k) => !allowed.has(k) || params.getAll(k).length !== 1)) return null;
-  if (!/^\/(learn|boss|java)\//.test(path)) return null;
+  if (!/^\/(learn|boss|java|careers)\//.test(path)) return null;
   const section = params.get('at');
   if (!section || !sectionOK(section)) return null;
   const target = { section };

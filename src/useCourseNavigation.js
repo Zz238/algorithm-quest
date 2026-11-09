@@ -50,8 +50,10 @@ export function useCourseNavigation(owner, terms) {
     ['learn', 'boss'].includes(parseRoute(url, terms).view) ||
     (parseRoute(url, terms).view === 'java' && !!parseRoute(url, terms).topic);
   let scrollSave, togglesCleanup, headerObserver;
+  let restoring = true,
+    restoration = 0;
   function savePlace(url = path.value, account = owner.value) {
-    if (!remembers(url)) return;
+    if (restoring || !remembers(url)) return;
     const details = pageContent.value?.querySelectorAll('details[data-study-place]') || [];
     const disclosures = Object.fromEntries(Array.from(details, (e) => [e.dataset.studyPlace, e.open]));
     writeDraft(
@@ -78,7 +80,7 @@ export function useCourseNavigation(owner, terms) {
   function onScroll() {
     const url = path.value,
       account = owner.value;
-    if (!remembers(url)) return;
+    if (restoring || !remembers(url)) return;
     clearTimeout(scrollSave);
     scrollSave = setTimeout(() => {
       if (url === path.value && account === owner.value) savePlace(url, account);
@@ -97,14 +99,39 @@ export function useCourseNavigation(owner, terms) {
     nav.scrollTo({ left, behavior: reducedMotion() ? 'instant' : 'smooth' });
   };
   async function focusPage() {
+    const request = ++restoration;
+    restoring = true;
     clearTimeout(scrollSave);
     const url = path.value,
-      account = owner.value,
-      place = remembers(url) ? readDraft(placeKey(url, account), storage) : null;
+      account = owner.value;
     document.title = routeTitle(current.value);
     await nextTick();
+    if (!pageContent.value?.querySelector('h1')) {
+      await new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (pageContent.value?.querySelector('h1')) {
+            observer.disconnect();
+            clearTimeout(limit);
+            resolve();
+          }
+        });
+        const limit = setTimeout(() => {
+          observer.disconnect();
+          resolve();
+        }, 5000);
+        if (pageContent.value) observer.observe(pageContent.value, { childList: true, subtree: true });
+        else {
+          clearTimeout(limit);
+          resolve();
+        }
+      });
+    }
     await new Promise(requestAnimationFrame);
-    if (url !== path.value || account !== owner.value) return;
+    if (request !== restoration || url !== path.value || account !== owner.value) return;
+    // Lazy pages temporarily shrink the document and cause a scroll-to-zero event.
+    // Preserve the last real position until content is mounted, including updates
+    // from the original tab while this page was loading.
+    const place = remembers(url) ? readDraft(placeKey(url, account), storage) : null;
     togglesCleanup?.();
     const details = Array.from(pageContent.value?.querySelectorAll('details[data-study-place]') || []);
     for (const el of details) {
@@ -124,6 +151,11 @@ export function useCourseNavigation(owner, terms) {
       target.focus({ preventScroll: true });
     }
     alignNav();
+    if (current.value.view === 'search')
+      pageContent.value?.querySelector('input[type="search"]')?.focus({ preventScroll: true });
+    await new Promise(requestAnimationFrame);
+    if (request !== restoration || url !== path.value || account !== owner.value) return;
+    restoring = false;
     // Save the newly entered lesson only after the old page's position was captured.
     savePlace(url, account);
   }
@@ -163,6 +195,9 @@ export function useCourseNavigation(owner, terms) {
     window.addEventListener('popstate', onHash);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', onHide);
+    window.addEventListener('blur', onHide);
+    window.addEventListener('storage', onResumeStorage);
+    window.addEventListener('keydown', searchShortcut);
     window.addEventListener('study-activity', onScroll);
     const header = document.querySelector('.header');
     if (header && typeof ResizeObserver !== 'undefined') {
@@ -179,6 +214,8 @@ export function useCourseNavigation(owner, terms) {
   });
   onUnmounted(() => {
     savePlace();
+    restoration++;
+    restoring = true;
     togglesCleanup?.();
     clearTimeout(scrollSave);
     navigation.cancel();
@@ -189,10 +226,31 @@ export function useCourseNavigation(owner, terms) {
     window.removeEventListener('popstate', onHash);
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('pagehide', onHide);
+    window.removeEventListener('blur', onHide);
+    window.removeEventListener('storage', onResumeStorage);
+    window.removeEventListener('keydown', searchShortcut);
     window.removeEventListener('study-activity', onScroll);
   });
   const refreshResume = () => {
     resume.value = readResume(owner.value);
   };
+  function onResumeStorage(event) {
+    if (event.key === resumeKey(owner.value)) resume.value = readResume(owner.value);
+  }
+  function searchShortcut(event) {
+    const typing = event.target?.closest?.('input,textarea,[contenteditable="true"]');
+    if (
+      (event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey)) ||
+      (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey)
+    ) {
+      event.preventDefault();
+      savePlace();
+      if (current.value.view === 'search')
+        document
+          .querySelector('.search-page input, .search-page-container input, input[type="search"]')
+          ?.focus();
+      else go('/search');
+    }
+  }
   return { path, current, go, navigating, pageContent, resume, refreshResume };
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { jumpTo } from '../useCourseNavigation.js';
-defineProps({ code: Boolean });
+defineProps({ code: Boolean, coding: Boolean });
 const active = ref('lesson-story');
 let frame;
 function update() {
@@ -35,6 +35,7 @@ onUnmounted(() => {
         ['lesson-experiment', '实验'],
         ...(code ? [['lesson-code', 'Java 实现']] : []),
         ['lesson-practice', '练习'],
+        ...(coding ? [['lesson-coding', '动手编程']] : []),
         ['lesson-challenge', '挑战'],
       ]"
       :key="id"

@@ -1,6 +1,10 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { chapters, lessonRoute, requiredLessons } from './data/course.js';
-import { coreJava, javaRoute } from './data/java-starter.js';
+import { chapters, lessonRoute, requiredLessons } from './data/course-index.js';
+import { JAVA_INDEX } from './data/course-index.js';
+const coreJava = Object.values(JAVA_INDEX).filter(
+  (u) => !['java-call-stack', 'java-two-loops', 'java-last-step'].includes(u.id),
+);
+const javaRoute = (id) => '/java/' + id.replace(/^java-/, '');
 import { JAVA_START } from './data/reading-guide.js';
 import { allLessons } from './course-route.js';
 import { LEVELS, experience, localDateKey, recordCheckin, recordLessonReading } from './logic.js';
@@ -33,7 +37,11 @@ export function useLearningProgress(progress, cloud, toast) {
   });
   const reads = computed(() => core.filter((l) => progress.lessons.includes(l.id)).length);
   const electiveReads = computed(() => electives.filter((l) => progress.lessons.includes(l.id)).length);
-  const due = computed(() => dueReviews(progress, today.value).length);
+  const due = computed(
+    () =>
+      dueReviews(progress, today.value).length +
+      Object.values(progress.learning.coding || {}).filter((r) => r.due <= today.value).length,
+  );
   const cleared = (c) =>
     progress.bosses.includes(c.id) && (c.id !== 5 || progress.bossTasks[5] === 1051);
   const clearedCount = computed(() => chapters.filter(cleared).length);
