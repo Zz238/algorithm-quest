@@ -32,6 +32,7 @@ jobs:
           npm run check:comments
           npm run check:reading
           npm run check:analytics
+          npm run check:topics
       - name: Build website
         run: npm run build
       - name: Upload Pages artifact

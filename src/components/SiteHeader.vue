@@ -45,6 +45,13 @@ const profile = computed(() => accountProfile(props.user));
         >职业路线</CourseLink
       >
       <CourseLink
+        :class="{ active: view === 'topics' }"
+        :aria-current="view === 'topics' ? 'page' : undefined"
+        to="/topics"
+        @navigate="emit('navigate', $event)"
+        >算法专题</CourseLink
+      >
+      <CourseLink
         :class="{ active: ['practice', 'practice-review', 'playground'].includes(view) }"
         :aria-current="['practice', 'practice-review', 'playground'].includes(view) ? 'page' : undefined"
         to="/practice"

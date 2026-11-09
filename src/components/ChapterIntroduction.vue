@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
 import ChapterFigures from './ChapterFigures.vue';
+import { ROADMAP_ITEMS, roadmapItemRoute } from '../data/algorithm-roadmap.js';
+import CourseLink from './CourseLink.vue';
+const topic = (id) => ROADMAP_ITEMS.find((t) => t.id === id);
 const emit = defineEmits(['navigate']);
 defineProps({ intro: Object, chapterId: Number, first: Boolean });
 const chosen = ref(-1),
@@ -83,6 +86,40 @@ const chosen = ref(-1),
         <ul>
           <li v-for="item in intro.further" :key="item">{{ item }}</li>
         </ul>
+      </details>
+      <details v-if="intro.curriculum" class="study-details" data-study-place="intro-operations">
+        <summary>这章的操作成本、使用场景与后续专题</summary>
+        <p>{{ intro.curriculum.focus }}</p>
+        <div class="terms-table">
+          <table>
+            <thead>
+              <tr>
+                <th>动作</th>
+                <th>成本</th>
+                <th>成立前提</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in intro.curriculum.operations" :key="row[0]">
+                <th>{{ row[0] }}</th>
+                <td data-label="成本">{{ row[1] }}</td>
+                <td data-label="前提">{{ row[2] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul>
+          <li v-for="text in intro.curriculum.applications" :key="text">{{ text }}</li>
+        </ul>
+        <nav class="topic-related" aria-label="本章后续专题">
+          <CourseLink
+            v-for="id in intro.curriculum.topics"
+            :key="id"
+            :to="roadmapItemRoute(topic(id))"
+            @navigate="emit('navigate', $event)"
+            >{{ topic(id).title }} →</CourseLink
+          >
+        </nav>
       </details>
       <p v-if="intro.sources" class="intro-sources">
         参考与延伸阅读：<a

@@ -12,6 +12,10 @@ export const SECTION_LABELS = {
   'career-steps': '跟随操作',
   'career-practice': '职业实践',
   'career-check': '阶段自检',
+  'topic-example': '专题推演',
+  'topic-definition': '专题概念',
+  'topic-check': '专题自检',
+  'topic-coding': '专题编程',
 };
 const sectionOK = (value) =>
   Object.hasOwn(SECTION_LABELS, value) || /^lesson-concept-[0-9]{1,2}$/.test(value);
@@ -23,7 +27,7 @@ export function splitStudyTarget(raw) {
   const params = new URLSearchParams(query);
   const allowed = new Set(['at', 'step', 'example', 'input']);
   if ([...params.keys()].some((k) => !allowed.has(k) || params.getAll(k).length !== 1)) return null;
-  if (!/^\/(learn|boss|java|careers)\//.test(path)) return null;
+  if (!/^\/(learn|boss|java|careers|topics)\//.test(path)) return null;
   const section = params.get('at');
   if (!section || !sectionOK(section)) return null;
   const target = { section };

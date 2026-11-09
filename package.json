@@ -17,7 +17,7 @@
     "check:java": "node scripts/check-starter-java.mjs",
     "generate:java": "node scripts/generate-java-examples.mjs",
     "lint": "eslint src scripts tests *.config.js",
-    "format:check": "prettier --check --ignore-unknown src/pages src/App.vue src/course-*.js src/course-figures.css src/learning-ux.css tests",
+    "format:check": "prettier --check --ignore-unknown src/pages src/App.vue src/course-*.js src/course-figures.css src/learning-ux.css tests src/components/Topic*.vue src/data/algorithm-*.js src/data/topics src/data/*depth.js src/data/topic-*.js src/data/coding-task-helper.js src/topic-*.js src/algorithm-topics.css scripts/check-topics.mjs",
     "test:components": "vitest run",
     "test:browser": "playwright test",
     "build:offline": "vite build --mode offline --outDir dist-offline && node scripts/offline.mjs dist-offline",
@@ -25,6 +25,7 @@
     "build:java-runner": "node scripts/build-java-runner.mjs",
     "check:coding": "node scripts/generate-course-index.mjs --check && node scripts/check-coding.mjs",
     "check:careers": "node scripts/check-career-projects.mjs",
+    "check:topics": "node scripts/check-topics.mjs",
     "measure:build": "node scripts/measure-build.mjs"
   },
   "engines": {

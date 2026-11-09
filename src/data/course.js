@@ -9,6 +9,9 @@ import { LINKED_UNITS } from './units/linked-basics.js';
 import { LESSON_PATHS } from './lesson-paths.js';
 import { FOUNDATION_ADDITIONS } from './foundation-additions.js';
 import { priorIds } from './learning-path.js';
+import { LESSON_DEPTH } from './lesson-depth.js';
+import { CHAPTER_DEPTH } from './chapter-depth.js';
+import { ROADMAP_SOURCE } from './algorithm-roadmap.js';
 export const units = {
   ...START_UNITS,
   ...SEQUENCE_UNITS,
@@ -144,7 +147,7 @@ export const chapters = original.map((c) => {
       base = units[id],
       u = {
         ...base,
-        sections: [...base.sections, ...(FOUNDATION_ADDITIONS[id] || [])],
+        sections: [...base.sections, ...(FOUNDATION_ADDITIONS[id] || []), LESSON_DEPTH[id]],
         demo: LESSON_PATHS[id].demo.mode,
       },
       codeKey = overrides[id] || u.codeKey;
@@ -181,7 +184,11 @@ export const chapters = original.map((c) => {
   if (c.id === 1) boss.codePrerequisiteChapters = [2, 3];
   return {
     ...c,
-    introduction: CHAPTER_INTROS[c.id],
+    introduction: {
+      ...CHAPTER_INTROS[c.id],
+      curriculum: CHAPTER_DEPTH[c.id],
+      sources: [...CHAPTER_INTROS[c.id].sources, ROADMAP_SOURCE],
+    },
     title: c.id === 5 ? '排序基础：交换、冒泡与插入' : c.title,
     subtitle: c.id === 5 ? '一次只聚焦一种移动规则' : c.subtitle,
     lessons,

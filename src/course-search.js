@@ -4,6 +4,7 @@ import { JAVA_UNITS, javaRoute } from './data/java-starter.js';
 import { CODING_TASKS } from './data/coding-catalog.js';
 import { CAREER_ROUTES, careerStageRoute } from './data/career-index.js';
 import { CAREER_LESSONS } from './data/career-lessons.js';
+import { TOPIC_LESSONS } from './data/algorithm-topics.js';
 
 export const glossaryPath = (term) => '/glossary/' + encodeURIComponent(term);
 export const COURSE_TERMS = Object.assign(Object.create(null), TERMS);
@@ -125,6 +126,26 @@ export function searchCourse(query, notes = {}) {
   return [
     ['lessons', '课程小节', [...lessons, ...java]],
     ['exercises', '章节练习', exercise],
+    [
+      'topics',
+      '算法专题',
+      TOPIC_LESSONS.map((t) =>
+        result(
+          '/topics/' + t.id,
+          t.title,
+          t.definition,
+          [
+            t.story,
+            ...t.terms.flatMap((term) => [term.term, term.meaning]),
+            ...t.sections.flatMap((s) => [s.title, ...s.paragraphs]),
+            t.example.input,
+            ...t.example.steps.flatMap((s) => [s.action, s.state, s.reason]),
+            t.challenge,
+            ...t.checks.map((q) => q.question),
+          ].join(' '),
+        ),
+      ),
+    ],
     ['terms', '术语', terms],
     ['code', 'Java 代码', code],
     [
