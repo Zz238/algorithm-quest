@@ -128,3 +128,32 @@ SOFTWARE.
 Java运行环境通过官方CDN `https://cjrtnc.leaningtech.com/5.0/loader.js` 按需加载，不在仓库中再分发运行时。运行区保留Built with CheerpJ标识。许可范围以 [官方许可说明](https://cheerpj.com/docs/licensing) 为准。`src/java/Runner.java`及其JAR为本项目自行编写的教学桥接代码。
 
 职业路线参考Spring、MDN、Java/Python、PostgreSQL、Google ML、scikit-learn和PyTorch官方资料；概念讲解、案例、项目业务代码及测试均为本项目独立编写。Spring依赖的具体许可证随Maven依赖提供。
+
+
+## Monaco Editor — MIT License
+
+`monaco-editor` 0.57.0 用于 Java 编辑区。仅加载 Java 高亮及本站启用的编辑功能；Monaco 不作为 Java 编译器，运行与类型检查继续由 CheerpJ / JDK 17 提供。
+
+来源：https://github.com/microsoft/monaco-editor
+
+The MIT License (MIT)
+
+Copyright (c) 2016 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

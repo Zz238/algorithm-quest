@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import JavaRunPanel from '../components/JavaRunPanel.vue';
 import { useStudyDraft } from '../study-drafts.js';
+import JavaCodeEditor from '../components/JavaCodeEditor.vue';
 const props = defineProps({ owner: String });
 const draft = useStudyDraft(props.owner, 'java-playground', 'source', (raw) => ({
   source:
@@ -11,33 +12,37 @@ const draft = useStudyDraft(props.owner, 'java-playground', 'source', (raw) => (
   stdin: typeof raw?.stdin === 'string' ? raw.stdin.slice(0, 2000) : '',
 }));
 const showInput = ref(false);
+const codeEditor = ref(null),
+  runPanel = ref(null),
+  diagnostics = ref([]);
 </script>
 <template>
   <main class="study-page coding-page">
     <span class="eyebrow">Java 实验台</span>
     <h1>写一段，运行看看</h1>
     <p>
-      这是完整程序编辑区。从 main
-      开始执行。先预测上面数组的总和，再运行；然后把其中一个数改掉，重新验证。
+      这是完整程序编辑区，从 main 开始执行。初始示例的数组是
+      a=[1,2,3]；先预测总和，再运行。然后修改其中一个数，重新验证。
     </p>
-    <label class="code-editor"
-      ><span>Main.java · 草稿自动保存在当前浏览器</span
-      ><textarea
-        v-model="draft.source"
-        rows="16"
-        maxlength="12000"
-        spellcheck="false"
-        autocapitalize="off"
-        autocomplete="off"
-        aria-label="Java 完整程序"
-      />
-    </label>
+    <JavaCodeEditor
+      ref="codeEditor"
+      v-model="draft.source"
+      label="Java 完整程序"
+      :diagnostics="diagnostics"
+      @run="runPanel?.execute()"
+    />
     <button class="text-button" @click="showInput = !showInput">
       {{ showInput ? '收起标准输入' : '需要 Scanner 输入？展开标准输入' }}
     </button>
     <label v-if="showInput" class="mini-output"
       >标准输入<textarea v-model="draft.stdin" rows="3" maxlength="2000" />
     </label>
-    <JavaRunPanel :source="draft.source" :stdin="draft.stdin" />
+    <JavaRunPanel
+      ref="runPanel"
+      :source="draft.source"
+      :stdin="draft.stdin"
+      @diagnostics="diagnostics = $event"
+      @locate="codeEditor?.locate($event)"
+    />
   </main>
 </template>

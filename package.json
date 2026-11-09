@@ -17,7 +17,7 @@
     "check:java": "node scripts/check-starter-java.mjs",
     "generate:java": "node scripts/generate-java-examples.mjs",
     "lint": "eslint src scripts tests *.config.js",
-    "format:check": "prettier --check --ignore-unknown src/pages src/App.vue src/course-*.js src/course-figures.css src/learning-ux.css tests src/components/Topic*.vue src/data/algorithm-*.js src/data/topics src/data/*depth.js src/data/topic-*.js src/data/coding-task-helper.js src/topic-*.js src/algorithm-topics.css scripts/check-topics.mjs",
+    "format:check": "prettier --check --ignore-unknown src/pages src/App.vue src/course-*.js src/course-figures.css src/learning-ux.css tests src/components/Topic*.vue src/data/algorithm-*.js src/data/topics src/data/*depth.js src/data/topic-*.js src/data/coding-task-helper.js src/topic-*.js src/algorithm-topics.css scripts/check-topics.mjs src/components/JavaCodeEditor.vue src/java/editor-support.js src/java/monaco-java.js src/java-editor.css",
     "test:components": "vitest run",
     "test:browser": "playwright test",
     "build:offline": "vite build --mode offline --outDir dist-offline && node scripts/offline.mjs dist-offline",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
+    "monaco-editor": "0.57.0",
     "morphicons": "2.0.2",
     "vue": "3.5.44"
   },

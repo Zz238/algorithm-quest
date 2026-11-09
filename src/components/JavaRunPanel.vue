@@ -8,10 +8,11 @@ const props = defineProps({
   sampleSource: String,
   stdin: { type: String, default: '' },
   lineOffset: { type: Number, default: 0 },
+  editableLines: Number,
   disabled: Boolean,
   judged: Boolean,
 });
-const emit = defineEmits(['result']);
+const emit = defineEmits(['result', 'diagnostics', 'locate']);
 const busy = ref(false),
   phase = ref(''),
   result = ref(null),
@@ -28,6 +29,7 @@ const diagnostic = computed(() => result.value?.diagnostics?.filter((d) => d.kin
 watch(
   () => [props.source, props.stdin],
   () => {
+    emit('diagnostics', []);
     if (!busy.value) {
       result.value = null;
       failure.value = '';
@@ -37,6 +39,7 @@ watch(
 async function execute(all = true) {
   if (busy.value || props.disabled) return;
   busy.value = true;
+  emit('diagnostics', []);
   result.value = null;
   failure.value = '';
   phase.value = 'loading';
@@ -63,6 +66,7 @@ async function execute(all = true) {
       return;
     }
     result.value = response;
+    emit('diagnostics', response.diagnostics || []);
     emit('result', { ...result.value, ...parsed.value, all });
   } catch (error) {
     if (token === runToken) {
@@ -88,6 +92,10 @@ onUnmounted(() => {
   engine?.dispose();
 });
 defineExpose({ execute });
+function editorLine(d) {
+  const line = d.line - props.lineOffset;
+  return line > 0 && line <= (props.editableLines || props.source.split('\n').length) ? line : null;
+}
 </script>
 <template>
   <section class="java-run-panel" aria-label="Java 运行与判题">
@@ -138,12 +146,15 @@ defineExpose({ execute });
       </p>
       <ol v-if="diagnostic.length" class="java-diagnostics">
         <li v-for="(d, i) in diagnostic" :key="i">
-          <strong>{{
-            d.line > lineOffset
-              ? '编辑区第 ' + (d.line - lineOffset) + ' 行'
-              : '程序框架第 ' + d.line + ' 行'
-          }}</strong
-          ><code>{{ d.message }}</code>
+          <button
+            v-if="editorLine(d)"
+            type="button"
+            class="diagnostic-location text-button"
+            @click="emit('locate', d)"
+          >
+            定位编辑区第 {{ editorLine(d) }} 行 →
+          </button>
+          <strong v-else>程序框架第 {{ d.line }} 行</strong><code>{{ d.message }}</code>
           <p>{{ explainJavaError(d.message) }}</p>
         </li>
       </ol>

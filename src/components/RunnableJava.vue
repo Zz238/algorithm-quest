@@ -3,6 +3,7 @@ import { defineAsyncComponent, ref } from 'vue';
 import { useStudyDraft } from '../study-drafts.js';
 import { useCodingProgress } from '../coding-progress.js';
 import UiButton from './ui/UiButton.vue';
+import JavaCodeEditor from './JavaCodeEditor.vue';
 const props = defineProps({
   source: String,
   expected: String,
@@ -23,6 +24,9 @@ const exampleDraft = useStudyDraft(
   (raw) => ({ source: typeof raw?.source === 'string' ? raw.source.slice(0, 12000) : props.source }),
 );
 const status = ref('');
+const codeEditor = ref(null),
+  runPanel = ref(null),
+  diagnostics = ref([]);
 function download() {
   const url = URL.createObjectURL(new Blob([props.source], { type: 'text/plain;charset=utf-8' }));
   const a = document.createElement('a');
@@ -59,16 +63,19 @@ async function copy() {
       <summary>在这里改写并运行，不用安装 Java</summary>
       <template v-if="editable"
         ><p>先只修改本节讲过的语句或输入，保留其余程序框架。预测结果，再点击运行核对。</p>
-        <label class="code-editor"
-          ><span>完整 Main.java · 可编辑</span
-          ><textarea
-            v-model="exampleDraft.source"
-            rows="12"
-            maxlength="12000"
-            spellcheck="false"
-            aria-label="改写当前 Java 示例"
-          /></label
-        ><JavaRunPanel :source="exampleDraft.source"
+        <JavaCodeEditor
+          ref="codeEditor"
+          v-model="exampleDraft.source"
+          label="改写当前 Java 示例"
+          :diagnostics="diagnostics"
+          :disabled="coding?.disabled.value"
+          @run="runPanel?.execute()" />
+        <JavaRunPanel
+          ref="runPanel"
+          :source="exampleDraft.source"
+          :disabled="coding?.disabled.value"
+          @diagnostics="diagnostics = $event"
+          @locate="codeEditor?.locate($event)"
       /></template>
     </details>
     <details v-if="showSource">

@@ -242,6 +242,7 @@ export function useCourseNavigation(owner, terms) {
     if (event.key === resumeKey(owner.value)) resume.value = readResume(owner.value);
   }
   function searchShortcut(event) {
+    if (event.defaultPrevented || event.target?.closest?.('.java-code-editor')) return;
     const typing = event.target?.closest?.('input,textarea,[contenteditable="true"]');
     if (
       (event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey)) ||

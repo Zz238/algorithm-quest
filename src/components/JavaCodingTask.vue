@@ -9,6 +9,7 @@ import JavaRunPanel from './JavaRunPanel.vue';
 import UiButton from './ui/UiButton.vue';
 import UiCheckbox from './ui/UiCheckbox.vue';
 import CourseLink from './CourseLink.vue';
+import JavaCodeEditor from './JavaCodeEditor.vue';
 const props = defineProps({ task: Object, owner: String, review: Boolean, disabled: Boolean });
 const coding = useCodingProgress();
 const previous = !props.review
@@ -32,7 +33,10 @@ const draft = useStudyDraft(
   }),
 );
 const referenceOpen = ref(false),
-  resetConfirm = ref(false);
+  resetConfirm = ref(false),
+  codeEditor = ref(null),
+  runPanel = ref(null),
+  diagnostics = ref([]);
 const full = computed(() => buildCodingProgram(props.task, draft.body));
 const sample = computed(() => buildCodingProgram(props.task, draft.body, { sample: true }));
 const saved = computed(() => coding?.progress.learning.coding[props.task.id]);
@@ -97,31 +101,35 @@ function reset() {
       <summary>查看本题已提供的类型与辅助方法</summary>
       <pre class="study-code"><code>{{ task.support }}</code></pre>
     </details>
-    <label class="code-editor"
-      ><span
-        ><code>{{ task.signature }} { … }</code> · 仅编辑方法体</span
-      ><textarea
-        v-model="draft.body"
-        rows="9"
-        maxlength="8000"
-        spellcheck="false"
-        autocapitalize="off"
-        autocomplete="off"
-        :disabled="disabled"
-        :aria-label="task.title + '代码'"
-      />
-    </label>
+    <p class="coding-method-signature">
+      <code>{{ task.signature }} { … }</code> · 仅编辑方法体
+    </p>
+    <JavaCodeEditor
+      ref="codeEditor"
+      v-model="draft.body"
+      :label="task.title + '代码'"
+      :context="task.signature"
+      :maxlength="8000"
+      :disabled="disabled"
+      :diagnostics="diagnostics"
+      :line-offset="full.lineOffset"
+      @run="runPanel?.execute(false)"
+    />
     <p class="micro">
       草稿自动保存在本机。测试结果和复习安排可随现有账号存档同步；代码不会加入客流统计。
     </p>
     <JavaRunPanel
+      ref="runPanel"
       :key="task.id"
       :source="full.source"
       :sample-source="sample.source"
       :line-offset="full.lineOffset"
+      :editable-lines="draft.body.split('\n').length"
       :disabled="disabled || coding?.disabled.value"
       judged
       @result="attempted"
+      @diagnostics="diagnostics = $event"
+      @locate="codeEditor?.locate($event)"
     />
     <div class="coding-help">
       <UiButton

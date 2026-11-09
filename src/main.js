@@ -17,3 +17,4 @@ import './ui-interactions.css';
 
 import './practice-careers.css';
 import './algorithm-topics.css';
+import './java-editor.css';
