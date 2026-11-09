@@ -50,8 +50,10 @@ export function useCourseNavigation(owner, terms) {
     ['learn', 'boss'].includes(parseRoute(url, terms).view) ||
     (parseRoute(url, terms).view === 'java' && !!parseRoute(url, terms).topic);
   let scrollSave, togglesCleanup, headerObserver;
+  let restoring = true,
+    restoration = 0;
   function savePlace(url = path.value, account = owner.value) {
-    if (!remembers(url)) return;
+    if (restoring || !remembers(url)) return;
     const details = pageContent.value?.querySelectorAll('details[data-study-place]') || [];
     const disclosures = Object.fromEntries(Array.from(details, (e) => [e.dataset.studyPlace, e.open]));
     writeDraft(
@@ -78,7 +80,7 @@ export function useCourseNavigation(owner, terms) {
   function onScroll() {
     const url = path.value,
       account = owner.value;
-    if (!remembers(url)) return;
+    if (restoring || !remembers(url)) return;
     clearTimeout(scrollSave);
     scrollSave = setTimeout(() => {
       if (url === path.value && account === owner.value) savePlace(url, account);
@@ -97,10 +99,11 @@ export function useCourseNavigation(owner, terms) {
     nav.scrollTo({ left, behavior: reducedMotion() ? 'instant' : 'smooth' });
   };
   async function focusPage() {
+    const request = ++restoration;
+    restoring = true;
     clearTimeout(scrollSave);
     const url = path.value,
-      account = owner.value,
-      place = remembers(url) ? readDraft(placeKey(url, account), storage) : null;
+      account = owner.value;
     document.title = routeTitle(current.value);
     await nextTick();
     if (!pageContent.value?.querySelector('h1')) {
@@ -124,7 +127,11 @@ export function useCourseNavigation(owner, terms) {
       });
     }
     await new Promise(requestAnimationFrame);
-    if (url !== path.value || account !== owner.value) return;
+    if (request !== restoration || url !== path.value || account !== owner.value) return;
+    // Lazy pages temporarily shrink the document and cause a scroll-to-zero event.
+    // Preserve the last real position until content is mounted, including updates
+    // from the original tab while this page was loading.
+    const place = remembers(url) ? readDraft(placeKey(url, account), storage) : null;
     togglesCleanup?.();
     const details = Array.from(pageContent.value?.querySelectorAll('details[data-study-place]') || []);
     for (const el of details) {
@@ -146,6 +153,9 @@ export function useCourseNavigation(owner, terms) {
     alignNav();
     if (current.value.view === 'search')
       pageContent.value?.querySelector('input[type="search"]')?.focus({ preventScroll: true });
+    await new Promise(requestAnimationFrame);
+    if (request !== restoration || url !== path.value || account !== owner.value) return;
+    restoring = false;
     // Save the newly entered lesson only after the old page's position was captured.
     savePlace(url, account);
   }
@@ -204,6 +214,8 @@ export function useCourseNavigation(owner, terms) {
   });
   onUnmounted(() => {
     savePlace();
+    restoration++;
+    restoring = true;
     togglesCleanup?.();
     clearTimeout(scrollSave);
     navigation.cancel();

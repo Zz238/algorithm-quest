@@ -47,6 +47,7 @@ test('a glossary tab returns to the previous lesson and its reading position', a
   page,
   context,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/learn/6/2');
   await page.getByRole('button', { name: '动手编程', exact: true }).click();
   await page.waitForTimeout(250);

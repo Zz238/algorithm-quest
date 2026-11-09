@@ -15,7 +15,7 @@ test('home returns to the interrupted lesson and its real lab step, separately f
   await expect(page.locator('.trace-lab [type=range]')).toHaveValue('2');
   await expect(page.locator('.trace-current')).toContainText('通过 b 修改');
   const y = await page.evaluate(() => scrollY);
-  await header(page, '课程目录');
+  await header(page, '基础教学');
   await expect(page.locator('.hero-next')).toContainText('上次停在：逐步实验 · 第 3 步');
   await expect(page.getByRole('link', { name: '按课程顺序继续' })).toHaveAttribute(
     'href',
@@ -138,13 +138,13 @@ test('all four stage projects preserve a private worksheet and produce runnable 
     await expect(page.getByLabel('1. 我拿到什么，要交出什么？')).toHaveValue('项目' + i + '的输入输出');
     await page.locator('.java-write-task > summary').click();
     const downloadPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: '下载 Main.java', exact: true }).click();
+    await page.getByRole('button', { name: '下载自己的 Main.java', exact: true }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('Main.java');
     const source = await readFile(await download.path(), 'utf8');
     expect(source).toContain('public class Main');
-    expect(source).toContain('static void verify');
-    await expect(page.locator('.project-worksheet')).toContainText('网站不执行这段输入');
+    expect(source).toContain('static void __aqCheck');
+    await expect(page.locator('.project-worksheet')).toContainText('与账号中的练习进度分别保存');
   }
 });
 
