@@ -27,7 +27,7 @@ function exportPlan() {
       draft.plan +
       '\n\n## 边界测试\n' +
       draft.boundary +
-      '\n\n说明：作品清单由本人核对，不代表网站运行过 Java。',
+      '\n\n说明：作品清单由本人核对；Java 测试结果在编程任务中单独记录。',
   );
 }
 </script>
@@ -73,7 +73,7 @@ function exportPlan() {
       >我已核对输入输出、解释选择理由，并尝试了一组不同数据。</UiCheckbox
     >
     <p v-if="draft.checked" role="status">
-      已保存你的自评。本机编译运行的结果需要你自己核对，网站没有执行这段 Java。
+      已保存你的自评。编程任务的实际通过情况以在线测试结果为准；清单是你自己的复盘。
     </p>
     <UiButton icon="download" @click="exportPlan">导出这份作品说明 Markdown</UiButton>
     <p class="micro">工作单和代码草稿仅保存在当前浏览器；与账号中的练习进度分别保存。</p>

@@ -103,6 +103,26 @@ export function useCourseNavigation(owner, terms) {
       place = remembers(url) ? readDraft(placeKey(url, account), storage) : null;
     document.title = routeTitle(current.value);
     await nextTick();
+    if (!pageContent.value?.querySelector('h1')) {
+      await new Promise((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (pageContent.value?.querySelector('h1')) {
+            observer.disconnect();
+            clearTimeout(limit);
+            resolve();
+          }
+        });
+        const limit = setTimeout(() => {
+          observer.disconnect();
+          resolve();
+        }, 5000);
+        if (pageContent.value) observer.observe(pageContent.value, { childList: true, subtree: true });
+        else {
+          clearTimeout(limit);
+          resolve();
+        }
+      });
+    }
     await new Promise(requestAnimationFrame);
     if (url !== path.value || account !== owner.value) return;
     togglesCleanup?.();
@@ -124,6 +144,8 @@ export function useCourseNavigation(owner, terms) {
       target.focus({ preventScroll: true });
     }
     alignNav();
+    if (current.value.view === 'search')
+      pageContent.value?.querySelector('input[type="search"]')?.focus({ preventScroll: true });
     // Save the newly entered lesson only after the old page's position was captured.
     savePlace(url, account);
   }
@@ -163,6 +185,9 @@ export function useCourseNavigation(owner, terms) {
     window.addEventListener('popstate', onHash);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', onHide);
+    window.addEventListener('blur', onHide);
+    window.addEventListener('storage', onResumeStorage);
+    window.addEventListener('keydown', searchShortcut);
     window.addEventListener('study-activity', onScroll);
     const header = document.querySelector('.header');
     if (header && typeof ResizeObserver !== 'undefined') {
@@ -189,10 +214,31 @@ export function useCourseNavigation(owner, terms) {
     window.removeEventListener('popstate', onHash);
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('pagehide', onHide);
+    window.removeEventListener('blur', onHide);
+    window.removeEventListener('storage', onResumeStorage);
+    window.removeEventListener('keydown', searchShortcut);
     window.removeEventListener('study-activity', onScroll);
   });
   const refreshResume = () => {
     resume.value = readResume(owner.value);
   };
+  function onResumeStorage(event) {
+    if (event.key === resumeKey(owner.value)) resume.value = readResume(owner.value);
+  }
+  function searchShortcut(event) {
+    const typing = event.target?.closest?.('input,textarea,[contenteditable="true"]');
+    if (
+      (event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey)) ||
+      (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey)
+    ) {
+      event.preventDefault();
+      savePlace();
+      if (current.value.view === 'search')
+        document
+          .querySelector('.search-page input, .search-page-container input, input[type="search"]')
+          ?.focus();
+      else go('/search');
+    }
+  }
   return { path, current, go, navigating, pageContent, resume, refreshResume };
 }

@@ -14,3 +14,5 @@ import './course-figures.css';
 import './learning-ux.css';
 import './learning-flow.css';
 import './ui-interactions.css';
+
+import './practice-careers.css';

@@ -43,18 +43,22 @@ jobs:
           npm run check:comments
           npm run check:reading
           npm run check:analytics
+          npm run check:coding
+          npm run check:careers
           npm run test:components
           npm run build
           git diff --exit-code
-      - name: Upload offline review copy
+      - name: Upload full Vite review build
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: algorithm-quest-offline-preview
-          path: offline.html
+          name: algorithm-quest-vite-preview
+          path: dist/
           if-no-files-found: error
           retention-days: 14
       - name: Install Chromium for browser tests
         run: npx playwright install --with-deps chromium
+      - name: Build optional legacy offline edition for compatibility tests
+        run: npm run build:offline
       - name: Check layout, navigation and offline behavior
         run: npm run test:browser
       - name: Upload browser test report

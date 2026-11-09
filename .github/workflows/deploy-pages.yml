@@ -34,8 +34,6 @@ jobs:
           npm run check:analytics
       - name: Build website
         run: npm run build
-      - name: Include the self-contained offline edition
-        run: cp offline.html dist/offline.html
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:

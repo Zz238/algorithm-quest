@@ -6,6 +6,7 @@ import { useStudyDraft } from '../study-drafts.js';
 import RunnableJava from './RunnableJava.vue';
 import PracticeCard from './PracticeCard.vue';
 import CourseLink from './CourseLink.vue';
+import LessonCoding from './LessonCoding.vue';
 import { JAVA_START } from '../data/reading-guide.js';
 import { lessonRoute } from '../data/course.js';
 const props = defineProps({ unitId: String, progress: Object, owner: String, disabled: Boolean });
@@ -175,6 +176,8 @@ function attempted(r) {
         <summary>看 Java 写法，并在电脑上试一次</summary>
         <pre class="study-code"><code>{{unit.example.source}}</code></pre>
         <RunnableJava
+          :topic="unit.id"
+          :owner="owner"
           :source="unit.example.source"
           :expected="unit.example.expected"
           :show-source="false"
@@ -198,6 +201,17 @@ function attempted(r) {
           {{ next ? '下一节预备课' : '进入对应算法小节' }} →</button
         ><button @click="emit('navigate', '/review/' + unit.id)">做一道变式</button>
       </div>
+      <LessonCoding
+        v-if="
+          !['java-print', 'java-variable', 'java-condition'].includes(unit.id) ||
+          progress.learning.prepared.includes('java-method') ||
+          progress.mastery.includes('2-4')
+        "
+        :topic="unit.id"
+        :owner="owner"
+        :disabled="disabled"
+        @navigate="emit('navigate', $event)"
+      />
     </template>
   </main>
 </template>

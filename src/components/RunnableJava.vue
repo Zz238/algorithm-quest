@@ -1,12 +1,27 @@
 <script setup>
-import { ref } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
+import { useStudyDraft } from '../study-drafts.js';
+import { useCodingProgress } from '../coding-progress.js';
 import UiButton from './ui/UiButton.vue';
 const props = defineProps({
   source: String,
   expected: String,
   title: { type: String, default: '在电脑上运行这个例子' },
   showSource: { type: Boolean, default: true },
+  topic: String,
+  owner: String,
 });
+const JavaRunPanel = defineAsyncComponent(() => import('./JavaRunPanel.vue'));
+const coding = useCodingProgress();
+let sourceHash = 0;
+for (const char of props.source) sourceHash = (Math.imul(sourceHash, 31) + char.charCodeAt(0)) | 0;
+const editable = ref(false);
+const exampleDraft = useStudyDraft(
+  props.owner || coding?.owner.value || 'guest',
+  props.topic || 'example-' + (sourceHash >>> 0).toString(36),
+  'example-source',
+  (raw) => ({ source: typeof raw?.source === 'string' ? raw.source.slice(0, 12000) : props.source }),
+);
 const status = ref('');
 function download() {
   const url = URL.createObjectURL(new Blob([props.source], { type: 'text/plain;charset=utf-8' }));
@@ -40,6 +55,22 @@ async function copy() {
       </div>
     </div>
     <p v-if="status" class="micro" role="status">{{ status }}</p>
+    <details @toggle="editable = $event.target.open">
+      <summary>在这里改写并运行，不用安装 Java</summary>
+      <template v-if="editable"
+        ><p>先只修改本节讲过的语句或输入，保留其余程序框架。预测结果，再点击运行核对。</p>
+        <label class="code-editor"
+          ><span>完整 Main.java · 可编辑</span
+          ><textarea
+            v-model="exampleDraft.source"
+            rows="12"
+            maxlength="12000"
+            spellcheck="false"
+            aria-label="改写当前 Java 示例"
+          /></label
+        ><JavaRunPanel :source="exampleDraft.source"
+      /></template>
+    </details>
     <details v-if="showSource">
       <summary>展开完整源代码</summary>
       <pre class="study-code"><code>{{source}}</code></pre>

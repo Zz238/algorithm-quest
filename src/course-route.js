@@ -1,6 +1,5 @@
-import { chapters } from './data/course.js';
-import { JAVA_BY_ID } from './data/java-starter.js';
-import { TRANSFER_BY_ID } from './data/learning-practice.js';
+import { chapters, JAVA_INDEX as JAVA_BY_ID, CODING_INDEX } from './data/course-index.js';
+import { CAREER_BY_ID } from './data/career-index.js';
 import { splitStudyTarget } from './study-target.js';
 
 export const allLessons = chapters.flatMap((c) => c.lessons);
@@ -18,12 +17,19 @@ const staticRoutes = new Map([
   ['/java', 'java'],
   ['/review', 'review'],
   ['/trial', 'trial'],
+  ['/playground', 'playground'],
+  ['/careers', 'careers'],
+  ['/practice', 'practice'],
+  ['/practice/review', 'practice-review'],
 ]);
 
 function parseBaseRoute(input, terms = {}) {
   const path = input === '' ? '/' : input === '/checkin' ? '/account' : input;
   const fallback = { path, view: 'not-found', chapter: null, lesson: null, index: null, topic: null };
   if (staticRoutes.has(path)) return { ...fallback, view: staticRoutes.get(path) };
+  const catalog = /^\/catalog\/([1-9]\d?)$/.exec(path);
+  if (catalog && chapters.some((c) => c.id === Number(catalog[1])))
+    return { ...fallback, view: 'home', selectedChapter: Number(catalog[1]) };
   const course = /^\/(learn|boss)\/([1-9]\d?)(?:\/(0|[1-9]\d?))?$/.exec(path);
   if (course) {
     const [, view, id, slot] = course;
@@ -43,10 +49,16 @@ function parseBaseRoute(input, terms = {}) {
     review &&
     (lessons.has(review[1]) ||
       Object.hasOwn(JAVA_BY_ID, review[1]) ||
-      Object.hasOwn(TRANSFER_BY_ID, review[1]))
+      /^transfer-[1-4]$/.test(review[1]))
   ) {
     return { ...fallback, view: 'review', topic: review[1] };
   }
+  const career = /^\/careers\/(backend|algorithm)(?:\/([a-z-]+))?$/.exec(path);
+  if (career && (!career[2] || CAREER_BY_ID[career[1]].stages.some(([id]) => id === career[2])))
+    return { ...fallback, view: 'careers', routeId: career[1], stageId: career[2] || null };
+  const practice = /^\/practice\/(review\/)?(code-[a-z0-9-]+)$/.exec(path);
+  if (practice && Object.hasOwn(CODING_INDEX, practice[2]))
+    return { ...fallback, view: practice[1] ? 'practice-review' : 'practice', topic: practice[2] };
   const glossary = /^\/glossary\/([^/]+)$/.exec(path);
   if (glossary) {
     try {
@@ -87,9 +99,13 @@ const TITLES = {
   java: 'Java 预备课',
   review: '复习与阶段练习',
   trial: '零基础试学',
+  playground: 'Java 在线实验台',
+  careers: '职业路线',
+  practice: '编程练习库',
+  'practice-review': '编程复习',
   'not-found': '没有找到页面',
 };
-export function routeTitle({ view, lesson, chapter, topic }) {
+export function routeTitle({ view, lesson, chapter, topic, routeId, stageId }) {
   const title =
     lesson?.title ||
     (view === 'boss'
@@ -99,5 +115,12 @@ export function routeTitle({ view, lesson, chapter, topic }) {
         : view === 'glossary' && topic
           ? topic + ' · 术语手册'
           : TITLES[view]);
-  return title + ' · 算法之旅';
+  const career = CAREER_BY_ID[routeId];
+  return (
+    (view === 'careers' && career
+      ? career.stages.find(([id]) => id === stageId)?.[1] || career.title
+      : view.startsWith('practice') && topic
+        ? CODING_INDEX[topic].title
+        : title) + ' · 算法之旅'
+  );
 }

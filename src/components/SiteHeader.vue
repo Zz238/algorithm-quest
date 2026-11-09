@@ -5,7 +5,7 @@ import UserAvatar from './UserAvatar.vue';
 import GitHubIcon from './GitHubIcon.vue';
 import CourseLink from './CourseLink.vue';
 import UiButton from './ui/UiButton.vue';
-const props = defineProps({ user: Object, view: String });
+const props = defineProps({ user: Object, view: String, coursePath: { type: String, default: '/' } });
 const emit = defineEmits(['navigate']);
 const profile = computed(() => accountProfile(props.user));
 </script>
@@ -32,11 +32,25 @@ const profile = computed(() => accountProfile(props.user));
       <CourseLink
         :class="{ active: ['home', 'learn', 'boss', 'java'].includes(view) }"
         :aria-current="['home', 'learn', 'boss', 'java'].includes(view) ? 'page' : undefined"
-        :to="'/'"
+        :to="coursePath"
         @navigate="emit('navigate', $event)"
       >
-        课程目录
+        基础教学
       </CourseLink>
+      <CourseLink
+        :class="{ active: view === 'careers' }"
+        :aria-current="view === 'careers' ? 'page' : undefined"
+        to="/careers"
+        @navigate="emit('navigate', $event)"
+        >职业路线</CourseLink
+      >
+      <CourseLink
+        :class="{ active: ['practice', 'practice-review', 'playground'].includes(view) }"
+        :aria-current="['practice', 'practice-review', 'playground'].includes(view) ? 'page' : undefined"
+        to="/practice"
+        @navigate="emit('navigate', $event)"
+        >编程实践</CourseLink
+      >
       <CourseLink
         :class="{ active: view === 'search' }"
         :aria-current="view === 'search' ? 'page' : undefined"

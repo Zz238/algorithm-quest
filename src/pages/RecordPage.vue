@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 import { chapters, requiredLessons, findLesson, lessonRoute } from '../data/course.js';
+import { CODING_INDEX } from '../data/course-index.js';
+import { CAREER_BY_ID, careerStageRoute } from '../data/career-index.js';
 import { coreJava } from '../data/java-starter.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import BackupPanel from '../components/BackupPanel.vue';
@@ -20,6 +22,18 @@ const props = defineProps({
   resume: Object,
 });
 const emit = defineEmits(['navigate', 'remove-note', 'apply-backup', 'reset-data']);
+const codingCount = computed(
+  () =>
+    Object.entries(props.progress.learning.coding || {}).filter(
+      ([id, r]) => CODING_INDEX[id] && r.independentAt,
+    ).length,
+);
+const selectedCareer = computed(() => CAREER_BY_ID[props.progress.learning.routeChoice?.id]);
+const nextCareer = computed(() =>
+  selectedCareer.value?.stages.find(
+    ([id]) => !props.progress.learning.career[selectedCareer.value.id + '-' + id]?.checked,
+  ),
+);
 const lessons = chapters.flatMap((c) => c.lessons);
 const pending = computed(() =>
   lessons.filter((l) => props.progress.lessons.includes(l.id) && !props.progress.mastery.includes(l.id)),
@@ -42,6 +56,20 @@ function status(chapter) {
     <h1>学习记录</h1>
     <p class="page-lead">阅读、基础练习和独立挑战分别记录。记下疑问后，可以从这里回到原小节。</p>
     <div class="study-actions record-shortcuts">
+      <CourseLink to="/practice" @navigate="emit('navigate', $event)"
+        >独立编程通过 {{ codingCount }} / {{ Object.keys(CODING_INDEX).length }}</CourseLink
+      >
+      <CourseLink
+        :to="
+          selectedCareer
+            ? nextCareer
+              ? careerStageRoute(selectedCareer.id, nextCareer[0])
+              : '/careers/' + selectedCareer.id
+            : '/careers'
+        "
+        @navigate="emit('navigate', $event)"
+        >{{ selectedCareer ? '继续' + selectedCareer.title + '路线' : '选择职业路线' }} →</CourseLink
+      >
       <CourseLink to="/notes" @navigate="emit('navigate', $event)">我的笔记</CourseLink>
       <button @click="jumpTo('study-backup')">备份与恢复</button>
       <button @click="emit('navigate', '/trial')">零基础试学</button>

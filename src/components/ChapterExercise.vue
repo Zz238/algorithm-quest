@@ -17,7 +17,7 @@ const props = defineProps({
   disabled: Boolean,
 });
 const emit = defineEmits(['navigate', 'complete', 'wrong']);
-const c = props.chapter,
+const c = chapters.find(ch=>ch.id===props.chapter.id),
   boss = c.boss;
 const application = TRANSFERS.find((t) => t.after.startsWith(c.id + '-'));
 const missing = computed(() =>
@@ -68,7 +68,6 @@ function attempted(result) {
 </script>
 <template>
   <article class="boss-content" :data-chapter="c.id">
-    <div class="breadcrumb">第 {{ c.id }} 章 / 章节综合练习</div>
     <div class="boss-heading">
       <div>
         <span class="eyebrow">章节练习 · LC {{ boss.lc }}</span>

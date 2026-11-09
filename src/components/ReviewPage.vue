@@ -15,6 +15,8 @@ import VariantPractice from './VariantPractice.vue';
 import PracticeCard from './PracticeCard.vue';
 import ProjectWorkshop from './ProjectWorkshop.vue';
 import CourseLink from './CourseLink.vue';
+import LessonCoding from './LessonCoding.vue';
+import { CODING_INDEX } from '../data/course-index.js';
 const props = defineProps({
   topic: String,
   owner: String,
@@ -54,6 +56,11 @@ const scheduled = computed(() =>
   Object.entries(props.progress.learning.review)
     .filter(([id, r]) => title(id) && r.due > props.today)
     .sort((a, b) => a[1].due.localeCompare(b[1].due)),
+);
+const codingDue = computed(() =>
+  Object.entries(props.progress.learning.coding || {}).filter(
+    ([id, r]) => CODING_INDEX[id] && r.due <= props.today,
+  ),
 );
 const isQuestion = !!props.topic && !transfer.value && !!reviewVariant(props.topic);
 const related = computed(() => (transfer.value ? findLesson(transfer.value.source) : null));
@@ -124,6 +131,13 @@ function transferAttempt(r) {
         @complete="emit('complete', { id: topic, assisted: $event.assisted })"
         @wrong="emit('wrong', $event)"
       />
+      <LessonCoding
+        :topic="topic"
+        :owner="owner"
+        :disabled="disabled"
+        review
+        @navigate="emit('navigate', $event)"
+      />
       <div class="study-actions">
         <button @click="emit('navigate', path(topic))">回到讲解</button
         ><button @click="emit('navigate', '/review')">回到复习清单</button>
@@ -137,7 +151,21 @@ function transferAttempt(r) {
           答错的知识点当天可以重做。答对后先隔一天，再逐步拉长间隔。每次先用一道题试试能否自己想起来。
         </p>
       </div>
-      <h2>今天待复习 · {{ due.length }}</h2>
+      <section class="coding-review-summary">
+        <h2>今天要重新写的代码 · {{ codingDue.length }}</h2>
+        <p>先独立写，再运行和修正。编程任务按实际测试结果安排下一次复习。</p>
+        <CourseLink to="/practice/review" @navigate="emit('navigate', $event)"
+          >打开编程复习清单 →</CourseLink
+        >
+        <ul v-if="codingDue.length">
+          <li v-for="[id] in codingDue.slice(0, 5)" :key="id">
+            <CourseLink :to="'/practice/review/' + id" @navigate="emit('navigate', $event)"
+              >{{ CODING_INDEX[id].title }} →</CourseLink
+            >
+          </li>
+        </ul>
+      </section>
+      <h2>概念与推演复习 · {{ due.length }}</h2>
       <p v-if="!due.length" class="study-note">
         今天没有到期的题。做过小节练习后，题目会自动排到这里。你也可以直接做下面的阶段应用。
       </p>

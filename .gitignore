@@ -9,3 +9,7 @@ java-validation/
 .env.*
 test-results/
 playwright-report/
+
+dist-offline/
+**/__pycache__/
+**/target/
