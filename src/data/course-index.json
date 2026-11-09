@@ -1181,6 +1181,66 @@
       "id": "code-core-transfer-4",
       "title": "把书签方案写成状态表",
       "topic": "transfer-4"
+    },
+    {
+      "id": "code-topic-selection-sort",
+      "title": "用选择排序固定每一轮的最小项",
+      "topic": "topic-selection-sort"
+    },
+    {
+      "id": "code-topic-counting-sort",
+      "title": "按小值域频次恢复排序结果",
+      "topic": "topic-counting-sort"
+    },
+    {
+      "id": "code-topic-big-add",
+      "title": "使用 BigInteger 交回精确和",
+      "topic": "topic-big-integer"
+    },
+    {
+      "id": "code-topic-next-greater",
+      "title": "为每格寻找右侧第一个更大值",
+      "topic": "topic-monotonic-stack"
+    },
+    {
+      "id": "code-topic-window-max",
+      "title": "维护连续窗口的最大值候选",
+      "topic": "topic-monotonic-queue"
+    },
+    {
+      "id": "code-topic-dsu",
+      "title": "用并查集统计合并后的组数",
+      "topic": "topic-disjoint-set"
+    },
+    {
+      "id": "code-topic-compress",
+      "title": "按升序唯一值给原数组重新编号",
+      "topic": "topic-coordinate-compression"
+    },
+    {
+      "id": "code-topic-fenwick",
+      "title": "单点增加后查询前若干项之和",
+      "topic": "topic-fenwick-tree"
+    },
+    {
+      "id": "code-topic-trie",
+      "title": "用字典树统计一个前缀对应几项",
+      "topic": "topic-trie"
+    },
+    {
+      "id": "code-topic-max-subarray",
+      "title": "求非空连续子数组的最大和",
+      "topic": "topic-linear-dp"
+    },
+    {
+      "id": "code-topic-min-coins",
+      "title": "用可重复面额凑出最少硬币",
+      "topic": "topic-complete-knapsack"
+    },
+    {
+      "id": "code-topic-topological",
+      "title": "判断所有前置任务能否完成",
+      "topic": "topic-topological-sort"
     }
   ]
 }

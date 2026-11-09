@@ -27,7 +27,7 @@ test('practice search, daily review and drafts work before loading Java resource
     if (r.url().includes('cjrtnc.leaningtech.com')) runtime.push(r.url());
   });
   await page.goto('/#/practice');
-  await expect(page.locator('.coding-task-list li')).toHaveCount(61);
+  await expect(page.locator('.coding-task-list li')).toHaveCount(73);
   await page.getByRole('searchbox', { name: '搜索编程任务' }).fill('链表');
   await expect(page.locator('.coding-task-list')).toContainText('沿next数完一条链');
   await page.goto('/#/practice/code-core-3-2');

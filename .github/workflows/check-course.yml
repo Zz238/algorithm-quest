@@ -45,6 +45,7 @@ jobs:
           npm run check:analytics
           npm run check:coding
           npm run check:careers
+          npm run check:topics
           npm run test:components
           npm run build
           git diff --exit-code

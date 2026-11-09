@@ -24,6 +24,7 @@ import PageLoadError from './components/PageLoadError.vue';
 import SiteBreadcrumbs from './components/SiteBreadcrumbs.vue';
 import { CODING_SERVICE, recordCoding } from './coding-progress.js';
 import { recordStudyActivity } from './study-state.js';
+import { ALGORITHM_TOPIC_BY_ID } from './data/algorithm-roadmap.js';
 const lazy = (loader) =>
   defineAsyncComponent({
     loader,
@@ -33,6 +34,7 @@ const lazy = (loader) =>
   });
 const CareerPage = lazy(() => import('./pages/CareerPage.vue'));
 const PracticePage = lazy(() => import('./pages/PracticePage.vue'));
+const AlgorithmTopics = lazy(() => import('./pages/AlgorithmTopics.vue'));
 const AccountPanel = lazy(() => import('./components/AccountPanel.vue'));
 const BeginnerTrial = lazy(() => import('./components/BeginnerTrial.vue'));
 const ChapterDrawer = lazy(() => import('./components/ChapterDrawer.vue'));
@@ -88,6 +90,12 @@ provide(CODING_SERVICE, {
         id,
         at: Math.max(Date.now(), (progress.learning.routeChoice?.at || 0) + 1),
       };
+  },
+  topicRead(id) {
+    if (cloud.state.initializing || !ALGORITHM_TOPIC_BY_ID[id]) return;
+    if (!progress.learning.topicsRead.includes(id)) progress.learning.topicsRead.push(id);
+    recordStudyActivity(progress, 'topic-' + id, localDateKey());
+    recordCheckin(progress, localDateKey(), !!cloud.state.user);
   },
 });
 const owner = computed(() => cloud.state.user?.id || 'guest');
@@ -384,6 +392,15 @@ onUnmounted(() => {
         />
         <BeginnerTrial v-else-if="view === 'trial'" :owner="owner" @navigate="go" />
         <JavaPlayground v-else-if="view === 'playground'" :owner="owner" />
+        <AlgorithmTopics
+          v-else-if="view === 'topics'"
+          :topic-id="current.topic"
+          :stage-id="current.topicStage"
+          :target="current.target"
+          :owner="owner"
+          :disabled="cloud.state.initializing"
+          @navigate="go"
+        />
         <CareerPage
           v-else-if="view === 'careers'"
           :route-id="current.routeId"

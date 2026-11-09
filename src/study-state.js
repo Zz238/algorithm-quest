@@ -1,4 +1,5 @@
 // Learning records are optional additions to the existing version-1 cloud document.
+import { ALGORITHM_TOPICS } from './data/algorithm-roadmap.js';
 export const STARTER_IDS = [
   'java-print',
   'java-variable',
@@ -22,6 +23,7 @@ const extraKeys = new Set([
   'transfer-2',
   'transfer-3',
   'transfer-4',
+  ...ALGORITHM_TOPICS.map((t) => 'topic-' + t.id),
 ]);
 export function localDateKey(date = new Date()) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -48,6 +50,7 @@ export const emptyLearning = () => ({
   independent: [],
   review: {},
   activity: {},
+  topicsRead: [],
   goal: null,
   coding: {},
   career: {},
@@ -64,6 +67,7 @@ export function cleanLearning(raw, ids) {
     g = record(v.goal);
   return {
     prepared: unique(v.prepared, (id) => extraKeys.has(id) && id.startsWith('java-')),
+    topicsRead: unique(v.topicsRead, (id) => extraKeys.has('topic-' + id)),
     independent: unique(v.independent, valid),
     review: Object.fromEntries(
       Object.entries(record(v.review))
@@ -128,6 +132,7 @@ export function mergeLearning(a, b) {
     career[key] = newer(a.career?.[key], b.career?.[key], (r) => Number(r.checked));
   return {
     prepared: union(a.prepared, b.prepared),
+    topicsRead: union(a.topicsRead, b.topicsRead),
     independent: union(a.independent, b.independent),
     review,
     activity,

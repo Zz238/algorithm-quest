@@ -1,5 +1,7 @@
 # Java 在线实践与职业路线 · 分支验收说明
 
+> 本文记录 2026-11-08 的 Java 实践与职业路线基线。本分支后续课程扩充、当前任务数量与新增验收见 [CURRICULUM_ROADMAP_REVIEW.md](./CURRICULUM_ROADMAP_REVIEW.md)。
+
 日期：2026-11-08。功能分支：`codex/java-practice-career`；基线：`main` 的 `2b0a796b169bfe244c6615a50ec43ad3b29e9c85`。
 
 ## 预览与合并边界

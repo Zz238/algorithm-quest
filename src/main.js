@@ -16,3 +16,4 @@ import './learning-flow.css';
 import './ui-interactions.css';
 
 import './practice-careers.css';
+import './algorithm-topics.css';

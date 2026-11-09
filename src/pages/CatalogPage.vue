@@ -145,6 +145,13 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
           maxlength="100"
         />
       </section>
+      <aside class="curriculum-entry">
+        <div>
+          <strong>基础课之外，按需要补一个知识点</strong>
+          <p>前缀和、滑动窗口、单调结构和 DP 进阶分别讲解。先看依赖，再跟一个完整例子。</p>
+        </div>
+        <CourseLink to="/topics" @navigate="navigate">查看四阶段算法专题 →</CourseLink>
+      </aside>
       <section class="starting-route" aria-label="入门路线">
         <h3>第一次写程序，按这条路线开始</h3>
         <ol>

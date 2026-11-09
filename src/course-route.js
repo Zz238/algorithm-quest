@@ -1,6 +1,7 @@
 import { chapters, JAVA_INDEX as JAVA_BY_ID, CODING_INDEX } from './data/course-index.js';
 import { CAREER_BY_ID } from './data/career-index.js';
 import { splitStudyTarget } from './study-target.js';
+import { ALGORITHM_TOPIC_BY_ID, ROADMAP_STAGES } from './data/algorithm-roadmap.js';
 
 export const allLessons = chapters.flatMap((c) => c.lessons);
 export const lessonIds = allLessons.map((l) => l.id);
@@ -21,12 +22,19 @@ const staticRoutes = new Map([
   ['/careers', 'careers'],
   ['/practice', 'practice'],
   ['/practice/review', 'practice-review'],
+  ['/topics', 'topics'],
 ]);
 
 function parseBaseRoute(input, terms = {}) {
   const path = input === '' ? '/' : input === '/checkin' ? '/account' : input;
   const fallback = { path, view: 'not-found', chapter: null, lesson: null, index: null, topic: null };
   if (staticRoutes.has(path)) return { ...fallback, view: staticRoutes.get(path) };
+  const topicStage = /^\/topics\/stage\/([a-z-]+)$/.exec(path);
+  if (topicStage && ROADMAP_STAGES.some((s) => s.id === topicStage[1]))
+    return { ...fallback, view: 'topics', topicStage: topicStage[1] };
+  const algorithmTopic = /^\/topics\/([a-z-]+)$/.exec(path);
+  if (algorithmTopic && Object.hasOwn(ALGORITHM_TOPIC_BY_ID, algorithmTopic[1]))
+    return { ...fallback, view: 'topics', topic: algorithmTopic[1] };
   const catalog = /^\/catalog\/([1-9]\d?)$/.exec(path);
   if (catalog && chapters.some((c) => c.id === Number(catalog[1])))
     return { ...fallback, view: 'home', selectedChapter: Number(catalog[1]) };
@@ -102,10 +110,11 @@ const TITLES = {
   playground: 'Java 在线实验台',
   careers: '职业路线',
   practice: '编程练习库',
+  topics: '算法专题与进阶路线',
   'practice-review': '编程复习',
   'not-found': '没有找到页面',
 };
-export function routeTitle({ view, lesson, chapter, topic, routeId, stageId }) {
+export function routeTitle({ view, lesson, chapter, topic, routeId, stageId, topicStage }) {
   const title =
     lesson?.title ||
     (view === 'boss'
@@ -117,10 +126,14 @@ export function routeTitle({ view, lesson, chapter, topic, routeId, stageId }) {
           : TITLES[view]);
   const career = CAREER_BY_ID[routeId];
   return (
-    (view === 'careers' && career
-      ? career.stages.find(([id]) => id === stageId)?.[1] || career.title
-      : view.startsWith('practice') && topic
-        ? CODING_INDEX[topic].title
-        : title) + ' · 算法之旅'
+    (view === 'topics'
+      ? ALGORITHM_TOPIC_BY_ID[topic]?.title ||
+        ROADMAP_STAGES.find((s) => s.id === topicStage)?.title ||
+        TITLES.topics
+      : view === 'careers' && career
+        ? career.stages.find(([id]) => id === stageId)?.[1] || career.title
+        : view.startsWith('practice') && topic
+          ? CODING_INDEX[topic].title
+          : title) + ' · 算法之旅'
   );
 }

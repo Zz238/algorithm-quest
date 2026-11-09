@@ -9,6 +9,7 @@ import { localDateKey } from '../study-state.js';
 import JavaCodingTask from '../components/JavaCodingTask.vue';
 import CourseLink from '../components/CourseLink.vue';
 import UiSearchField from '../components/ui/UiSearchField.vue';
+import { ALGORITHM_TOPIC_BY_ID } from '../data/algorithm-roadmap.js';
 const props = defineProps({ taskId: String, owner: String, review: Boolean, disabled: Boolean });
 const emit = defineEmits(['navigate']);
 const coding = useCodingProgress();
@@ -34,6 +35,9 @@ const tasks = computed(() =>
 const related = computed(() => {
   const t = task.value;
   if (!t) return null;
+  const topicId = t.topic.startsWith('topic-') ? t.topic.slice(6) : null;
+  if (ALGORITHM_TOPIC_BY_ID[topicId])
+    return { path: '/topics/' + topicId, title: ALGORITHM_TOPIC_BY_ID[topicId].title };
   if (JAVA_BY_ID[t.topic]) return { path: javaRoute(t.topic), title: JAVA_BY_ID[t.topic].title };
   const lesson = chapters.flatMap((c) => c.lessons).find((l) => l.id === t.topic);
   return lesson

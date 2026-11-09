@@ -1,35 +1,9 @@
 import { JAVA_TASKS } from './learning-practice.js';
 import { PROJECT_TASKS } from './stage-projects.js';
+import { exercise } from './coding-task-helper.js';
+import { TOPIC_CODING_TASKS } from './topic-coding.js';
 
 const cases = (...items) => items;
-function exercise(id, topic, title, signature, prompt, solution, tests, hints, extra = {}) {
-  const returns = signature.match(/static\s+(\S+)/)?.[1];
-  return {
-    id: 'code-' + id,
-    topic,
-    title,
-    signature,
-    task: prompt,
-    solution,
-    cases: tests,
-    starter:
-      '// 在这里写方法体\n' +
-      (returns === 'boolean'
-        ? 'return false;'
-        : returns === 'String'
-          ? 'return "";'
-          : returns === 'int[]'
-            ? 'return new int[0];'
-            : returns === 'void'
-              ? ''
-              : returns === 'Node'
-                ? 'return null;'
-                : 'return 0;'),
-    hints,
-    level: '基础',
-    ...extra,
-  };
-}
 const E = exercise;
 const array = '参数 a 非 null，长度 0～100，元素在 −100 到 100 之间。';
 const nodeSupport =
@@ -663,7 +637,7 @@ const preparation = {
   'code-window-sum':
     '想象每次只看连续两个座位的金额。[2,1,5,1]的第一个窗口和为3。往右移一格时，2离开、5进入，新和就是3−2+5=6。只需维护当前窗口和，不必每次重算全部k项。最大和先用第一个完整窗口初始化，不能用0，否则全是负数时会错。',
 };
-export const CODING_TASKS = [...extra, ...legacy].map((t) => ({
+export const CODING_TASKS = [...extra, ...legacy, ...TOPIC_CODING_TASKS].map((t) => ({
   ...t,
   preparation: t.preparation || preparation[t.id],
 }));

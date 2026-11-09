@@ -4,10 +4,20 @@ import { CAREER_BY_ID } from '../data/career-index.js';
 import { CODING_INDEX, JAVA_INDEX } from '../data/course-index.js';
 import { routeTitle } from '../course-route.js';
 import CourseLink from './CourseLink.vue';
+import { ALGORITHM_TOPIC_BY_ID, ROADMAP_STAGES } from '../data/algorithm-roadmap.js';
 const props = defineProps({ route: Object });
 const emit = defineEmits(['navigate']);
 const parts = computed(() => {
   const r = props.route;
+  if (r.view === 'topics') {
+    const topic = ALGORITHM_TOPIC_BY_ID[r.topic],
+      stage = ROADMAP_STAGES.find((s) => s.id === (topic?.stage || r.topicStage));
+    return [
+      { label: '算法专题', to: '/topics' },
+      ...(stage ? [{ label: stage.title, to: '/topics/stage/' + stage.id }] : []),
+      ...(topic ? [{ label: topic.title }] : []),
+    ];
+  }
   if (r.view === 'home')
     return [
       { label: '基础教学', to: '/' },

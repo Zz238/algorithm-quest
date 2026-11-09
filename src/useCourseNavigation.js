@@ -38,7 +38,9 @@ export function useCourseNavigation(owner, terms) {
   function readResume(account) {
     const value = readDraft(resumeKey(account), storage);
     const route = value?.path && parseRoute(value.path, terms);
-    return route && (['learn', 'boss'].includes(route.view) || (route.view === 'java' && route.topic))
+    return route &&
+      (['learn', 'boss'].includes(route.view) ||
+        (['java', 'topics'].includes(route.view) && route.topic))
       ? value
       : null;
   }
@@ -48,7 +50,7 @@ export function useCourseNavigation(owner, terms) {
   const placeKey = (url, account) => draftKey(account, parseRoute(url, terms).path, 'reading-position');
   const remembers = (url) =>
     ['learn', 'boss'].includes(parseRoute(url, terms).view) ||
-    (parseRoute(url, terms).view === 'java' && !!parseRoute(url, terms).topic);
+    (['java', 'topics'].includes(parseRoute(url, terms).view) && !!parseRoute(url, terms).topic);
   let scrollSave, togglesCleanup, headerObserver;
   let restoring = true,
     restoration = 0;
@@ -64,7 +66,9 @@ export function useCourseNavigation(owner, terms) {
     const sections = [...(pageContent.value?.querySelectorAll('[data-study-section]') || [])];
     const section = sections.filter((e) => e.getBoundingClientRect().top < innerHeight * 0.5).at(-1);
     const lab = pageContent.value?.querySelector('[data-trace-step]');
-    const step = section?.id === 'lesson-experiment' ? Number(lab?.dataset.traceStep) : null;
+    const step = ['lesson-experiment', 'topic-example'].includes(section?.id)
+      ? Number(lab?.dataset.traceStep)
+      : null;
     const route = parseRoute(url, terms);
     const value = {
       path: route.path,
