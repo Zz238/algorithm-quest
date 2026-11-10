@@ -26,10 +26,16 @@ test('Monaco highlights Java, completes declared members, indents and keeps undo
   await page.keyboard.press('Home');
   await page.keyboard.press('Tab');
   await expect(editor.locator('.view-lines')).toContainText('int total = 7;');
-  const tokens = await editor
-    .locator('.view-line span')
-    .evaluateAll((nodes) => new Set(nodes.map((n) => getComputedStyle(n).color)).size);
-  expect(tokens).toBeGreaterThan(1);
+  // Monaco updates syntax tokens after rendering the changed text.
+  await expect
+    .poll(
+      () =>
+        editor
+          .locator('.view-line span')
+          .evaluateAll((nodes) => new Set(nodes.map((n) => getComputedStyle(n).color)).size),
+      { timeout: 15000 },
+    )
+    .toBeGreaterThan(1);
   await page.reload();
   await expect(page.locator('.java-code-editor')).toHaveAttribute('data-editor-mode', 'monaco');
   await expect(page.locator('.java-code-editor .view-lines')).toContainText('int total = 7;');
