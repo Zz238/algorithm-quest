@@ -19,8 +19,12 @@ export async function editJavaCode(page, label, source) {
   await page.keyboard.press('Control+a');
   await page.keyboard.press('Control+v');
   await page.keyboard.press('Control+a');
+  await page.evaluate(() => navigator.clipboard.writeText('Awaiting copied editor file'));
   await page.keyboard.press('Control+c');
-  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(source);
+  // Browser clipboard text uses CRLF; Java and Monaco accept either line ending.
+  await expect
+    .poll(async () => (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n'))
+    .toBe(source.replace(/\r\n/g, '\n'));
   await page.keyboard.press('ArrowRight');
   return editor;
 }
