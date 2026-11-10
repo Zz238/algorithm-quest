@@ -4,19 +4,20 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 const directory = mkdtempSync(join(tmpdir(), 'quest-runner-'));
 try {
-  execFileSync(
-    'java',
-    [
-      '-m',
-      'jdk.compiler/com.sun.tools.javac.Main',
-      '--release',
-      '8',
-      '-d',
-      directory,
-      'src/java/Runner.java',
-    ],
-    { stdio: 'inherit' },
-  );
+  const compiler = ['-m', 'jdk.compiler/com.sun.tools.javac.Main'];
+  const output = ['-d', directory, 'src/java/Runner.java'];
+  try {
+    execFileSync('java', [...compiler, '--release', '8', ...output], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    // Some slim JDK images omit ct.sym; retain Java-8 bytecode for the Java-17 browser VM.
+    if (!/release version 8 not supported/.test(String(error.stderr))) throw error;
+    execFileSync('java', [...compiler, '-source', '8', '-target', '8', '-Xlint:-options', ...output], {
+      stdio: 'inherit',
+    });
+  }
   mkdirSync('src/java/generated', { recursive: true });
   const jar = join(directory, 'runner.jar');
   execFileSync(

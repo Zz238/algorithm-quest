@@ -31,6 +31,9 @@ public final class Runner {
         String text() throws UnsupportedEncodingException { return bytes.toString("UTF-8"); }
     }
     public static String run(String source, String input) {
+        return runEntry(source, input, "Main");
+    }
+    public static String runEntry(String source, String input, String entryClass) {
         final long start = System.currentTimeMillis();
         PrintStream oldOut = System.out, oldErr = System.err;
         InputStream oldIn = System.in;
@@ -38,6 +41,8 @@ public final class Runner {
         String state = "compile-error", error = "", diagnostics = "[]";
         StandardJavaFileManager standard = null;
         try {
+            if (!"Main".equals(entryClass) && !"__QuestTests".equals(entryClass))
+                throw new IllegalArgumentException("Unknown course entry class");
             status("compiling");
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null) throw new IllegalStateException("JDK compiler is unavailable in this runtime");
@@ -73,8 +78,10 @@ public final class Runner {
                 System.setOut(new PrintStream(out, true, "UTF-8"));
                 System.setErr(new PrintStream(err, true, "UTF-8"));
                 System.setIn(new ByteArrayInputStream(input.getBytes("UTF-8")));
-                Class<?> main = loader.loadClass("Main");
-                main.getMethod("main", String[].class).invoke(null, (Object) new String[0]);
+                Class<?> main = loader.loadClass(entryClass);
+                Method entry = main.getMethod("main", String[].class);
+                entry.setAccessible(true);
+                entry.invoke(null, (Object) new String[0]);
                 if (System.out.checkError() || System.err.checkError()) throw new IOException("Output exceeded 16384 bytes");
                 state = "finished";
             }
@@ -112,6 +119,6 @@ public final class Runner {
     }
     public static void main(String[] args) throws Exception {
         String source = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(args[0])), "UTF-8");
-        System.out.println(run(source, args.length > 1 ? args[1] : ""));
+        System.out.println(runEntry(source, args.length > 1 ? args[1] : "", args.length > 2 ? args[2] : "Main"));
     }
 }

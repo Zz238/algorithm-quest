@@ -123,11 +123,6 @@
   line-height: 1.8;
   padding: 8px 15px;
 }
-.coding-method-signature {
-  margin-top: 22px;
-  overflow-wrap: anywhere;
-  font-size: 14px;
-}
 .java-code-editor .monaco-editor :is(textarea.inputarea, .native-edit-context) {
   border: 0 !important;
   padding: 0 !important;

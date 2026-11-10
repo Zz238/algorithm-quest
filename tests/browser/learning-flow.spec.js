@@ -143,7 +143,7 @@ test('all four stage projects preserve a private worksheet and produce runnable 
     expect(download.suggestedFilename()).toBe('Main.java');
     const source = await readFile(await download.path(), 'utf8');
     expect(source).toContain('public class Main');
-    expect(source).toContain('static void __aqCheck');
+    expect(source).toContain('public static void main(String[] args)');
     await expect(page.locator('.project-worksheet')).toContainText('与账号中的练习进度分别保存');
   }
 });

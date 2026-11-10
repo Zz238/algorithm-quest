@@ -91,4 +91,37 @@ describe('Java editor teaching support and real compiler diagnostics', () => {
     expect(wrapper.text()).toContain('本次结果未计入');
     wrapper.unmount();
   });
+  it('runs the visible main for examples and the separate judge entry for all test cases', async () => {
+    const wrapper = shallowMount(JavaRunPanel, {
+      props: {
+        source: 'judged-source',
+        entryClass: '__QuestTests',
+        sampleSource: 'visible-source',
+        sampleJudged: false,
+        judged: true,
+      },
+    });
+    sandbox.run.mockResolvedValueOnce({ state: 'finished', stdout: '你好，世界', diagnostics: [] });
+    await wrapper.vm.execute(false);
+    expect(sandbox.run).toHaveBeenLastCalledWith({
+      source: 'visible-source',
+      stdin: '',
+      entryClass: 'Main',
+    });
+    expect(wrapper.text()).toContain('程序已执行完成');
+    expect(wrapper.text()).not.toContain('没有完成有效测试');
+    sandbox.run.mockResolvedValueOnce({
+      state: 'finished',
+      stdout: '@@AQ@@{"id":1,"ok":true}',
+      diagnostics: [],
+    });
+    await wrapper.vm.execute(true);
+    expect(sandbox.run).toHaveBeenLastCalledWith({
+      source: 'judged-source',
+      stdin: '',
+      entryClass: '__QuestTests',
+    });
+    expect(wrapper.text()).toContain('测试通过 1 / 1');
+    wrapper.unmount();
+  });
 });

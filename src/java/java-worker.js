@@ -21,7 +21,7 @@ self.onmessage = async ({ data }) => {
       runner = await lib.quest.runtime.Runner;
       self.postMessage({ type: 'ready' });
     } else if (data.type === 'run' && runner) {
-      const raw = await runner.run(data.source, data.stdin || '');
+      const raw = await runner.runEntry(data.source, data.stdin || '', data.entryClass || 'Main');
       self.postMessage({ type: 'result', result: JSON.parse(String(raw)) });
     }
   } catch (error) {

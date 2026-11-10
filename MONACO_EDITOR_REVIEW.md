@@ -4,7 +4,7 @@
 
 ## 替换结果
 
-练习题的方法体、课程示例改写、Java 在线实验台三个入口统一使用 `JavaCodeEditor.vue`。保留原来的 `body` / `source` 草稿字段、存储键、账号隔离、提示记录、示例运行和全部测试，不会因为换编辑器清空已有代码。
+练习题、课程示例改写、Java 在线实验台三个入口统一使用 `JavaCodeEditor.vue`。保留原来的存储键、账号隔离、提示记录、示例运行和全部测试，不会因为换编辑器清空已有代码。2026-11-10 起，编程题也编辑完整文件，原有 `body` 草稿自动包装为完整 `source` 草稿。
 
 | 能力 | 实现 |
 | --- | --- |
@@ -13,7 +13,7 @@
 | 悬停与参数 | Java 基础关键字的通俗解释，println / print / Math.max / Math.min / Arrays.sort 的常用参数提示 |
 | 显示 | 14/16/18/20px 字号、浅/深色、换行开关、编辑区放大、行列状态 |
 | 快捷运行 | Ctrl/⌘ + Enter；练习题运行示例，完整程序运行当前 Main.java。提交全部测试仍使用明确的提交按钮 |
-| 编译错误 | 使用真实 javac 诊断，按程序框架偏移映射到编辑区红线，点击错误回到相应行；修改代码后清空旧标记，过期运行的结果不写入当前编辑器 |
+| 编译错误 | 使用真实 javac 诊断，完整文件的行号直接映射到编辑区红线，点击错误回到相应行；修改代码后清空旧标记，过期运行的结果不写入当前编辑器 |
 | 小屏与兼容 | 手机默认简易编辑，可主动切换 Monaco，两种模式共享同一草稿。加载失败时保留可编辑文本及重试。file:// 离线文件保留简易编辑 |
 | 生命周期 | 编辑器进入可见区域才加载；卸载时销毁模型、编辑器、观察器和监听；开发热更新注销旧补全/悬停/参数提供器 |
 
@@ -32,18 +32,26 @@ Monaco 官方不把移动浏览器或 file:// 工作线程列为受支持环境�
 | `src/components/JavaCodeEditor.vue` | Vue 模型同步、延迟加载、显示工具、降级、快捷键、标记与定位、销毁 |
 | `src/java/monaco-java.js` | Monaco ESM、Java 高亮、Vite Worker、功能注册及常用提供器 |
 | `src/java/editor-support.js` | 可单独检查的有限提示规则与编译行号转换，避免将启发式提示当作编译结论 |
-| `src/components/JavaCodingTask.vue` | 方法体编辑及框架行号偏移，保留原任务/进度机制 |
+| `src/components/JavaCodingTask.vue` | 完整 Main.java 编辑、旧方法体草稿迁移、相同文件下载，保留原任务/进度机制 |
+| `src/java/coding-program.js` | 生成可见类/方法/main 入口与独立测试入口；不把内部测试辅助代码放入编辑区 |
+| `src/java/Runner.java` | 真实编译完整文件；区分示例 Main 与全部测试入口，保留隔离和资源限制 |
 | `src/components/RunnableJava.vue` | 完整示例改写，保留原草稿 |
 | `src/pages/JavaPlayground.vue` | 完整程序、标准输入与运行 |
 | `src/components/JavaRunPanel.vue` | 真实诊断事件、点击定位与过期结果拦截 |
 | `src/java-editor.css` | 编辑区样式与小屏布局，隔离全站 textarea 样式对 Monaco 输入层的影响，继续使用全局圆角变量 |
 | `src/useCourseNavigation.js` | 在代码区书写时不抢占编辑器快捷键 |
-| `tests/components/java-editor.test.js` | 声明/成员提示、注释过滤、片段、诊断范围与过期结果 |
+| `tests/components/java-editor.test.js` / `coding-file.test.js` | 声明/成员提示、诊断、过期结果、完整文件、入口区分、旧草稿迁移和账号隔离 |
 | `tests/browser/java-editor.spec.js` | 真实 Monaco 高亮、补全、撤销、保存、真实编译红线、手机切换及首页按需加载 |
 
 ## 验证
 
-本机格式检查、静态检查、Vite 正式构建、可选旧离线构建和 28 项组件测试已通过。新增浏览器用例与原有流程合计 42 个场景；主分支 CI 的最终结果应全部通过后再发布。
+2026-11-10 完整文件改动：本机 32 项组件测试、静态与格式检查通过；真实 JDK 验证 73 道任务、16 个复习变式、334 组用例及 6 个可见 Main 示例。新增浏览器场景检查修改 main 输入、运行示例、提交全部测试和刷新恢复；发布继续等待完整 CI 通过。
+
+实际浏览器已验证：将 main 中的示例改为 `greet("新同学")` 后，运行输出“你好，新同学”；独立入口的 3 组测试全部通过，刷新后完整代码仍在。
+
+![完整 Main.java 实际预览](./docs/reviews/full-main-editor-2026-11-10.jpg)
+
+2026-11-09 编辑器替换基线：本机格式检查、静态检查、Vite 正式构建、可选旧离线构建和 28 项组件测试已通过。该版本主分支 CI 的 42 个浏览器场景全部通过后已发布。
 
 实际浏览器已验证：数组 `a.` 可补全 `length`；Ctrl + Enter 启动真实编译；未声明 `unknownVariable` 产生红线，点击错误将光标定位到第 3 行；修正为数组累计示例后输出 `6`。
 

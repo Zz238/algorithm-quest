@@ -6,6 +6,9 @@ import { explainJavaError, parseCaseOutput } from '../java/feedback.js';
 const props = defineProps({
   source: String,
   sampleSource: String,
+  entryClass: { type: String, default: 'Main' },
+  sampleEntryClass: { type: String, default: 'Main' },
+  sampleJudged: { type: Boolean, default: true },
   stdin: { type: String, default: '' },
   lineOffset: { type: Number, default: 0 },
   editableLines: Number,
@@ -17,6 +20,8 @@ const busy = ref(false),
   phase = ref(''),
   result = ref(null),
   failure = ref('');
+const completedAll = ref(true);
+const judgedResult = computed(() => props.judged && (completedAll.value || props.sampleJudged));
 let engine,
   runToken = 0;
 const messages = {
@@ -27,7 +32,7 @@ const messages = {
 const parsed = computed(() => parseCaseOutput(result.value?.stdout));
 const diagnostic = computed(() => result.value?.diagnostics?.filter((d) => d.kind === 'ERROR') || []);
 watch(
-  () => [props.source, props.stdin],
+  () => [props.source, props.sampleSource, props.stdin, props.entryClass, props.sampleEntryClass],
   () => {
     emit('diagnostics', []);
     if (!busy.value) {
@@ -45,7 +50,8 @@ async function execute(all = true) {
   phase.value = 'loading';
   const token = ++runToken;
   const source = !all && props.sampleSource ? props.sampleSource : props.source,
-    stdin = props.stdin;
+    stdin = props.stdin,
+    entryClass = !all && props.sampleSource ? props.sampleEntryClass : props.entryClass;
   try {
     if (!engine) {
       const { createJavaSandbox } = await import('../java/sandbox.js');
@@ -56,16 +62,18 @@ async function execute(all = true) {
         },
       });
     }
-    const response = await engine.run({ source, stdin });
+    const response = await engine.run({ source, stdin, entryClass });
     if (token !== runToken) return;
     if (
       source !== (!all && props.sampleSource ? props.sampleSource : props.source) ||
-      stdin !== props.stdin
+      stdin !== props.stdin ||
+      entryClass !== (!all && props.sampleSource ? props.sampleEntryClass : props.entryClass)
     ) {
       failure.value = '运行期间代码或输入已更改，本次结果未计入。请重新运行当前版本。';
       return;
     }
     result.value = response;
+    completedAll.value = all;
     emit('diagnostics', response.diagnostics || []);
     emit('result', { ...result.value, ...parsed.value, all });
   } catch (error) {
@@ -127,16 +135,16 @@ function editorLine(d) {
         :class="[
           'coding-feedback',
           result.state === 'finished' &&
-          (!judged || (parsed.cases.length && parsed.cases.every((c) => c.ok)))
+          (!judgedResult || (parsed.cases.length && parsed.cases.every((c) => c.ok)))
             ? 'is-success'
             : 'is-error',
         ]"
       >
         {{
           result.state === 'finished'
-            ? judged && parsed.cases.length
+            ? judgedResult && parsed.cases.length
               ? `测试通过 ${parsed.cases.filter((c) => c.ok).length} / ${parsed.cases.length}`
-              : judged
+              : judgedResult
                 ? '程序结束，但没有完成有效测试。请检查是否提前退出或改动了测试框架。'
                 : '程序已执行完成'
             : result.state === 'compile-error'

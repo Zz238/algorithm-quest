@@ -3,7 +3,12 @@ import { computed, ref } from 'vue';
 import { useStudyDraft, browserStorage, draftKey, readDraft } from '../study-drafts.js';
 import { localDateKey } from '../study-state.js';
 import { useCodingProgress } from '../coding-progress.js';
-import { buildCodingProgram } from '../java/coding-program.js';
+import {
+  buildLearnerProgram,
+  buildSourceJudgingProgram,
+  restoreCodingSource,
+  CODING_SOURCE_LIMIT,
+} from '../java/coding-program.js';
 import { downloadText } from '../download.js';
 import JavaRunPanel from './JavaRunPanel.vue';
 import UiButton from './ui/UiButton.vue';
@@ -20,12 +25,7 @@ const draft = useStudyDraft(
   props.task.id,
   props.review ? 'coding-review-' + localDateKey() : 'coding-write',
   (raw) => ({
-    body:
-      typeof raw?.body === 'string'
-        ? raw.body.slice(0, 8000)
-        : typeof previous?.body === 'string'
-          ? previous.body.slice(0, 8000)
-          : props.task.starter,
+    source: restoreCodingSource(props.task, raw, previous),
     hints: Number.isInteger(raw?.hints) ? Math.max(0, Math.min(2, raw.hints)) : 0,
     reference: raw?.reference === true || (!raw && previous?.reference === true),
     explanation: typeof raw?.explanation === 'string' ? raw.explanation.slice(0, 1000) : '',
@@ -37,8 +37,7 @@ const referenceOpen = ref(false),
   codeEditor = ref(null),
   runPanel = ref(null),
   diagnostics = ref([]);
-const full = computed(() => buildCodingProgram(props.task, draft.body));
-const sample = computed(() => buildCodingProgram(props.task, draft.body, { sample: true }));
+const full = computed(() => buildSourceJudgingProgram(props.task, draft.source));
 const saved = computed(() => coding?.progress.learning.coding[props.task.id]);
 function attempted(result) {
   if (!result.all || result.state === 'stopped' || props.disabled) return;
@@ -54,7 +53,7 @@ function attempted(result) {
   );
 }
 function reset() {
-  draft.body = props.task.starter;
+  draft.source = buildLearnerProgram(props.task);
   draft.hints = 0;
   draft.reference = false;
   referenceOpen.value = false;
@@ -81,7 +80,8 @@ function reset() {
       "
       class="study-note"
     >
-      这里练习的是“方法体”，会用到参数和 return。还没学过时，可先打开
+      Main.java 中已经放好了类、方法声明和示例入口。先完成方法里的任务，会用到参数和
+      return。还没学过时，可先打开
       <CourseLink to="/java/method" @navigate="coding.navigate('/java/method')"
         >方法与返回值起步课 →</CourseLink
       >，或者在 Java 起步示例中先练改写完整程序。
@@ -94,25 +94,17 @@ function reset() {
       <strong>先预测一个例子</strong><code>{{ task.cases[0][0] }}</code
       ><span>预期：{{ JSON.stringify(task.cases[0][1]) }}</span>
     </div>
-    <p v-if="task.support" class="micro">
-      辅助类型和测试入口已准备好；只需要在下面写方法体。可展开程序框架核对定义。
-    </p>
-    <details v-if="task.support">
-      <summary>查看本题已提供的类型与辅助方法</summary>
-      <pre class="study-code"><code>{{ task.support }}</code></pre>
-    </details>
-    <p class="coding-method-signature">
-      <code>{{ task.signature }} { … }</code> · 仅编辑方法体
+    <p class="micro">
+      完整代码都在下面的 Main.java 中。运行示例会执行文件里的
+      main；提交全部测试会按题目要求调用方法，请保留 Main 类名和题目给定的方法声明。
     </p>
     <JavaCodeEditor
       ref="codeEditor"
-      v-model="draft.body"
+      v-model="draft.source"
       :label="task.title + '代码'"
-      :context="task.signature"
-      :maxlength="8000"
+      :maxlength="CODING_SOURCE_LIMIT"
       :disabled="disabled"
       :diagnostics="diagnostics"
-      :line-offset="full.lineOffset"
       @run="runPanel?.execute(false)"
     />
     <p class="micro">
@@ -122,9 +114,10 @@ function reset() {
       ref="runPanel"
       :key="task.id"
       :source="full.source"
-      :sample-source="sample.source"
-      :line-offset="full.lineOffset"
-      :editable-lines="draft.body.split('\n').length"
+      :sample-source="draft.source"
+      :entry-class="full.entryClass"
+      :sample-judged="false"
+      :editable-lines="draft.source.split('\n').length"
       :disabled="disabled || coding?.disabled.value"
       judged
       @result="attempted"
@@ -144,7 +137,7 @@ function reset() {
           if (referenceOpen) draft.reference = true;
         "
         >{{ referenceOpen ? '收起参考写法' : '查看参考写法' }}</UiButton
-      ><UiButton icon="download" @click="downloadText('Main.java', full.source)"
+      ><UiButton icon="download" @click="downloadText('Main.java', draft.source)"
         >下载自己的 Main.java</UiButton
       ><button class="text-button" @click="resetConfirm = !resetConfirm">重新练习</button>
     </div>
@@ -153,7 +146,7 @@ function reset() {
     </ol>
     <div v-if="referenceOpen" class="study-note">
       <p>看过答案后会记录“参考后完成”。稍后在复习模式重新编写，再检验是否能独立完成。</p>
-      <pre class="study-code"><code>{{ task.solution }}</code></pre>
+      <pre class="study-code"><code>{{ buildLearnerProgram(task, task.solution) }}</code></pre>
     </div>
     <div v-if="resetConfirm" class="coding-feedback">
       <p>将清空这道题当前编辑区和提示状态；历史测试记录保留。</p>

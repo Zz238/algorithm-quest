@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { editJavaCode } from './editor-helpers.js';
+import { editJavaCode, editCodingBody } from './editor-helpers.js';
 
 test('Monaco highlights Java, completes declared members, indents and keeps undo and drafts', async ({
   page,
@@ -40,14 +40,19 @@ test('real Java compilation errors become clickable editor markers, then clear a
 }) => {
   test.setTimeout(180000);
   await page.goto('/#/practice/code-core-3-2');
-  const editor = await editJavaCode(page, '自己写一个循环累计代码', 'return unknownVariable;');
+  const editor = await editCodingBody(
+    page,
+    '自己写一个循环累计代码',
+    'code-core-3-2',
+    'return unknownVariable;',
+  );
   await page.getByRole('button', { name: '运行示例', exact: true }).click();
   await expect(page.locator('.coding-result')).toContainText('编译未通过', { timeout: 150000 });
-  await expect(page.locator('.diagnostic-location')).toContainText('编辑区第 1 行');
+  await expect(page.locator('.diagnostic-location')).toContainText('编辑区第 3 行');
   await expect(editor.locator('.squiggly-error').first()).toBeVisible();
   await page.locator('.diagnostic-location').first().click();
   await expect(editor.locator('textarea.inputarea')).toBeFocused();
-  await editJavaCode(page, '自己写一个循环累计代码', 'return 0;');
+  await editCodingBody(page, '自己写一个循环累计代码', 'code-core-3-2', 'return 0;');
   await expect(editor.locator('.squiggly-error')).toHaveCount(0);
 });
 

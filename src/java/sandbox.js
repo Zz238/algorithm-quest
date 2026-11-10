@@ -113,14 +113,14 @@ export function createJavaSandbox({
     }
     return promise;
   }
-  async function run({ source, stdin = '' }) {
+  async function run({ source, stdin = '', entryClass = 'Main' }) {
     if (pending || loading) throw new Error('上一项任务仍在运行，请先停止。');
     await initialize();
     return new Promise((resolve, reject) => {
       pending = { resolve, reject };
       onStatus('compiling');
       timeout(compileMs, '编译超时，代码草稿已保留。');
-      port.postMessage({ type: 'run', source, stdin });
+      port.postMessage({ type: 'run', source, stdin, entryClass });
     });
   }
   return { run, stop: reset, dispose: reset };

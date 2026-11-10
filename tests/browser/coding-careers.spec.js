@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { editJavaCode } from './editor-helpers.js';
+import { editCodingBody, editJavaCode } from './editor-helpers.js';
+import { buildLearnerProgram } from '../../src/java/coding-program.js';
+import { CODING_BY_ID } from '../../src/data/coding-catalog.js';
 
 test('career routes, breadcrumbs and prerequisite-aware content remain separate from basic lessons', async ({
   page,
@@ -32,7 +34,12 @@ test('practice search, daily review and drafts work before loading Java resource
   await page.getByRole('searchbox', { name: '搜索编程任务' }).fill('链表');
   await expect(page.locator('.coding-task-list')).toContainText('沿next数完一条链');
   await page.goto('/#/practice/code-core-3-2');
-  const editor = await editJavaCode(page, '自己写一个循环累计代码', 'int total = 7;\nreturn total;');
+  const editor = await editCodingBody(
+    page,
+    '自己写一个循环累计代码',
+    'code-core-3-2',
+    'int total = 7;\nreturn total;',
+  );
   await page.reload();
   await expect(editor).toContainText('int total = 7;');
   await page.goto('/#/practice/review/code-core-3-2');
@@ -89,10 +96,42 @@ for (const width of [320, 390, 768, 1024, 1440])
 test('real browser Java compiles and reports all course test cases', async ({ page }) => {
   test.setTimeout(180000);
   await page.goto('/#/practice/code-core-3-2');
-  await editJavaCode(page, '自己写一个循环累计代码', 'int sum=0;\nfor(int x:a)sum+=x;\nreturn sum;');
+  await editCodingBody(
+    page,
+    '自己写一个循环累计代码',
+    'code-core-3-2',
+    'int sum=0;\nfor(int x:a)sum+=x;\nreturn sum;',
+  );
   await page.getByRole('button', { name: '提交全部测试', exact: true }).click();
   await expect(page.locator('.coding-result')).toContainText('测试通过 3 / 3', { timeout: 150000 });
   await expect(page.locator('.coding-badge')).toHaveText('曾独立通过');
   await page.reload();
   await expect(page.locator('.coding-badge')).toHaveText('曾独立通过');
+});
+test('a task keeps its complete Main file and runs the edited main separately from judged tests', async ({
+  page,
+}) => {
+  test.setTimeout(180000);
+  const task = CODING_BY_ID['code-greeting'];
+  await page.goto('/#/practice/' + task.id);
+  const source = buildLearnerProgram(task, 'return "你好，" + name;').replace(
+    task.cases[0][0],
+    'greet("新同学")',
+  );
+  const editor = await editJavaCode(page, task.title + '代码', source);
+  await expect(page.locator('.coding-method-signature')).toHaveCount(0);
+  await expect(editor.locator('.view-lines')).toContainText('public class Main');
+  await expect(editor.locator('.view-lines')).toContainText('public static String greet');
+  await expect(editor.locator('.view-lines')).toContainText('public static void main');
+  await page.getByRole('button', { name: '运行示例', exact: true }).click();
+  await expect(page.locator('.coding-result')).toContainText('程序已执行完成', { timeout: 150000 });
+  await expect(page.locator('.coding-result')).toContainText('你好，新同学');
+  await expect(page.locator('.coding-badge')).toHaveCount(0);
+  await page.getByRole('button', { name: '提交全部测试', exact: true }).click();
+  await expect(page.locator('.coding-result')).toContainText(
+    `测试通过 ${task.cases.length} / ${task.cases.length}`,
+    { timeout: 150000 },
+  );
+  await page.reload();
+  await expect(page.locator('.java-code-editor')).toContainText('新同学');
 });
