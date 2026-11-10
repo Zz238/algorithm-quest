@@ -8,7 +8,10 @@ export async function editJavaCode(page, label, source) {
   await editor.scrollIntoViewIfNeeded();
   await expect(editor).toHaveAttribute('data-editor-mode', 'monaco', { timeout: 20000 });
   const input = editor.locator('textarea.inputarea');
-  await input.click();
+  // Monaco keeps its textarea behind the visible surface (z-index: -10).
+  // Click the surface to focus it rather than waiting to click that hidden layer.
+  await editor.locator('.monaco-editor').click({ timeout: 10000 });
+  await expect(input).toBeFocused();
   // Input.insertText is treated as typing by Monaco and can add a closing brace
   // to a complete multiline program. Paste as a user would, then verify the file.
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
