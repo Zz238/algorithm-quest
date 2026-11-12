@@ -15,8 +15,30 @@ import UiButton from './ui/UiButton.vue';
 import UiCheckbox from './ui/UiCheckbox.vue';
 import CourseLink from './CourseLink.vue';
 import JavaCodeEditor from './JavaCodeEditor.vue';
+import { useReadingDevice } from '../java/device-policy.js';
+import PracticeCard from './PracticeCard.vue';
+import { answerState } from '../answering.js';
+import { useLearningInsights } from '../learning-insights.js';
+const insights = useLearningInsights();
+let attemptStarted = Date.now();
+const readingDevice = useReadingDevice();
 const props = defineProps({ task: Object, owner: String, review: Boolean, disabled: Boolean });
 const coding = useCodingProgress();
+const prediction = {
+  kind: 'output',
+  category: 'boundary',
+  question:
+    props.task.task +
+    ' 输入：' +
+    props.task.cases[0][0] +
+    '。请预测返回值；数组和字符串用 JSON 格式填写。',
+  answer: props.task.cases[0][1],
+  explanation: '结果为 ' + JSON.stringify(props.task.cases[0][1]) + '。' + props.task.hints.join(' '),
+  hints: props.task.hints,
+};
+const mobileWork = useStudyDraft(props.owner, props.task.id, 'mobile-prediction', (raw) => ({
+  item: answerState(prediction, raw?.item),
+}));
 const previous = !props.review
   ? readDraft(draftKey(props.owner, props.task.topic, 'java-write'), browserStorage())
   : null;
@@ -46,6 +68,18 @@ function attempted(result) {
     result.state === 'finished' &&
     result.cases.length === props.task.cases.length &&
     result.cases.every((c) => c.ok);
+  insights?.record({
+    key: props.task.id,
+    ok: passed,
+    elapsed: Math.min(3600000, Date.now() - attemptStarted),
+    category: result.state === 'compile-error' ? 'concept' : 'boundary',
+    difficulty: /进阶|工程|综合|阶段/.test(props.task.level)
+      ? 3
+      : /基础|起步|入门/.test(props.task.level)
+        ? 1
+        : 2,
+  });
+  attemptStarted = Date.now();
   coding?.record(
     props.task.id,
     { passed, assisted: draft.hints > 0 || draft.reference },
@@ -90,7 +124,13 @@ function reset() {
       <strong>这里新增的写法</strong>
       <p>{{ task.preparation }}</p>
     </aside>
-    <div class="coding-example">
+    <PracticeCard
+      v-if="readingDevice"
+      :question="prediction"
+      :state="mobileWork.item"
+      :disabled="disabled"
+    />
+    <div v-else class="coding-example">
       <strong>先预测一个例子</strong><code>{{ task.cases[0][0] }}</code
       ><span>预期：{{ JSON.stringify(task.cases[0][1]) }}</span>
     </div>

@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
+    "fuse.js": "^7.5.0",
     "monaco-editor": "0.57.0",
     "morphicons": "2.0.2",
     "vue": "3.5.44"

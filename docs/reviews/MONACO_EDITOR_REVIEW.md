@@ -49,13 +49,13 @@ Monaco 官方不把移动浏览器或 file:// 工作线程列为受支持环境�
 
 实际浏览器已验证：将 main 中的示例改为 `greet("新同学")` 后，运行输出“你好，新同学”；独立入口的 3 组测试全部通过，刷新后完整代码仍在。
 
-![完整 Main.java 实际预览](./docs/reviews/full-main-editor-2026-11-10.jpg)
+![完整 Main.java 实际预览](full-main-editor-2026-11-10.jpg)
 
 2026-11-09 编辑器替换基线：本机格式检查、静态检查、Vite 正式构建、可选旧离线构建和 28 项组件测试已通过。该版本主分支 CI 的 42 个浏览器场景全部通过后已发布。
 
 实际浏览器已验证：数组 `a.` 可补全 `length`；Ctrl + Enter 启动真实编译；未声明 `unknownVariable` 产生红线，点击错误将光标定位到第 3 行；修正为数组累计示例后输出 `6`。
 
-![Monaco 实际预览](./docs/reviews/monaco-editor-preview-1794234661194.jpg)
+![Monaco 实际预览](monaco-editor-preview-1794234661194.jpg)
 
 ## 性能与发布
 

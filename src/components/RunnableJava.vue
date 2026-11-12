@@ -4,6 +4,8 @@ import { useStudyDraft } from '../study-drafts.js';
 import { useCodingProgress } from '../coding-progress.js';
 import UiButton from './ui/UiButton.vue';
 import JavaCodeEditor from './JavaCodeEditor.vue';
+import { useReadingDevice } from '../java/device-policy.js';
+const readingDevice = useReadingDevice();
 const props = defineProps({
   source: String,
   expected: String,
@@ -59,7 +61,7 @@ async function copy() {
       </div>
     </div>
     <p v-if="status" class="micro" role="status">{{ status }}</p>
-    <details @toggle="editable = $event.target.open">
+    <details v-if="!readingDevice" @toggle="editable = $event.target.open">
       <summary>在这里改写并运行，不用安装 Java</summary>
       <template v-if="editable"
         ><p>先只修改本节讲过的语句或输入，保留其余程序框架。预测结果，再点击运行核对。</p>

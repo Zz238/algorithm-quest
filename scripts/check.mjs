@@ -8,7 +8,6 @@ import { lessonDemo, runDemo } from '../src/lesson-demos.js';
 import {
   solve,
   equalOutput,
-  experience,
   cleanProgress,
   freshProgress,
   localDateKey,
@@ -99,7 +98,6 @@ const previous = cleanProgress(
 assert.deepEqual(previous.mastery, []);
 assert.deepEqual(previous.bossTasks, {});
 assert.deepEqual(previous.lessons, ['5-3']);
-assert.equal(experience(previous), 180);
 const optionalChapter = chapters[7],
   optionalProgress = freshProgress();
 optionalProgress.dailyRead['2026-10-27'] = requiredLessons(optionalChapter)
@@ -129,7 +127,6 @@ for (const c of chapters) {
     cases++;
   }
 }
-assert.equal(experience({ lessons: Array(72), bosses: Array(12) }), 3960);
 assert.deepEqual(
   cleanProgress(
     { version: 1, lessons: ['1-1', 'bad'], bosses: [1, 1, 100], notes: { bad: 'x' }, bookmarks: [] },

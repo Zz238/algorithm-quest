@@ -169,9 +169,7 @@ const anchors = [
         @click="service?.topicRead(topic.id)"
         >{{ read ? '本篇已读' : '记录本篇已读' }}</UiButton
       >
-      <p class="micro">
-        已读不等于独立掌握，也不单独发放 XP。独立编程测试与复习记录在“编程练习”中查看。
-      </p>
+      <p class="micro">已读不等于独立掌握。独立编程测试与复习记录在“编程练习”中查看。</p>
       <CourseLink :to="'/topics/stage/' + topic.stage" @navigate="emit('navigate', $event)"
         >返回{{ stage.title }}目录 →</CourseLink
       >

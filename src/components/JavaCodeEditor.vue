@@ -1,6 +1,9 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { javaEditorDiagnostics } from '../java/editor-support.js';
+import { useReadingDevice } from '../java/device-policy.js';
+import ReadonlyJava from './ReadonlyJava.vue';
+const readingDevice = useReadingDevice();
 const props = defineProps({
   modelValue: { type: String, default: '' },
   label: { type: String, required: true },
@@ -20,7 +23,7 @@ const shell = ref(null),
   expanded = ref(false),
   wrap = ref(true),
   fontSize = ref(16),
-  dark = ref(false),
+  dark = ref(document.documentElement.dataset.theme === 'dark'),
   cursor = ref({ lineNumber: 1, column: 1 });
 const offline = import.meta.env.MODE === 'offline' || location.protocol === 'file:';
 const simple = ref(offline || window.matchMedia('(max-width:600px)').matches);
@@ -30,6 +33,7 @@ let editor,
   monaco,
   observer,
   resizeObserver,
+  themeObserver,
   disposed = false,
   composing = false;
 const disposables = [];
@@ -56,12 +60,12 @@ function markers() {
   );
 }
 async function start() {
-  if (offline || simple.value || ready.value || loading.value || disposed) return;
+  if (readingDevice.value || offline || simple.value || ready.value || loading.value || disposed) return;
   loading.value = true;
   issue.value = '';
   try {
     const { createJavaEditor } = await import('../java/monaco-java.js');
-    if (disposed || simple.value) return;
+    if (disposed || simple.value || readingDevice.value) return;
     if (composing) {
       issue.value = '输入结束后可启用专业编辑器。';
       return;
@@ -209,8 +213,27 @@ watch([expanded, simple], async () => {
   await nextTick();
   editor?.layout();
 });
+watch(readingDevice, async (reading) => {
+  observer?.disconnect();
+  if (reading) {
+    resizeObserver?.disconnect();
+    for (const d of disposables.splice(0)) d.dispose();
+    editor?.dispose();
+    model?.dispose();
+    editor = null;
+    model = null;
+    ready.value = false;
+  } else {
+    await nextTick();
+    if (!offline && !simple.value) await start();
+  }
+});
 onMounted(() => {
-  if (!offline && !simple.value) {
+  themeObserver = new MutationObserver(() => {
+    dark.value = document.documentElement.dataset.theme === 'dark';
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (!readingDevice.value && !offline && !simple.value) {
     observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -226,6 +249,7 @@ onMounted(() => {
 onUnmounted(() => {
   disposed = true;
   observer?.disconnect();
+  themeObserver?.disconnect();
   resizeObserver?.disconnect();
   for (const d of disposables) d.dispose();
   editor?.dispose();
@@ -235,6 +259,7 @@ defineExpose({ locate });
 </script>
 <template>
   <section
+    v-if="!readingDevice"
     ref="shell"
     class="java-code-editor"
     :class="{ 'is-expanded': expanded, 'is-dark': dark }"
@@ -304,8 +329,9 @@ defineExpose({ locate });
       </p>
       <p>
         输入 fori、foreach 或 sout 可选用常用片段。常用 Java
-        提示帮助书写；类型和语法错误以运行后的真实编译结果为准。小屏可使用简易模式，代码和判题保持一致。
+        提示帮助书写；类型和语法错误以运行后的真实编译结果为准。触屏设备使用只读代码与手算练习。
       </p>
     </details>
   </section>
+  <ReadonlyJava v-else :source="modelValue" :label="label" />
 </template>

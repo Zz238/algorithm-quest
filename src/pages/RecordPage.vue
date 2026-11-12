@@ -160,21 +160,16 @@ function status(chapter) {
         </p>
       </div>
     </div>
-    <details class="record-skill study-details">
-      <summary>练习积分与历史记录</summary>
+    <section class="record-skill study-details">
+      <h2>练习掌握度</h2>
       <p>
-        <strong>{{ summary.practicePoints }}</strong> 分 ·
+        已读 {{ summary.completion }}% · 基础练习通过
         {{
-          summary.nextLevel
-            ? '距「' + summary.nextLevel + '」还差 ' + summary.toNext + ' 分'
-            : '已达到最高等级'
-        }}
+          Math.round((progress.mastery.length / lessons.length) * 100)
+        }}%。阅读、基础练习和独立完成分开记录。
       </p>
-      <p class="micro">
-        基础练习通过、独立答对变式、完成章末题时分别加分。历史积分
-        {{ summary.legacyPoints }} 分继续保留。
-      </p>
-    </details>
+      <CourseLink to="/review" @navigate="emit('navigate', $event)">查看错误模式与复习建议 →</CourseLink>
+    </section>
     <section class="chapter-record">
       <div class="section-heading">
         <h2>逐章进度</h2>

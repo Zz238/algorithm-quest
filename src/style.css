@@ -85,7 +85,7 @@ summary:hover { color: var(--green); }
 .brand-symbol { width: 34px; height: 34px; flex: none; color: var(--green); }
 .brand span { display: flex; align-items: baseline; gap: 10px; }
 .brand small { font-size: 10px; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
-/* Underline interaction adapted from WhiteNervosa's Uiverse button; see THIRD_PARTY_NOTICES.md. */
+/* Underline interaction adapted from WhiteNervosa's Uiverse button; see docs/THIRD_PARTY_NOTICES.md. */
 .header nav { --nav-underline-duration: 400ms; --nav-underline-ease: cubic-bezier(.25,.8,.25,1); display: flex; align-items: center; gap: 24px; }
 .header nav :is(button,.course-link) { padding: 8px 1px; border: 1px solid transparent; background: transparent; font-size: 14px; white-space: nowrap; position: relative; color: var(--muted); box-shadow: none; transition: color var(--nav-underline-duration) var(--nav-underline-ease); }
 /* Keep the invisible structural border so interaction never changes the button's size. */

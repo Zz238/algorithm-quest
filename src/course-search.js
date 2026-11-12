@@ -5,6 +5,9 @@ import { CODING_TASKS } from './data/coding-catalog.js';
 import { CAREER_ROUTES, careerStageRoute } from './data/career-index.js';
 import { CAREER_LESSONS } from './data/career-lessons.js';
 import { TOPIC_LESSONS } from './data/algorithm-topics.js';
+import Fuse from 'fuse.js';
+import { CHAPTER_CHALLENGES } from './data/chapter-challenges.js';
+import { COMPLEXITY_QUESTIONS } from './data/complexity-practice.js';
 
 export const glossaryPath = (term) => '/glossary/' + encodeURIComponent(term);
 export const COURSE_TERMS = Object.assign(Object.create(null), TERMS);
@@ -125,7 +128,28 @@ export function searchCourse(query, notes = {}) {
     (item.index.includes(phrase) ? 5 : 0);
   return [
     ['lessons', '课程小节', [...lessons, ...java]],
-    ['exercises', '章节练习', exercise],
+    [
+      'exercises',
+      '章节练习',
+      [
+        ...exercise,
+        ...Object.entries(CHAPTER_CHALLENGES).map(([id, t]) =>
+          result('/boss/' + id, t.title, t.exercise.question, t.exercise.explanation + ' LC ' + t.lc),
+        ),
+      ],
+    ],
+    [
+      'tools',
+      '学习工具',
+      [
+        result('/knowledge', '知识图谱', '课程、专题与前置依赖关系'),
+        result('/execution', '逐行执行', '调用栈、作用域与链表引用'),
+        result('/compare', '对比辨析', '栈与队列 BFS DFS 归并排序 快速排序'),
+        ...COMPLEXITY_QUESTIONS.map((q) =>
+          result('/complexity', q.title, q.question, q.code + ' ' + q.explanation),
+        ),
+      ],
+    ],
     [
       'topics',
       '算法专题',
@@ -173,12 +197,36 @@ export function searchCourse(query, notes = {}) {
     .map(([key, label, entries]) => ({
       key,
       label,
-      items: entries
-        .filter((e) => words.every((w) => e.index.includes(w)))
-        .sort((a, b) => rank(b) - rank(a))
-        .map(({ path, title, summary }) => ({ path, title, summary })),
+      items: fuzzyEntries(entries, phrase, words, rank).map(({ path, title, summary }) => ({
+        path,
+        title,
+        summary,
+      })),
     }))
     .filter((g) => g.items.length);
+}
+
+function fuzzyEntries(entries, phrase, words, rank) {
+  const exact = entries
+    .filter((e) => words.every((w) => e.index.includes(w)))
+    .sort((a, b) => rank(b) - rank(a));
+  const found = new Set(exact);
+  // Very short queries keep precise matching; longer phrases allow modest typo tolerance.
+  if (phrase.length < 3 || phrase.length > 32) return exact;
+  const fuzzy = new Fuse(entries, {
+    keys: [{ name: 'title', weight: 3 }, { name: 'summary', weight: 2 }, 'index'],
+    threshold: 0.28,
+    ignoreLocation: true,
+    includeScore: true,
+    minMatchCharLength: 2,
+  });
+  return [
+    ...exact,
+    ...fuzzy
+      .search(phrase)
+      .map((r) => r.item)
+      .filter((item) => !found.has(item)),
+  ];
 }
 
 export function filterTerms(query) {

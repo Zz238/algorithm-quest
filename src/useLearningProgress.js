@@ -7,7 +7,7 @@ const coreJava = Object.values(JAVA_INDEX).filter(
 const javaRoute = (id) => '/java/' + id.replace(/^java-/, '');
 import { JAVA_START } from './data/reading-guide.js';
 import { allLessons } from './course-route.js';
-import { LEVELS, experience, localDateKey, recordCheckin, recordLessonReading } from './logic.js';
+import { localDateKey, recordCheckin, recordLessonReading } from './logic.js';
 import {
   dailyGoal,
   dailyStudyCount,
@@ -59,8 +59,6 @@ export function useLearningProgress(progress, cloud, toast) {
   const chapterReads = (c) => requiredLessons(c).filter((l) => progress.lessons.includes(l.id)).length;
   const summary = computed(() => {
     const independent = allLessons.filter((l) => progress.learning.independent.includes(l.id)).length;
-    const practicePoints = 30 * progress.mastery.length + 20 * independent + 150 * clearedCount.value;
-    const next = LEVELS.find((level) => level.min > practicePoints);
     return {
       core: core.length,
       electives: electives.length,
@@ -70,10 +68,6 @@ export function useLearningProgress(progress, cloud, toast) {
       due: due.value,
       independent,
       cleared: clearedCount.value,
-      legacyPoints: experience(progress),
-      practicePoints,
-      nextLevel: next?.name || null,
-      toNext: next ? next.min - practicePoints : 0,
     };
   });
   function markWrong(id) {

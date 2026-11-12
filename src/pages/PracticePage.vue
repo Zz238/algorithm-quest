@@ -10,6 +10,7 @@ import JavaCodingTask from '../components/JavaCodingTask.vue';
 import CourseLink from '../components/CourseLink.vue';
 import UiSearchField from '../components/ui/UiSearchField.vue';
 import { ALGORITHM_TOPIC_BY_ID } from '../data/algorithm-roadmap.js';
+import { adaptiveLevel, recommendTasks } from '../learning-insights.js';
 const props = defineProps({ taskId: String, owner: String, review: Boolean, disabled: Boolean });
 const emit = defineEmits(['navigate']);
 const coding = useCodingProgress();
@@ -21,8 +22,15 @@ const query = ref(''),
   filter = ref(props.review ? 'due' : 'all');
 const today = localDateKey();
 const records = computed(() => coding?.progress.learning.coding || {});
+const adaptive = ref(true);
+const recommendedLevel = computed(() => adaptiveLevel(coding?.progress.learning.attempts || []));
+const orderedTasks = computed(() =>
+  adaptive.value
+    ? recommendTasks(CODING_TASKS, records.value, coding?.progress.learning.attempts || [])
+    : CODING_TASKS,
+);
 const tasks = computed(() =>
-  CODING_TASKS.filter(
+  orderedTasks.value.filter(
     (t) =>
       (!query.value ||
         (t.title + ' ' + t.task + ' ' + t.level).toLowerCase().includes(query.value.toLowerCase())) &&
@@ -72,6 +80,7 @@ const related = computed(() => {
         项独立任务。从修改一个返回值，到完成数据结构和阶段作品。先通过对应讲解，再选任务；“工程基础”和“进阶衔接”有单独的补充说明。
       </p>
       <div class="practice-toolbar">
+        <label><input v-model="adaptive" type="checkbox" /> 自适应推荐</label>
         <UiSearchField
           v-model="query"
           label="搜索编程任务"
@@ -86,6 +95,11 @@ const related = computed(() => {
         >
       </div>
       <p class="micro">
+        <span v-if="adaptive"
+          >根据最近 12 次有效答题的正确率和耗时推荐，当前建议：{{
+            ['起步巩固', '基础应用', '综合挑战'][recommendedLevel - 1]
+          }}。记录不足时从起步任务开始；可随时关闭推荐。</span
+        >
         复习先隐藏参考答案，重新编写；独立通过后按1、3、7、14、30天逐步安排。当天重复通过不会反复延长间隔。
       </p>
       <p v-if="!tasks.length" class="study-note">没有符合条件的任务。可以更换筛选，或清空搜索内容。</p>

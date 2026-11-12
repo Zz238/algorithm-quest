@@ -17,6 +17,8 @@ import ProjectWorkshop from './ProjectWorkshop.vue';
 import CourseLink from './CourseLink.vue';
 import LessonCoding from './LessonCoding.vue';
 import { CODING_INDEX } from '../data/course-index.js';
+import { attemptSummary } from '../learning-insights.js';
+const patterns = computed(() => attemptSummary(props.progress.learning.attempts || []));
 const props = defineProps({
   topic: String,
   owner: String,
@@ -152,6 +154,21 @@ function transferAttempt(r) {
         </p>
       </div>
       <section class="coding-review-summary">
+        <h2>错误模式分析</h2>
+        <p v-if="!patterns.some((p) => p.total)">
+          完成概念、边界和复杂度练习后，这里会按实际答题记录给出建议。
+        </p>
+        <ul class="error-patterns">
+          <li v-for="p in patterns" :key="p.category">
+            <strong
+              >{{ p.title }}：{{ p.wrong }} / {{ p.total }} 次答错<span v-if="p.total"
+                >（{{ Math.round(p.rate * 100) }}%）</span
+              ></strong
+            >
+            <p>{{ p.advice }}</p>
+            <CourseLink :to="p.path" @navigate="emit('navigate', $event)">去针对性练习 →</CourseLink>
+          </li>
+        </ul>
         <h2>今天要重新写的代码 · {{ codingDue.length }}</h2>
         <p>先独立写，再运行和修正。编程任务按实际测试结果安排下一次复习。</p>
         <CourseLink to="/practice/review" @navigate="emit('navigate', $event)"

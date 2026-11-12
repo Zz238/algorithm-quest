@@ -9,14 +9,6 @@ import {
   DEFAULT_GOAL,
 } from './study-state.js';
 export { localDateKey, validDateKey, shiftDateKey };
-export const LEVELS = [
-  { name: '算法小白', min: 0 },
-  { name: '算法学徒', min: 100 },
-  { name: '算法探索者', min: 300 },
-  { name: '算法能手', min: 700 },
-  { name: '算法高手', min: 1500 },
-  { name: '算法大牛', min: 3000 },
-];
 export const WORLD_NAMES = ['启程村', '结构森林', '思路山脉', '算法城'];
 export function normalize(value, id) {
   if (id === 78) return value.map((a) => [...a].sort((a, b) => a - b).join(',')).sort();
@@ -274,7 +266,4 @@ export function cleanProgress(p, lessonIds) {
         .filter(([, items]) => items.length),
     ),
   };
-}
-export function experience(p) {
-  return p.lessons.length * 30 + p.bosses.length * 150;
 }

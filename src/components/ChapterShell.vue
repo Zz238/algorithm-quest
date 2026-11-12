@@ -1,6 +1,7 @@
 <script setup>
 import { shortLessonTitle } from '../data/reading-guide.js';
 import CourseLink from './CourseLink.vue';
+import LearningToolLinks from './LearningToolLinks.vue';
 defineProps({ view: String, chapter: Object, lessonIndex: Number, progress: Object });
 const emit = defineEmits(['navigate']);
 </script>
@@ -43,6 +44,8 @@ const emit = defineEmits(['navigate']);
         <button @click="emit('navigate', '/glossary')">打开术语手册 →</button>
       </div>
     </aside>
-    <slot />
+    <div class="chapter-reading-column">
+      <LearningToolLinks :chapter="chapter.id" @navigate="emit('navigate', $event)" /><slot />
+    </div>
   </main>
 </template>

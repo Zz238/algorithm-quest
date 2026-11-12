@@ -1,5 +1,6 @@
 // Learning records are optional additions to the existing version-1 cloud document.
 import { ALGORITHM_TOPICS } from './data/algorithm-roadmap.js';
+import { cleanAttempts, mergeAttempts } from './learning-insights.js';
 export const STARTER_IDS = [
   'java-print',
   'java-variable',
@@ -55,6 +56,7 @@ export const emptyLearning = () => ({
   coding: {},
   career: {},
   routeChoice: null,
+  attempts: [],
 });
 const record = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 const union = (a = [], b = []) => [...new Set([...a, ...b])].sort();
@@ -96,6 +98,7 @@ export function cleanLearning(raw, ids) {
     ),
     goal: validGoal(g.count) && stamp(g.at) ? { count: g.count, at: g.at } : null,
     coding: cleanCoding(v.coding),
+    attempts: cleanAttempts(v.attempts),
     career: cleanCareer(v.career),
     routeChoice:
       ['backend', 'algorithm'].includes(v.routeChoice?.id) && stamp(v.routeChoice?.at)
@@ -139,6 +142,7 @@ export function mergeLearning(a, b) {
     goal: newer(a.goal, b.goal, (g) => g.count),
     coding,
     career,
+    attempts: mergeAttempts(a.attempts, b.attempts),
     routeChoice: newer(a.routeChoice, b.routeChoice, (r) => r.id),
   };
 }

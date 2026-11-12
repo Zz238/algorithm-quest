@@ -5,8 +5,13 @@ import UserAvatar from './UserAvatar.vue';
 import GitHubIcon from './GitHubIcon.vue';
 import CourseLink from './CourseLink.vue';
 import UiButton from './ui/UiButton.vue';
-const props = defineProps({ user: Object, view: String, coursePath: { type: String, default: '/' } });
-const emit = defineEmits(['navigate']);
+const props = defineProps({
+  user: Object,
+  view: String,
+  theme: String,
+  coursePath: { type: String, default: '/' },
+});
+const emit = defineEmits(['navigate', 'theme']);
 const profile = computed(() => accountProfile(props.user));
 </script>
 <template>
@@ -84,6 +89,14 @@ const profile = computed(() => accountProfile(props.user));
       </CourseLink>
     </nav>
     <div class="header-actions">
+      <label class="theme-picker"
+        ><span class="sr-only">阅读主题</span
+        ><select aria-label="阅读主题" :value="theme" @change="emit('theme', $event.target.value)">
+          <option value="system">跟随系统</option>
+          <option value="light">浅色模式</option>
+          <option value="dark">暗色模式</option>
+        </select></label
+      >
       <a
         class="github-link"
         href="https://github.com/Zz238/algorithm-quest"

@@ -9,6 +9,7 @@ import { TRANSFERS } from '../data/learning-practice.js';
 import PracticeCard from './PracticeCard.vue';
 import TraceLab from './TraceLab.vue';
 import CodeReader from './CodeReader.vue';
+import ChapterChallengePair from './ChapterChallengePair.vue';
 const props = defineProps({
   chapter: Object,
   progress: Object,
@@ -17,7 +18,7 @@ const props = defineProps({
   disabled: Boolean,
 });
 const emit = defineEmits(['navigate', 'complete', 'wrong']);
-const c = chapters.find(ch=>ch.id===props.chapter.id),
+const c = chapters.find((ch) => ch.id === props.chapter.id),
   boss = c.boss;
 const application = TRANSFERS.find((t) => t.after.startsWith(c.id + '-'));
 const missing = computed(() =>
@@ -68,6 +69,7 @@ function attempted(result) {
 </script>
 <template>
   <article class="boss-content" :data-chapter="c.id">
+    <ChapterChallengePair :chapter="c" :owner="owner" :disabled="disabled" />
     <div class="boss-heading">
       <div>
         <span class="eyebrow">章节练习 · LC {{ boss.lc }}</span>
@@ -88,9 +90,7 @@ function attempted(result) {
       <h2>可以先预览和试做</h2>
       <p>
         还差
-        {{
-          missing.length
-        }}
+        {{ missing.length }}
         个基础小节的阅读或练习记录。先试做下面的题也可以，草稿会保留；补齐基础记录后就能登记完成本章。
       </p>
       <div class="study-actions">

@@ -33,6 +33,12 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
 </script>
 <template>
   <main class="home">
+    <nav class="learning-tools" aria-label="学习工具">
+      <CourseLink to="/knowledge" @navigate="navigate">知识图谱</CourseLink
+      ><CourseLink to="/execution" @navigate="navigate">逐行执行</CourseLink
+      ><CourseLink to="/compare" @navigate="navigate">对比辨析</CourseLink
+      ><CourseLink to="/complexity" @navigate="navigate">复杂度训练</CourseLink>
+    </nav>
     <section v-if="selected" :id="'catalog-chapter-' + selected.id" class="chapter-directory study-page">
       <CourseLink to="/" @navigate="navigate">← 全部基础教学</CourseLink
       ><span class="eyebrow">第 {{ selected.id }} 章 · 小节目录</span>

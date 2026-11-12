@@ -4,6 +4,9 @@ import AnswerInput from './AnswerInput.vue';
 import UiButton from './ui/UiButton.vue';
 import { scoreAnswer, hintFor, practiceAnswer } from '../answering.js';
 import { jumpTo } from '../useCourseNavigation.js';
+import { useLearningInsights, questionCategory } from '../learning-insights.js';
+const insights = useLearningInsights();
+let startedAt = Date.now();
 const props = defineProps({
   question: Object,
   state: Object,
@@ -86,6 +89,14 @@ function check() {
     s.value.errors[q.value.kind] = (s.value.errors[q.value.kind] || 0) + 1;
   if (result.format || result.unverified) return;
   s.value.attempts++;
+  insights?.record({
+    key: s.value.sig,
+    category: questionCategory(q.value),
+    ok: result.ok,
+    elapsed: Math.min(3600000, Date.now() - startedAt),
+    difficulty: [1, 2, 3].includes(q.value.difficulty) ? q.value.difficulty : 1,
+  });
+  startedAt = Date.now();
   emit('attempt', {
     ok: result.ok,
     assisted: s.value.helped || props.priorHelp,

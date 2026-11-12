@@ -6,6 +6,7 @@ import {
   javaEditorDiagnostics,
 } from '../../src/java/editor-support.js';
 import JavaRunPanel from '../../src/components/JavaRunPanel.vue';
+import { runtimeConsent } from '../../src/java/device-policy.js';
 const sandbox = vi.hoisted(() => ({ run: vi.fn(), stop: vi.fn(), dispose: vi.fn() }));
 vi.mock('../../src/java/sandbox.js', () => ({ createJavaSandbox: () => sandbox }));
 
@@ -65,12 +66,16 @@ describe('Java editor teaching support and real compiler diagnostics', () => {
     sandbox.run.mockResolvedValueOnce({ state: 'compile-error', diagnostics, stdout: '' });
     const wrapper = shallowMount(JavaRunPanel, { props: { source: 'class Main {}' } });
     await wrapper.vm.execute();
+    expect(sandbox.run).not.toHaveBeenCalled();
+    expect(wrapper.find('.runtime-consent').exists()).toBe(true);
+    await wrapper.vm.acceptRuntime();
     expect(wrapper.emitted('diagnostics').at(-1)).toEqual([diagnostics]);
     await wrapper.setProps({ source: 'class Main { int n; }' });
     expect(wrapper.emitted('diagnostics').at(-1)).toEqual([[]]);
     wrapper.unmount();
   });
   it('discards diagnostics produced for code that changed during compilation', async () => {
+    runtimeConsent.accepted = true;
     let finish;
     sandbox.run.mockReturnValueOnce(
       new Promise((resolve) => {
@@ -92,6 +97,7 @@ describe('Java editor teaching support and real compiler diagnostics', () => {
     wrapper.unmount();
   });
   it('runs the visible main for examples and the separate judge entry for all test cases', async () => {
+    runtimeConsent.accepted = true;
     const wrapper = shallowMount(JavaRunPanel, {
       props: {
         source: 'judged-source',

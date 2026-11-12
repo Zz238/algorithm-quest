@@ -103,6 +103,8 @@ test('real browser Java compiles and reports all course test cases', async ({ pa
     'int sum=0;\nfor(int x:a)sum+=x;\nreturn sum;',
   );
   await page.getByRole('button', { name: '提交全部测试', exact: true }).click();
+  await expect(page.locator('.runtime-consent')).toBeVisible();
+  await page.locator('.runtime-consent .primary').click();
   await expect(page.locator('.coding-result')).toContainText('测试通过 3 / 3', { timeout: 150000 });
   await expect(page.locator('.coding-badge')).toHaveText('曾独立通过');
   await page.reload();
@@ -124,6 +126,8 @@ test('a task keeps its complete Main file and runs the edited main separately fr
   await expect(editor.locator('.view-lines')).toContainText('public static String greet');
   await expect(editor.locator('.view-lines')).toContainText('public static void main');
   await page.getByRole('button', { name: '运行示例', exact: true }).click();
+  await expect(page.locator('.runtime-consent')).toBeVisible();
+  await page.locator('.runtime-consent .primary').click();
   await expect(page.locator('.coding-result')).toContainText('程序已执行完成', { timeout: 150000 });
   await expect(page.locator('.coding-result')).toContainText('你好，新同学');
   await expect(page.locator('.coding-badge')).toHaveCount(0);

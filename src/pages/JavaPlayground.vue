@@ -3,6 +3,10 @@ import { ref } from 'vue';
 import JavaRunPanel from '../components/JavaRunPanel.vue';
 import { useStudyDraft } from '../study-drafts.js';
 import JavaCodeEditor from '../components/JavaCodeEditor.vue';
+import { useReadingDevice } from '../java/device-policy.js';
+import CourseLink from '../components/CourseLink.vue';
+const emit = defineEmits(['navigate']);
+const readingDevice = useReadingDevice();
 const props = defineProps({ owner: String });
 const draft = useStudyDraft(props.owner, 'java-playground', 'source', (raw) => ({
   source:
@@ -31,7 +35,16 @@ const codeEditor = ref(null),
       :diagnostics="diagnostics"
       @run="runPanel?.execute()"
     />
-    <button class="text-button" @click="showInput = !showInput">
+    <p v-if="readingDevice" class="study-note">
+      在手机上先读代码并手算，再到电脑验证。<CourseLink
+        to="/execution"
+        @navigate="emit('navigate', $event)"
+        >观察逐行执行 →</CourseLink
+      >　<CourseLink to="/complexity" @navigate="emit('navigate', $event)"
+        >做一道复杂度练习 →</CourseLink
+      >
+    </p>
+    <button v-if="!readingDevice" class="text-button" @click="showInput = !showInput">
       {{ showInput ? '收起标准输入' : '需要 Scanner 输入？展开标准输入' }}
     </button>
     <label v-if="showInput" class="mini-output"

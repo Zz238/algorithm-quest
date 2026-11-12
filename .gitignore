@@ -13,3 +13,4 @@ playwright-report/
 dist-offline/
 **/__pycache__/
 **/target/
+.impeccable/review/

@@ -3,6 +3,10 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import UiButton from './ui/UiButton.vue';
 import UiStatus from './ui/UiStatus.vue';
 import { explainJavaError, parseCaseOutput } from '../java/feedback.js';
+import { useReadingDevice, runtimeConsent } from '../java/device-policy.js';
+const readingDevice = useReadingDevice();
+const consent = ref(false),
+  pendingRun = ref(true);
 const props = defineProps({
   source: String,
   sampleSource: String,
@@ -42,7 +46,12 @@ watch(
   },
 );
 async function execute(all = true) {
-  if (busy.value || props.disabled) return;
+  if (busy.value || props.disabled || readingDevice.value) return;
+  if (!runtimeConsent.accepted) {
+    pendingRun.value = all;
+    consent.value = true;
+    return;
+  }
   busy.value = true;
   emit('diagnostics', []);
   result.value = null;
@@ -95,18 +104,35 @@ function stop() {
   phase.value = '';
   failure.value = '已停止运行。代码草稿保留。';
 }
+function acceptRuntime() {
+  runtimeConsent.accepted = true;
+  consent.value = false;
+  return execute(pendingRun.value);
+}
+watch(readingDevice, (value) => {
+  if (value && busy.value) stop();
+});
 onUnmounted(() => {
   runToken++;
   engine?.dispose();
 });
-defineExpose({ execute });
+defineExpose({ execute, acceptRuntime });
 function editorLine(d) {
   const line = d.line - props.lineOffset;
   return line > 0 && line <= (props.editableLines || props.source.split('\n').length) ? line : null;
 }
 </script>
 <template>
-  <section class="java-run-panel" aria-label="Java 运行与判题">
+  <section v-if="!readingDevice" class="java-run-panel" aria-label="Java 运行与判题">
+    <div v-if="consent" class="runtime-consent study-note" role="group" aria-label="首次运行流量提醒">
+      <strong>首次运行需要下载 Java 浏览器运行沙盒</strong>
+      <p>
+        请预留约 15–20 MB
+        或更多流量；实际大小取决于缓存和程序使用的类库。弱网下可能需要较长时间。是否开始加载？
+      </p>
+      <button class="primary" @click="acceptRuntime">开始加载并运行</button
+      ><button @click="consent = false">暂不加载</button>
+    </div>
     <div class="study-actions">
       <UiButton v-if="sampleSource" icon="play" :disabled="busy || disabled" @click="execute(false)"
         >运行示例</UiButton
@@ -124,12 +150,16 @@ function editorLine(d) {
     <UiStatus v-if="busy" :loading="true" kind="waiting">{{
       messages[phase] || messages.loading
     }}</UiStatus>
+    <progress v-if="busy" aria-label="Java 环境当前阶段，无法获取下载字节进度"></progress>
     <p class="micro">
       Built with <a href="https://cheerpj.com/" target="_blank" rel="noopener">CheerpJ ↗</a> · Java
       在当前浏览器的隔离环境中运行；首次加载需要联网。代码不会发送给判题服务器。执行阶段最多 5
       秒，输出最多 16 KB。
     </p>
-    <div v-if="failure" class="coding-feedback is-error" role="alert">{{ failure }}</div>
+    <div v-if="failure" class="coding-feedback is-error" role="alert">
+      {{ failure }}
+      <p v-if="/超时/.test(failure)">{{ explainJavaError(failure) }}</p>
+    </div>
     <div v-if="result" class="coding-result" aria-live="polite">
       <p
         :class="[
@@ -180,6 +210,9 @@ function editorLine(d) {
         </div>
       </div>
       <div v-if="parsed.output || result.stderr">
+        <p v-if="result.stderr" class="coding-feedback is-error">
+          {{ explainJavaError(result.stderr) }}
+        </p>
         <h3>程序输出</h3>
         <pre
           class="study-code"
@@ -187,4 +220,8 @@ function editorLine(d) {
       </div>
     </div>
   </section>
+  <p v-else class="study-note">
+    当前为触屏／小屏阅读模式，不加载 Java
+    运行环境。可以阅读高亮代码、完成填空或手算推演；需要真实编译时，请在电脑端打开同一课程。
+  </p>
 </template>

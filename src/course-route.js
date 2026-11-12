@@ -23,6 +23,10 @@ const staticRoutes = new Map([
   ['/practice', 'practice'],
   ['/practice/review', 'practice-review'],
   ['/topics', 'topics'],
+  ['/knowledge', 'knowledge'],
+  ['/execution', 'execution'],
+  ['/compare', 'compare'],
+  ['/complexity', 'complexity'],
 ]);
 
 function parseBaseRoute(input, terms = {}) {
@@ -96,6 +100,10 @@ export function parseRoute(input, terms = {}) {
 }
 
 const TITLES = {
+  knowledge: '学习知识图谱',
+  execution: '逐行执行与内存',
+  compare: '算法对比辨析',
+  complexity: '复杂度训练',
   home: '课程目录',
   search: '搜索课程与笔记',
   glossary: '术语手册',

@@ -27,7 +27,7 @@
 
 ## 来源
 
-Uiverse 是可独立使用的 HTML/CSS 元素集合，本项目将选定交互适配为 Vue 组件。Morphicons 使用项目中已经锁定的版本，新增图标路径为本地定义。具体来源、作者和 MIT 文本见 [第三方说明](THIRD_PARTY_NOTICES.md)。
+Uiverse 是可独立使用的 HTML/CSS 元素集合，本项目将选定交互适配为 Vue 组件。Morphicons 使用项目中已经锁定的版本，新增图标路径为本地定义。具体来源、作者和 MIT 文本见 [第三方说明](../THIRD_PARTY_NOTICES.md)。
 
 ## 验证
 

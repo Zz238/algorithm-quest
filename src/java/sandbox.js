@@ -1,5 +1,6 @@
 import workerSource from './java-worker.js?raw';
 import runnerUrl from './generated/runner.jar?url';
+import { isReadingDevice } from './device-policy.js';
 
 const frameDocument = `<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob: https://cjrtnc.leaningtech.com; worker-src blob:; connect-src https://cjrtnc.leaningtech.com; child-src blob:"><script>
 addEventListener('message', function boot(event) {
@@ -114,6 +115,7 @@ export function createJavaSandbox({
     return promise;
   }
   async function run({ source, stdin = '', entryClass = 'Main' }) {
+    if (isReadingDevice()) throw new Error('触屏或小屏设备使用阅读与手算模式，不加载 Java 运行环境。');
     if (pending || loading) throw new Error('上一项任务仍在运行，请先停止。');
     await initialize();
     return new Promise((resolve, reject) => {

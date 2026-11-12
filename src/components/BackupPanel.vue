@@ -1,12 +1,64 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 import { lessonIds } from '../course-route.js';
 import { findLesson } from '../data/course.js';
 import { describeBackup, mergeBackup, parseBackup, resetProgress } from '../progress-backup.js';
 import { downloadText } from '../download.js';
 import ConfirmAction from './ConfirmAction.vue';
-
+import { encryptBackup, decryptBackup } from '../encrypted-backup.js';
 const props = defineProps({ progress: Object, owner: String, disabled: Boolean, recoveries: Array });
+const password = ref(''),
+  transferCode = ref(''),
+  transferBusy = ref(false),
+  transferStatus = ref('');
+let transferToken = 0;
+function clearTransfer() {
+  transferToken++;
+  transferBusy.value = false;
+  password.value = '';
+  transferCode.value = '';
+  transferStatus.value = '';
+  incoming.value = null;
+  error.value = '';
+}
+watch(() => props.owner, clearTransfer);
+onUnmounted(clearTransfer);
+async function transfer(action) {
+  if (transferBusy.value || props.disabled) return;
+  const owner = props.owner,
+    token = ++transferToken;
+  transferBusy.value = true;
+  error.value = '';
+  transferStatus.value = '';
+  try {
+    if (action === 'export') {
+      const code = await encryptBackup(JSON.parse(JSON.stringify(props.progress)), password.value);
+      if (owner !== props.owner || token !== transferToken) return;
+      transferCode.value = code;
+      transferStatus.value = '已生成，有效期 24 小时。复制数据串，在另一台设备输入同一口令并解密预览。';
+    } else {
+      const text = await decryptBackup(transferCode.value, password.value);
+      if (owner !== props.owner || token !== transferToken) return;
+      incoming.value = parseBackup(text, lessonIds);
+      mode.value = 'merge';
+      conflicts.value = 'current';
+      transferStatus.value = '已解密，请核对下方导入预览，再确认合并。';
+    }
+  } catch (e) {
+    if (owner === props.owner && token === transferToken) error.value = e.message;
+  } finally {
+    if (token === transferToken) transferBusy.value = false;
+  }
+}
+async function copyTransfer() {
+  try {
+    await navigator.clipboard.writeText(transferCode.value);
+    transferStatus.value = '已复制加密数据串；请另外传递口令。';
+  } catch {
+    transferStatus.value = '浏览器不允许自动复制，请选中数据串手动复制。';
+  }
+}
+
 const emit = defineEmits(['apply', 'reset']);
 const incoming = ref(null),
   mode = ref('merge'),
@@ -88,6 +140,42 @@ function confirmReset() {
         <input type="file" accept=".json,application/json" :disabled="disabled" @change="choose" />
       </label>
     </div>
+    <details class="study-details encrypted-transfer">
+      <summary>免登录跨设备迁移 · 加密数据串</summary>
+      <p>
+        无需 GitHub 账号。使用临时口令在当前设备加密，再把数据串带到另一台设备。AES-GCM 加密，24
+        小时内可由本页面解密；Base64
+        仅用于编码。数据不上传服务器。到期由设备时间校验，不能撤回已经复制的数据或阻止修改时钟后解密。
+      </p>
+      <label
+        >临时口令（至少 8 个字符）<input
+          v-model="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          maxlength="128"
+          :disabled="transferBusy || disabled" /></label
+      ><label
+        >加密数据串<textarea
+          v-model="transferCode"
+          rows="4"
+          maxlength="2000000"
+          spellcheck="false"
+          :disabled="transferBusy || disabled"
+        />
+      </label>
+      <div class="study-actions">
+        <button :disabled="disabled || transferBusy || password.length < 8" @click="transfer('export')">
+          {{ transferBusy ? '正在处理…' : '生成加密数据串' }}</button
+        ><button
+          :disabled="disabled || transferBusy || !transferCode || password.length < 8"
+          @click="transfer('import')"
+        >
+          解密并预览导入</button
+        ><button :disabled="!transferCode || transferBusy" @click="copyTransfer">复制数据串</button>
+      </div>
+      <p v-if="transferStatus" role="status">{{ transferStatus }}</p>
+    </details>
     <p v-if="error" class="backup-error" role="alert">{{ error }}</p>
     <div v-if="overview" class="backup-preview" aria-label="备份导入预览">
       <h3>导入预览</h3>

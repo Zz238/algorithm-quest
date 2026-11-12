@@ -25,6 +25,7 @@ import SiteBreadcrumbs from './components/SiteBreadcrumbs.vue';
 import { CODING_SERVICE, recordCoding } from './coding-progress.js';
 import { recordStudyActivity } from './study-state.js';
 import { ALGORITHM_TOPIC_BY_ID } from './data/algorithm-roadmap.js';
+import { LEARNING_INSIGHTS } from './learning-insights.js';
 const lazy = (loader) =>
   defineAsyncComponent({
     loader,
@@ -32,6 +33,10 @@ const lazy = (loader) =>
     errorComponent: PageLoadError,
     delay: 100,
   });
+const KnowledgePage = lazy(() => import('./pages/KnowledgePage.vue'));
+const ExecutionPage = lazy(() => import('./pages/ExecutionPage.vue'));
+const ComparePage = lazy(() => import('./pages/ComparePage.vue'));
+const ComplexityPage = lazy(() => import('./pages/ComplexityPage.vue'));
 const CareerPage = lazy(() => import('./pages/CareerPage.vue'));
 const PracticePage = lazy(() => import('./pages/PracticePage.vue'));
 const AlgorithmTopics = lazy(() => import('./pages/AlgorithmTopics.vue'));
@@ -104,6 +109,21 @@ const { path, current, go, navigating, pageContent, resume, refreshResume } = us
   COURSE_TERMS,
 );
 const readingPrefs = useReadingPreferences();
+provide(LEARNING_INSIGHTS, {
+  record(attempt) {
+    if (cloud.state.initializing) return;
+    const attempts = progress.learning.attempts || [];
+    progress.learning.attempts = [
+      ...attempts,
+      {
+        ...attempt,
+        id: crypto.randomUUID(),
+        at: Date.now(),
+        topic: current.value.lesson?.id || current.value.topic || current.value.path,
+      },
+    ].slice(-600);
+  },
+});
 const notesWide = ref(false);
 const view = computed(() => current.value.view);
 const chapter = computed(() => current.value.chapter);
@@ -316,6 +336,8 @@ onUnmounted(() => {
         :user="cloud.state.user"
         :view="view"
         :course-path="['home', 'learn', 'boss', 'java'].includes(view) ? '/' : resumePath"
+        :theme="readingPrefs.theme"
+        @theme="readingPrefs.theme = $event"
         @navigate="go"
       />
       <SiteBreadcrumbs :route="current" @navigate="go" />
@@ -369,6 +391,16 @@ onUnmounted(() => {
           :navigating="navigating"
           @navigate="go"
         />
+        <KnowledgePage v-else-if="view === 'knowledge'" :progress="progress" @navigate="go" />
+        <ExecutionPage v-else-if="view === 'execution'" @navigate="go" />
+        <ComparePage v-else-if="view === 'compare'" @navigate="go" />
+        <ComplexityPage
+          v-else-if="view === 'complexity'"
+          :owner="owner"
+          :progress="progress"
+          :disabled="cloud.state.initializing"
+          @navigate="go"
+        />
         <JavaStarter
           v-else-if="view === 'java'"
           :unit-id="current.topic"
@@ -391,7 +423,7 @@ onUnmounted(() => {
           @wrong="markWrong"
         />
         <BeginnerTrial v-else-if="view === 'trial'" :owner="owner" @navigate="go" />
-        <JavaPlayground v-else-if="view === 'playground'" :owner="owner" />
+        <JavaPlayground v-else-if="view === 'playground'" :owner="owner" @navigate="go" />
         <AlgorithmTopics
           v-else-if="view === 'topics'"
           :topic-id="current.topic"
