@@ -106,11 +106,22 @@
 }
 .knowledge-canvas {
   max-width: 100%;
-  max-height: 630px;
-  overflow: auto;
   border: 1px solid var(--line);
   margin: 24px 0;
   background: var(--paper);
+}
+.knowledge-canvas > svg {
+  display: block;
+  width: 100%;
+}
+.coding-filters > .ui-search-group {
+  margin-block: 0;
+}
+.adaptive-toggle {
+  align-items: center;
+}
+.adaptive-toggle .ui-checkbox-control {
+  margin-top: 0;
 }
 .knowledge-edge {
   stroke: var(--line);

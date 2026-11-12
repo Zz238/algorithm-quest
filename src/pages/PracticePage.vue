@@ -9,6 +9,7 @@ import { localDateKey } from '../study-state.js';
 import JavaCodingTask from '../components/JavaCodingTask.vue';
 import CourseLink from '../components/CourseLink.vue';
 import UiSearchField from '../components/ui/UiSearchField.vue';
+import UiCheckbox from '../components/ui/UiCheckbox.vue';
 import { ALGORITHM_TOPIC_BY_ID } from '../data/algorithm-roadmap.js';
 import { adaptiveLevel, recommendTasks } from '../learning-insights.js';
 const props = defineProps({ taskId: String, owner: String, review: Boolean, disabled: Boolean });
@@ -79,8 +80,7 @@ const related = computed(() => {
         {{ CODING_TASKS.length }}
         项独立任务。从修改一个返回值，到完成数据结构和阶段作品。先通过对应讲解，再选任务；“工程基础”和“进阶衔接”有单独的补充说明。
       </p>
-      <div class="practice-toolbar">
-        <label><input v-model="adaptive" type="checkbox" /> 自适应推荐</label>
+      <div class="practice-toolbar coding-filters">
         <UiSearchField
           v-model="query"
           label="搜索编程任务"
@@ -94,6 +94,7 @@ const related = computed(() => {
           </select></label
         >
       </div>
+      <UiCheckbox v-model="adaptive" class="adaptive-toggle">自适应推荐</UiCheckbox>
       <p class="micro">
         <span v-if="adaptive"
           >根据最近 12 次有效答题的正确率和耗时推荐，当前建议：{{

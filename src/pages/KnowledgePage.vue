@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { chapters, JAVA_INDEX, lessonRoute } from '../data/course-index.js';
 import { ALGORITHM_TOPICS } from '../data/algorithm-roadmap.js';
 import { TOPIC_LESSONS } from '../data/algorithm-topics.js';
@@ -10,30 +10,38 @@ const emit = defineEmits(['navigate']);
 const query = ref(''),
   scope = ref('all'),
   selected = ref('');
+const canvas = ref(null),
+  canvasWidth = ref(828);
+let resizeObserver;
+onMounted(() => {
+  if (canvas.value.clientWidth) canvasWidth.value = canvas.value.clientWidth;
+  if (typeof ResizeObserver === 'undefined') return;
+  resizeObserver = new ResizeObserver(([entry]) => {
+    canvasWidth.value = entry.contentRect.width;
+  });
+  resizeObserver.observe(canvas.value);
+});
+onUnmounted(() => resizeObserver?.disconnect());
 const nodes = computed(() => [
-  ...Object.values(JAVA_INDEX).map((j, i) => ({
+  ...Object.values(JAVA_INDEX).map((j) => ({
     id: j.id,
     title: j.title,
     group: 'Java 预备课',
     path: '/java/' + j.id.slice(5),
     dependencies: [],
     done: props.progress.learning.prepared.includes(j.id),
-    x: 24,
-    y: 40 + i * 58,
   })),
   ...chapters.flatMap((c) =>
-    c.lessons.map((l, i) => ({
+    c.lessons.map((l) => ({
       id: l.id,
       title: l.title,
       group: '第 ' + c.id + ' 章',
       path: lessonRoute(l.id),
       dependencies: priorIds(l.id),
       done: props.progress.lessons.includes(l.id),
-      x: 270 + ((c.id - 1) % 4) * 245,
-      y: 40 + Math.floor((c.id - 1) / 4) * 410 + i * 58,
     })),
   ),
-  ...ALGORITHM_TOPICS.map((t, i) => ({
+  ...ALGORITHM_TOPICS.map((t) => ({
     id: 'topic-' + t.id,
     title: t.title,
     group: '算法专题',
@@ -42,8 +50,6 @@ const nodes = computed(() => [
       ALGORITHM_TOPICS.some((a) => a.id === id) ? 'topic-' + id : id,
     ),
     done: props.progress.learning.topicsRead.includes(t.id),
-    x: 1250 + (i % 3) * 245,
-    y: 40 + Math.floor(i / 3) * 78,
   })),
 ]);
 const byId = computed(() => Object.fromEntries(nodes.value.map((n) => [n.id, n])));
@@ -55,12 +61,38 @@ const visible = computed(() =>
       (scope.value === 'all' || (scope.value === 'done' ? n.done : !n.done)),
   ),
 );
+const columns = computed(() => Math.max(1, Math.floor((canvasWidth.value - 24) / 245)));
+const nodeWidth = computed(() => (canvasWidth.value - 48 - (columns.value - 1) * 35) / columns.value);
+const positioned = computed(() =>
+  visible.value.map((node, i) => ({
+    ...node,
+    x: 24 + (i % columns.value) * (nodeWidth.value + 35),
+    y: 24 + Math.floor(i / columns.value) * 76,
+  })),
+);
+const canvasHeight = computed(() =>
+  Math.max(96, Math.ceil(visible.value.length / columns.value) * 76 + 24),
+);
 const links = computed(() => {
-  const shown = new Set(visible.value.map((n) => n.id));
-  return visible.value.flatMap((n) =>
-    n.dependencies.filter((id) => shown.has(id)).map((id) => ({ from: byId.value[id], to: n })),
+  const shown = new Map(positioned.value.map((n) => [n.id, n]));
+  return positioned.value.flatMap((n) =>
+    n.dependencies.filter((id) => shown.has(id)).map((id) => ({ from: shown.get(id), to: n })),
   );
 });
+function edgePath({ from, to }) {
+  if (from.y === to.y) return `M${from.x + nodeWidth.value},${from.y + 26} H${to.x}`;
+  const startX = from.x + nodeWidth.value / 2,
+    endX = to.x + nodeWidth.value / 2,
+    laneX = Math.min(from.x, to.x) - 14;
+  return `M${startX},${from.y + 52} V${from.y + 64} H${laneX} V${to.y - 12} H${endX} V${to.y}`;
+}
+function titleLines(node) {
+  const title = (node.done ? '已读 · ' : '') + node.title;
+  const count = Math.max(10, Math.floor((nodeWidth.value - 20) / 12));
+  return title.length > count
+    ? [title.slice(0, count), title.slice(count, count * 2 - 1) + (title.length >= count * 2 ? '…' : '')]
+    : [title];
+}
 function related(n) {
   return (
     !selected.value ||
@@ -89,13 +121,13 @@ function related(n) {
       ><button v-if="selected" @click="selected = ''">取消聚焦</button>
     </div>
     <p class="micro">
-      可横向滚动图谱；悬停或聚焦节点查看依赖，点击节点进入课程。键盘用户也可在下方节点列表中直接进入。
+      图谱随页面完整展开；悬停或聚焦节点查看依赖，点击节点进入课程。键盘用户也可在下方节点列表中直接进入。
     </p>
-    <div class="knowledge-canvas" tabindex="0" aria-label="知识依赖图，可滚动">
+    <div ref="canvas" class="knowledge-canvas" aria-label="完整知识依赖图">
       <svg
-        viewBox="0 0 1990 1300"
-        width="1990"
-        height="1300"
+        :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
+        width="100%"
+        :height="canvasHeight"
         role="group"
         aria-label="课程与专题的前置关系"
       >
@@ -114,13 +146,13 @@ function related(n) {
         <path
           v-for="edge in links"
           :key="edge.from.id + ':' + edge.to.id"
-          :d="`M${edge.from.x + 210},${edge.from.y + 21} C${edge.from.x + 235},${edge.from.y + 21} ${edge.to.x - 25},${edge.to.y + 21} ${edge.to.x},${edge.to.y + 21}`"
+          :d="edgePath(edge)"
           fill="none"
           :class="['knowledge-edge', { focused: selected === edge.from.id || selected === edge.to.id }]"
           marker-end="url(#knowledge-arrow)"
         />
         <g
-          v-for="n in visible"
+          v-for="n in positioned"
           :key="n.id"
           :transform="`translate(${n.x},${n.y})`"
           :class="['knowledge-node', { done: n.done, dim: !related(n), selected: n.id === selected }]"
@@ -134,9 +166,9 @@ function related(n) {
           @keydown.space.prevent="emit('navigate', n.path)"
         >
           <title>{{ n.group }} · {{ n.title }}</title>
-          <rect width="210" height="42" rx="6" />
-          <text x="10" y="26">
-            {{ n.done ? '已读 · ' : '' }}{{ n.title.length > 14 ? n.title.slice(0, 14) + '…' : n.title }}
+          <rect :width="nodeWidth" height="52" rx="6" />
+          <text x="10" :y="titleLines(n).length === 1 ? 31 : 21">
+            <tspan v-for="(line, i) in titleLines(n)" :key="i" x="10" :dy="i ? 18 : 0">{{ line }}</tspan>
           </text>
         </g>
       </svg>
