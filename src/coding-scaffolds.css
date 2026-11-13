@@ -1,0 +1,221 @@
+.coding-scaffold {
+  min-width: 0;
+  margin-block: 24px;
+}
+.coding-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+.coding-mode-tabs button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+}
+.coding-mode-tabs button[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--subtle);
+  font-weight: 700;
+}
+.coding-mode-tabs button:focus-visible,
+.coding-block-actions button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.coding-mode-done {
+  color: var(--green);
+  font-size: 12px;
+}
+.coding-mode-intro {
+  margin-block: 24px 16px;
+}
+.coding-mode-intro h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+.coding-mode-intro p,
+.coding-learning-guide li {
+  line-height: 1.8;
+}
+.coding-mode-intro p {
+  margin: 0;
+  color: var(--muted);
+}
+.coding-file-context,
+.coding-blank-code {
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.coding-file-context {
+  margin: 0;
+  padding: 12px 18px;
+  background: var(--subtle);
+}
+.coding-blank-code {
+  padding: 10px 22px;
+  background: var(--subtle);
+}
+.coding-blank-code code {
+  font: inherit;
+  color: var(--ink);
+}
+.coding-blank-code textarea {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  min-height: 44px;
+  margin: 4px 3px;
+  padding: 6px 9px;
+  resize: vertical;
+  field-sizing: content;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px dashed var(--green);
+  border-radius: 5px;
+}
+.coding-blank-code textarea.is-multiline {
+  display: block;
+  width: 100% !important;
+  margin-inline: 0;
+}
+.coding-scaffold-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.coding-blocks {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.coding-blocks > li {
+  padding: 12px;
+  background: var(--subtle);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  cursor: grab;
+}
+.coding-blocks > li.is-dragging {
+  opacity: 0.5;
+}
+.coding-block-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+.coding-block-index {
+  flex: 0 0 20px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.coding-block-line code {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+  line-height: 1.8;
+}
+.coding-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+}
+.coding-block-actions button {
+  min-height: 36px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.coding-block-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.coding-typing-surface {
+  display: grid;
+  position: relative;
+  min-width: 0;
+  background: var(--subtle);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.coding-typing-ghost,
+.coding-typing-surface textarea {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 0;
+  font-family: var(--mono);
+  font-size: 16px;
+  line-height: 1.8;
+  letter-spacing: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+  box-sizing: border-box;
+}
+.coding-typing-ghost {
+  color: var(--muted);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.coding-typing-surface textarea {
+  position: relative;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--green);
+  resize: vertical;
+  overflow: hidden;
+  field-sizing: content;
+}
+.coding-typing details,
+.coding-learning-guide {
+  margin-top: 20px;
+}
+.coding-learning-guide {
+  padding-block: 16px;
+  border-block: 1px solid var(--line);
+}
+.coding-learning-guide summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 28px;
+}
+.coding-learning-guide li {
+  margin: 12px 0;
+}
+@media (max-width: 600px) {
+  .coding-mode-tabs button {
+    flex: 1 1 44%;
+  }
+  .coding-block-actions button {
+    min-height: 44px;
+  }
+  .coding-blank-code {
+    padding-inline: 12px;
+  }
+}

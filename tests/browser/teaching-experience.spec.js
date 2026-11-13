@@ -99,6 +99,7 @@ test('touch devices get highlighted readonly code and hand calculation without r
   });
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/#/practice/code-greeting');
+  await page.getByRole('button', { name: '第三关 · 独立编写', exact: true }).click();
   await expect(page.locator('.readonly-java')).toBeVisible();
   await page.locator('.readonly-java summary').click();
   await expect(page.locator('.syntax-keyword').first()).toBeVisible();

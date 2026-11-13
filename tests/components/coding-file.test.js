@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import JavaCodingTask from '../../src/components/JavaCodingTask.vue';
 import JavaCodeEditor from '../../src/components/JavaCodeEditor.vue';
 import JavaRunPanel from '../../src/components/JavaRunPanel.vue';
+import CodingScaffold from '../../src/components/CodingScaffold.vue';
 import { CODING_BY_ID } from '../../src/data/coding-catalog.js';
 import {
   buildLearnerProgram,
@@ -13,8 +14,13 @@ import { browserStorage, clearStudyDrafts, draftKey, writeDraft } from '../../sr
 
 describe('complete Main.java coding files', () => {
   const task = CODING_BY_ID['code-greeting'];
-  it('keeps the class, target method and executable main in one editor without a separate method heading', () => {
-    const wrapper = shallowMount(JavaCodingTask, { props: { task, owner: 'file-heading' } });
+  it('keeps the class, target method and executable main in the independent editor without a separate method heading', async () => {
+    const wrapper = shallowMount(JavaCodingTask, {
+      props: { task, owner: 'file-heading' },
+      global: { renderStubDefaultSlot: true },
+    });
+    wrapper.findComponent(CodingScaffold).vm.$emit('mode', 'independent');
+    await wrapper.vm.$nextTick();
     const editor = wrapper.findComponent(JavaCodeEditor);
     expect(editor.props('modelValue')).toContain('public class Main {');
     expect(editor.props('modelValue')).toContain('public static String greet(String name) {');
@@ -36,7 +42,10 @@ describe('complete Main.java coding files', () => {
       { body: 'return "旧草稿" + name;', hints: 1, reference: true },
       browserStorage(),
     );
-    let wrapper = shallowMount(JavaCodingTask, { props: { task, owner } });
+    let wrapper = shallowMount(JavaCodingTask, {
+      props: { task, owner },
+      global: { renderStubDefaultSlot: true },
+    });
     expect(wrapper.findComponent(JavaCodeEditor).props('modelValue')).toContain(
       'return "旧草稿" + name;',
     );
@@ -48,10 +57,18 @@ describe('complete Main.java coding files', () => {
     wrapper.findComponent(JavaCodeEditor).vm.$emit('update:modelValue', edited);
     await wrapper.vm.$nextTick();
     wrapper.unmount();
-    wrapper = shallowMount(JavaCodingTask, { props: { task, owner } });
+    wrapper = shallowMount(JavaCodingTask, {
+      props: { task, owner },
+      global: { renderStubDefaultSlot: true },
+    });
     expect(wrapper.findComponent(JavaCodeEditor).props('modelValue')).toBe(edited);
     wrapper.unmount();
-    wrapper = shallowMount(JavaCodingTask, { props: { task, owner: other } });
+    wrapper = shallowMount(JavaCodingTask, {
+      props: { task, owner: other },
+      global: { renderStubDefaultSlot: true },
+    });
+    wrapper.findComponent(CodingScaffold).vm.$emit('mode', 'independent');
+    await wrapper.vm.$nextTick();
     expect(wrapper.findComponent(JavaCodeEditor).props('modelValue')).not.toContain('旧草稿');
     expect(wrapper.findComponent(JavaCodeEditor).props('modelValue')).not.toContain('新草稿');
     wrapper.unmount();

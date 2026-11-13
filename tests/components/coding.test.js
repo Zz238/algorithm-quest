@@ -5,6 +5,7 @@ import { freshProgress } from '../../src/logic.js';
 import { CODING_SERVICE, recordCoding } from '../../src/coding-progress.js';
 import JavaCodingTask from '../../src/components/JavaCodingTask.vue';
 import JavaRunPanel from '../../src/components/JavaRunPanel.vue';
+import CodingScaffold from '../../src/components/CodingScaffold.vue';
 import { cleanLearning, mergeLearning } from '../../src/study-state.js';
 import { parseRoute } from '../../src/course-route.js';
 import { COURSE_TERMS } from '../../src/data/course-index.js';
@@ -14,7 +15,7 @@ import { CODING_BY_ID } from '../../src/data/coding-catalog.js';
 import { explainJavaError, parseCaseOutput } from '../../src/java/feedback.js';
 import { careerProjectFiles, zipFiles } from '../../src/project-export.js';
 describe('coding practice and career learning', () => {
-  it('ignores a completed run after its account has changed', () => {
+  it('ignores a completed run after its account has changed', async () => {
     const task = CODING_BY_ID['code-core-3-2'];
     const owner = ref('first-account');
     const record = vi.fn();
@@ -26,6 +27,8 @@ describe('coding practice and career learning', () => {
         },
       },
     });
+    wrapper.findComponent(CodingScaffold).vm.$emit('mode', 'independent');
+    await wrapper.vm.$nextTick();
     const result = { all: true, state: 'finished', cases: task.cases.map(() => ({ ok: true })) };
     owner.value = 'second-account';
     wrapper.findComponent(JavaRunPanel).vm.$emit('result', result);
