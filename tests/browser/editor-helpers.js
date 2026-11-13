@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { buildLearnerProgram } from '../../src/java/coding-program.js';
 import { CODING_BY_ID } from '../../src/data/coding-catalog.js';
 export async function editJavaCode(page, label, source) {
+  await page.locator('.java-code-editor, .coding-scaffold').first().waitFor();
   const independent = page.getByRole('button', { name: '第三关 · 独立编写', exact: true });
   if (await independent.count()) await independent.click();
   const editor = page
