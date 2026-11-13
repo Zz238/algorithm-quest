@@ -41,6 +41,8 @@ test('practice search, daily review and drafts work before loading Java resource
     'int total = 7;\nreturn total;',
   );
   await page.reload();
+  await editor.scrollIntoViewIfNeeded();
+  await expect(editor).toHaveAttribute('data-editor-mode', 'monaco');
   await expect(editor).toContainText('int total = 7;');
   await page.goto('/#/practice/review/code-core-3-2');
   await expect(page.locator('.coding-task')).toContainText('累计每项的平方');
@@ -137,5 +139,7 @@ test('a task keeps its complete Main file and runs the edited main separately fr
     { timeout: 150000 },
   );
   await page.reload();
+  await editor.scrollIntoViewIfNeeded();
+  await expect(editor).toHaveAttribute('data-editor-mode', 'monaco');
   await expect(page.locator('.java-code-editor')).toContainText('新同学');
 });
