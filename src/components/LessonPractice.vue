@@ -4,7 +4,14 @@ import PracticeCard from './PracticeCard.vue';
 import { WRITING_DRILLS } from '../data/learning-practice.js';
 import { answerState, withLessonFeedback } from '../answering.js';
 import { useStudyDraft } from '../study-drafts.js';
-const props = defineProps({ lesson: Object, mastered: Boolean, owner: String, disabled: Boolean });
+
+const props = defineProps({
+  lesson: Object,
+  mastered: Boolean,
+  owner: String,
+  disabled: Boolean,
+  draft: Object,
+});
 const emit = defineEmits(['mastered', 'wrong']);
 const base = props.lesson.foundation.practice.map((q, i) => withLessonFeedback(props.lesson.id, q, i));
 const questions = [
@@ -13,9 +20,11 @@ const questions = [
     withLessonFeedback(props.lesson.id, q, 3 + i),
   ),
 ];
-const state = useStudyDraft(props.owner, props.lesson.id, 'exercise', (raw) => ({
-  items: questions.map((q, i) => answerState(q, raw?.items?.[i])),
-}));
+const state =
+  props.draft ||
+  useStudyDraft(props.owner, props.lesson.id, 'exercise', (raw) => ({
+    items: questions.map((q, i) => answerState(q, raw?.items?.[i])),
+  }));
 const passed = computed(() => state.items.slice(0, base.length).filter((s) => s.passed).length);
 function attempted(i, result) {
   if (!result.ok) emit('wrong', props.lesson.id);
@@ -40,7 +49,7 @@ function attempted(i, result) {
         mastered ? '基础练习已通过' : passed + ' / ' + base.length + ' 道基础题已通过'
       }}</span>
     </div>
-    <p>可以先做会的题，稍后回来继续。每题的草稿和结果保存在当前浏览器。</p>
+    <p>可以先做会的题，稍后回来继续；在上方正文自检答过的题目会自动同步到这里。</p>
     <PracticeCard
       v-for="(q, i) in questions"
       :key="state.items[i].sig"

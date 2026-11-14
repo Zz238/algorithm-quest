@@ -6,6 +6,9 @@ import { lessonDemo } from '../lesson-demos.js';
 import { codingForTopic } from '../data/coding-catalog.js';
 import { JAVA_RECAP, CHAPTER_BRIDGES } from '../data/reading-guide.js';
 import { JAVA_BY_ID, javaRoute } from '../data/java-starter.js';
+import { WRITING_DRILLS } from '../data/learning-practice.js';
+import { answerState, withLessonFeedback } from '../answering.js';
+import { useStudyDraft } from '../study-drafts.js';
 import { jumpTo } from '../useCourseNavigation.js';
 import ChapterIntroduction from '../components/ChapterIntroduction.vue';
 import CodeReader from '../components/CodeReader.vue';
@@ -59,6 +62,27 @@ const recap = computed(() => JAVA_BY_ID[JAVA_RECAP[lesson.value.id]]);
 const prepared = computed(
   () => recap.value && props.progress.learning.prepared.includes(recap.value.id),
 );
+const baseQuestions = computed(() =>
+  lesson.value.foundation.practice.map((q, i) => withLessonFeedback(lesson.value.id, q, i)),
+);
+const allQuestions = computed(() => [
+  ...baseQuestions.value,
+  ...(WRITING_DRILLS[lesson.value.id] || []).map((q, i) =>
+    withLessonFeedback(lesson.value.id, q, 3 + i),
+  ),
+]);
+const exerciseDraft = useStudyDraft(props.owner, lesson.value.id, 'exercise', (raw) => ({
+  items: allQuestions.value.map((q, i) => answerState(q, raw?.items?.[i])),
+}));
+function handleInlineAttempt({ index, result }) {
+  if (!result.ok) emit('wrong', lesson.value.id);
+  else if (
+    index < baseQuestions.value.length &&
+    exerciseDraft.items.slice(0, baseQuestions.value.length).every((s) => s.passed)
+  ) {
+    emit('mastered', lesson.value.id);
+  }
+}
 function inspectFigure(index) {
   lab.value?.showExampleStep(index);
   jumpTo('lesson-experiment');
@@ -117,12 +141,15 @@ function inspectFigure(index) {
     </div>
     <NodeAnatomy v-if="lesson.id === '6-1'" />
     <details class="study-details before-reading" data-study-place="before-reading">
-      <summary>需要先会什么 · 本章为什么学这些</summary>
+      <summary>
+        {{ lessonIndex === 0 ? '需要先会什么 · 本章为什么学这些' : '本节目标与前置知识' }}
+      </summary>
       <h2>学完这一节，你能做什么</h2>
       <ul>
         <li v-for="goal in lesson.foundation.goals" :key="goal">{{ goal }}</li>
       </ul>
       <PrerequisitePanel :items="prior" :progress="progress" @navigate="navigate" /><ChapterIntroduction
+        v-if="lessonIndex === 0"
         :key="'intro-' + lesson.id"
         :intro="chapter.introduction"
         :chapter-id="chapter.id"
@@ -133,8 +160,11 @@ function inspectFigure(index) {
     <LessonFoundation
       :lesson="lesson"
       :unit="lesson.foundation"
+      :practice-items="exerciseDraft.items"
+      :disabled="disabled"
       @inspect="inspectFigure"
       @note="emit('note', $event)"
+      @attempt="handleInlineAttempt"
     />
     <section
       id="lesson-experiment"
@@ -207,6 +237,7 @@ boolean equal = (a == b);</code></pre>
       :key="owner + '-' + lesson.id"
       :owner="owner"
       :lesson="lesson"
+      :draft="exerciseDraft"
       :mastered="lessonMastered"
       :disabled="disabled"
       @mastered="emit('mastered', $event)"

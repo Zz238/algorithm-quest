@@ -69,7 +69,6 @@ function attempted(result) {
 </script>
 <template>
   <article class="boss-content" :data-chapter="c.id">
-    <ChapterChallengePair :chapter="c" :owner="owner" :disabled="disabled" />
     <div class="boss-heading">
       <div>
         <span class="eyebrow">章节练习 · LC {{ boss.lc }}</span>
@@ -84,6 +83,7 @@ function attempted(result) {
       <button @click="jumpTo('boss-question')">题目</button>
       <button @click="jumpTo('boss-practice')">练习与提示</button>
       <button @click="jumpTo('boss-solution')">题解</button>
+      <button @click="jumpTo('boss-challenge-pair')">进阶挑战</button>
       <button @click="jumpTo('boss-complete')">登记完成</button>
     </nav>
     <section v-if="!ready" class="boss-section study-note" aria-label="章节练习预览">
@@ -197,6 +197,13 @@ function attempted(result) {
         </div>
       </div>
     </section>
+    <ChapterChallengePair
+      id="boss-challenge-pair"
+      class="study-anchor"
+      :chapter="c"
+      :owner="owner"
+      :disabled="disabled"
+    />
     <section class="clear-chapter study-anchor" id="boss-complete">
       <div>
         <h2>{{ completed ? '本章练习已完成' : '登记本章完成' }}</h2>

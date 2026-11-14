@@ -43,13 +43,6 @@ const profile = computed(() => accountProfile(props.user));
         基础教学
       </CourseLink>
       <CourseLink
-        :class="{ active: view === 'careers' }"
-        :aria-current="view === 'careers' ? 'page' : undefined"
-        to="/careers"
-        @navigate="emit('navigate', $event)"
-        >职业路线</CourseLink
-      >
-      <CourseLink
         :class="{ active: view === 'topics' }"
         :aria-current="view === 'topics' ? 'page' : undefined"
         to="/topics"

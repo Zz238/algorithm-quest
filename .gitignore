@@ -13,4 +13,7 @@ playwright-report/
 dist-offline/
 **/__pycache__/
 **/target/
-.impeccable/review/
+.impeccable/
+.reasonix/
+.oil-ui/
+.agents/

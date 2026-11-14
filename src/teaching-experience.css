@@ -139,14 +139,22 @@
   stroke: var(--line);
 }
 .knowledge-node text {
+  fill: var(--ink);
+  font: 13px var(--font);
+}
+.knowledge-node .node-meta {
   fill: var(--muted);
-  font: 12px var(--font);
+  font-size: 11px;
+}
+.knowledge-node .node-title {
+  font-weight: 600;
 }
 .knowledge-node.done rect {
   fill: var(--soft);
   stroke: var(--green);
 }
-.knowledge-node.done text {
+.knowledge-node.done text,
+.knowledge-node.done .node-meta {
   fill: var(--green);
 }
 .knowledge-node.selected rect,
@@ -155,7 +163,95 @@
   stroke-width: 2;
 }
 .knowledge-node.dim {
-  opacity: 0.35;
+  opacity: 0.32;
+}
+.knowledge-active-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.knowledge-active-card h2 {
+  margin: 4px 0 6px;
+  font-size: 20px;
+}
+.knowledge-active-card p {
+  margin: 0;
+  color: var(--muted);
+}
+.inline-check > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.inline-check.is-passed {
+  border-color: #b4d8c2;
+  background: var(--success-bg, #ecf8f1);
+}
+.inline-check-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success, #126641);
+}
+.coding-mode-tabs button.is-helper {
+  border-style: dashed;
+  opacity: 0.9;
+}
+.practice-quick-links {
+  margin: 16px 0 22px;
+  gap: 12px;
+}
+.practice-quick-links .course-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--subtle);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.practice-quick-links .course-link:hover {
+  background: var(--soft);
+  color: var(--green);
+}
+.starting-route > summary {
+  font-size: 18px;
+}
+.knowledge-page > .eyebrow {
+  display: block;
+  margin-top: 18px;
+}
+@media (min-width: 801px) {
+  .knowledge-page .practice-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+  }
+}
+.brand small {
+  font-size: 11px;
+}
+.stage-number {
+  color: var(--muted);
+}
+@media (max-width: 760px) {
+  .header nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+  .course-sidebar .eyebrow,
+  .chapter-panel-heading .eyebrow,
+  .chapter-trigger,
+  .lesson-notes-trigger {
+    font-size: 11px;
+  }
 }
 .readonly-java {
   margin: 16px 0;

@@ -10,7 +10,15 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'Chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'Chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}),
+      },
+    },
+  ],
   webServer: process.env.ALGO_BROWSER_BASE_URL
     ? undefined
     : {

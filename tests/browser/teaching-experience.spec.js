@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
 test('knowledge dependencies, execution scopes, comparisons and dark reading work in a browser', async ({
   page,
 }) => {
@@ -35,8 +34,6 @@ test('knowledge dependencies, execution scopes, comparisons and dark reading wor
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
     ),
   ).toBe(true);
-  mkdirSync('.impeccable/review', { recursive: true });
-  await page.screenshot({ path: '.impeccable/review/desktop.png', fullPage: true });
   expect(errors).toEqual([]);
 });
 
@@ -115,8 +112,6 @@ test('touch devices get highlighted readonly code and hand calculation without r
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
     ),
   ).toBe(true);
-  mkdirSync('.impeccable/review', { recursive: true });
-  await page.screenshot({ path: '.impeccable/review/mobile.png', fullPage: true });
   expect(requests).toEqual([]);
   expect(errors).toEqual([]);
   await context.close();

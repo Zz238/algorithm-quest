@@ -4,8 +4,13 @@ import GlossedText from './GlossedText.vue';
 import InlineCheck from './InlineCheck.vue';
 import StudyFigures from './StudyFigures.vue';
 import { figurePlacement } from '../data/figure-placement.js';
-const props = defineProps({ unit: Object, lesson: Object });
-const emit = defineEmits(['inspect', 'note']);
+const props = defineProps({
+  unit: Object,
+  lesson: Object,
+  practiceItems: Array,
+  disabled: Boolean,
+});
+const emit = defineEmits(['inspect', 'note', 'attempt']);
 const placement = computed(() => figurePlacement(props.lesson));
 </script>
 <template>
@@ -76,7 +81,10 @@ const placement = computed(() => figurePlacement(props.lesson));
       <InlineCheck
         v-if="i < 2"
         :question="unit.practice[i]"
+        :state="practiceItems?.[i]"
+        :disabled="disabled"
         :label="i === 0 ? '停一下，确认这个概念' : '动手推演一次'"
+        @attempt="emit('attempt', { index: i, result: $event })"
       />
     </section>
   </section>

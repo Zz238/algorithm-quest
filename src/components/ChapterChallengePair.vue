@@ -18,14 +18,19 @@ const pair = computed(() =>
 </script>
 <template>
   <section class="chapter-challenge-pair boss-section">
-    <h2>每章两步：概念验证与应用进阶</h2>
-    <p>Easy 检查概念，Medium 检验迁移。进阶题可分阶段完成，不增加本章登记完成的门槛。</p>
+    <div class="section-bar">
+      <div>
+        <span class="eyebrow">选做进阶 · 不影响本章过关登记</span>
+        <h2>同章挑战配对：从达标到进阶</h2>
+      </div>
+    </div>
+    <p>完成上方本章正题后，可在这里挑战同主题的进阶手算题。Easy 检验基础概念，Medium 检验条件与边界迁移。</p>
     <ol class="challenge-pair-list">
       <li v-for="item in pair" :key="item.lc">
         <strong>{{ item.difficulty }} · LC {{ item.lc }} · {{ item.title }}</strong>
-        <p>{{ item.existing ? '本章完整讲解与练习在下方。' : item.prerequisite }}</p>
+        <p>{{ item.existing ? '上方正题：本章核心必做练习。' : item.prerequisite }}</p>
         <a v-if="!item.existing" :href="item.url" target="_blank" rel="noopener">力扣原题 ↗</a
-        ><a v-else href="#boss-question">阅读本章题解 ↓</a>
+        ><a v-else href="#boss-question">回到上方正题 ↑</a>
       </li>
     </ol>
     <h3>{{ extra.difficulty }} · {{ extra.title }} · 本地手算练习</h3>

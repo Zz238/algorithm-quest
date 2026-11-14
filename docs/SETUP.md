@@ -10,9 +10,7 @@
 
 ## 开发启动
 
-Node.js 需要满足 package.json 的 engines 条件：20.19+ 或 22.12+；建议使用受支持的 LTS 版本。本轮本机实际运行 Node 24.19.0。
-
-Windows：解压完整项目后，双击 `start-windows.bat`。首次会安装锁定依赖，然后打开浏览器。也可以在项目根目录的终端执行：
+Node.js 需要满足 package.json 的 engines 条件：20.19+ 或 22.12+；建议使用受支持的 LTS 版本。在项目根目录的终端执行：
 
 ```bash
 npm ci
@@ -20,8 +18,6 @@ npm run dev
 ```
 
 默认地址为 `http://127.0.0.1:5173/`，以终端实际显示地址为准。如果端口已占用，Vite 会选择下一个可用端口。停止服务可在终端按 Ctrl+C。
-
-macOS：在终端执行 `sh start-macos.command`，或在项目根目录执行同样的 npm 命令。
 
 首次安装依赖需要联网；安装后课程功能不依赖外部服务。点击力扣或参考资料链接时需要联网。
 
@@ -36,8 +32,6 @@ npm run preview
 
 ## 验证
 
-## 验证
-
 ```bash
 npm run lint
 npm run format:check
@@ -48,6 +42,8 @@ npm run test:components
 npm run check:cloud
 npm run check:comments
 npm run check:reading
+npm run check:coding
+npm run check:topics
 ```
 
 基础内容与参考算法检查只需要 Node。检查命令只读源码；Java 编译和运行使用临时目录。只跑 Node 检查可使用 `npm run check -- --skip-java`。

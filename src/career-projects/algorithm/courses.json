@@ -1,7 +1,0 @@
-[
-  {"id":"arrays","tags":["array","index"],"requires":[]},
-  {"id":"loops","tags":["array","loop"],"requires":[]},
-  {"id":"hash","tags":["array","lookup"],"requires":["arrays"]},
-  {"id":"recursion","tags":["call","function"],"requires":["loops"]},
-  {"id":"trees","tags":["tree","recursion"],"requires":["recursion"]}
-]

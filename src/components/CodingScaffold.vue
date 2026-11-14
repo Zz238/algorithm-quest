@@ -112,6 +112,7 @@ function indent(id, delta) {
         v-for="[id, label] in modes"
         :key="id"
         type="button"
+        :class="{ 'is-helper': id === 'parsons' || id === 'typing' }"
         :aria-pressed="state.mode === id"
         :disabled="disabled"
         @click="changeMode(id)"
@@ -288,11 +289,11 @@ function indent(id, delta) {
       </div>
       <p v-if="feedback" class="coding-feedback" role="status">{{ feedback }}</p>
       <p class="micro">
-        参考核对只比较本题参考写法，不代表 Java 已编译或通过测试。{{
+        「按参考写法核对」仅快速比对填空文本是否与标准模板相同；{{
           reading
-            ? '手机端可继续填空、排序和跟打；请在电脑端提交真实测试。'
-            : '也可以在下方提交全部测试，检验拼出的真实 Java 代码。'
-        }}辅助模式完成会单独记录，不计为独立通过。
+            ? '触屏设备可继续填空、积木排序与跟打，真实 Java 编译判题请在电脑端切换至「第三关 · 独立编写」提交。'
+            : '若你写了等价的不同写法，可直接在下方点击「提交全部测试」运行真实 Java 判题。'
+        }}
       </p>
     </template>
     <details class="coding-learning-guide">

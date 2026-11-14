@@ -14,7 +14,6 @@ addEventListener('message', function boot(event) {
     worker.onmessage = e => {
       if(e.data.type === 'ready' && nextRun) { worker.postMessage(nextRun); nextRun = null; return; }
       port.postMessage(e.data);
-      if(e.data.type === 'result') { worker.terminate(); worker = null; }
     };
     worker.onerror = e => port.postMessage({type:'error', message:e.message || 'Java worker could not start'});
     worker.postMessage({type:'init', jar:event.data.jar});

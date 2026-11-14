@@ -24,13 +24,17 @@ function run(key, source) {
     timeout: 20000,
   });
   assert.equal(compile.status, 0, `${key}: ${compile.stderr}`);
-  return spawnSync(java, ['-cp', dir, 'Main'], { encoding: 'utf8', timeout: 5000 });
+  return spawnSync(
+    java,
+    ['-Dfile.encoding=UTF-8', '-Dsun.stdout.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-cp', dir, 'Main'],
+    { encoding: 'utf8', timeout: 5000 },
+  );
 }
 try {
   for (const u of JAVA_UNITS) {
     const r = run(u.id, u.example.source);
     assert.equal(r.status, 0, r.stderr);
-    assert.equal(r.stdout.trim(), u.example.expected, u.id);
+    assert.equal(r.stdout.replace(/\r\n/g, '\n').trim(), u.example.expected, u.id);
   }
   const tasks = { ...JAVA_TASKS, ...PROJECT_TASKS };
   for (const [id, t] of Object.entries(tasks)) {

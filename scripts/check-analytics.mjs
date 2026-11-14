@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {randomUUID,createHash} from 'node:crypto';
-import http from 'node:http';
+import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
 import {createTrafficTracker,TRAFFIC_VISITOR_KEY,TRAFFIC_CHOICE_KEY,trafficDay,externalSource,trafficAllowed} from '../src/analytics.js';
-import {createAdminServer,ADMIN_HOST} from '../admin/server.mjs';
 import {chapters} from '../src/data/course.js';
 
 // Browser collection: SPA navigation, deduplication, privacy choices, per-day identity.
@@ -66,31 +64,4 @@ await db.exec(fs.readFileSync(new URL('../supabase/tests/traffic_analytics_deplo
 assert.equal(await scalar('select count(*)::integer from algo_quest_analytics.visits'),beforeSmoke,'Deployment checks must leave no synthetic records.');
 await db.close();
 
-// Real HTTP server: loopback binding, DNS-rebinding/CSRF protections, PKCE and admin session.
-const port=4789,origin='http://127.0.0.1:'+port,cloudCalls=[];let allowAdmin=true;
-const mockFetch=async(url,options)=>{
- const body=options.body?JSON.parse(options.body):undefined;cloudCalls.push({url,options,body});
- if(url.includes('grant_type=pkce'))return Response.json({access_token:'test-jwt',refresh_token:'test-refresh',expires_in:3600,user:{id:adminId}});
- if(url.endsWith('algo_quest_traffic_is_admin'))return Response.json(allowAdmin);
- if(url.endsWith('algo_quest_traffic_report'))return Response.json({daily:[],chapters:[],visits:[],totals:{pv:0,visitor_days:0,days:1},has_more:false});
- throw Error('Unexpected cloud call');
-};
-const server=createAdminServer({port,fetch:mockFetch});await new Promise(resolve=>server.listen(port,ADMIN_HOST,resolve));
-try{
- assert.equal(server.address().address,'127.0.0.1');let response=await fetch(origin+'/');assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert(response.headers.get('content-security-policy').includes("frame-ancestors 'none'"));assert(!response.headers.has('access-control-allow-origin'));
- const rawStatus=headers=>new Promise((resolve,reject)=>{const r=http.get(origin+'/',{headers},response=>{response.resume();response.on('end',()=>resolve(response.statusCode));});r.on('error',reject);});
- assert.equal(await rawStatus({host:'evil.example'}),403);
- assert.equal((await fetch(origin+'/api/session',{headers:{origin:'https://evil.example'}})).status,403);
- assert.equal((await fetch(origin+'/api/session',{headers:{'sec-fetch-site':'cross-site'}})).status,403);
- assert.equal((await fetch(origin+'/api/auth/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,403);
- assert.equal((await fetch(origin+'/api/report?from='+day+'&to='+day)).status,401);
- assert.equal((await fetch(origin+'/server.mjs')).status,404);
- response=await fetch(origin+'/api/auth/start',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:'{}'});const auth=await response.json();const flowCookie=response.headers.get('set-cookie').split(';')[0];const authorize=new URL(auth.url);assert.equal(authorize.searchParams.get('redirect_to'),origin+'/auth/callback');assert.equal(authorize.searchParams.get('provider'),'github');assert.equal(authorize.searchParams.get('code_challenge').length,43);assert.equal(authorize.searchParams.get('code_challenge_method'),'s256');
- response=await fetch(origin+'/auth/callback?code=test-code',{headers:{cookie:flowCookie},redirect:'manual'});assert.equal(response.status,303);const cookie=response.headers.get('set-cookie').split(';')[0];assert.notEqual(cookie,flowCookie);assert(response.headers.get('set-cookie').includes('HttpOnly'));const exchange=cloudCalls.find(c=>c.url.includes('grant_type=pkce'));assert.equal(createHash('sha256').update(exchange.body.code_verifier).digest('base64url'),authorize.searchParams.get('code_challenge'));
- assert.equal((await fetch(origin+'/auth/callback?code=test-code',{headers:{cookie:flowCookie},redirect:'manual'})).status,400);
- response=await fetch(origin+'/api/session',{headers:{cookie}});const session=await response.json();assert.equal(session.authenticated,true);assert(!JSON.stringify(session).includes('test-jwt'));
- response=await fetch(origin+'/api/report?from='+day+'&to='+day,{headers:{cookie}});assert.equal(response.status,200);assert.equal(cloudCalls.at(-1).options.headers.Authorization,'Bearer test-jwt');
- response=await fetch(origin+'/api/logout',{method:'POST',headers:{origin,cookie,'Content-Type':'application/json'},body:'{}'});assert.equal(response.status,200);assert.equal((await (await fetch(origin+'/api/session',{headers:{cookie}})).json()).authenticated,false);
- allowAdmin=false;response=await fetch(origin+'/api/auth/start',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:'{}'});const otherCookie=response.headers.get('set-cookie').split(';')[0];response=await fetch(origin+'/auth/callback?code=other',{headers:{cookie:otherCookie},redirect:'manual'});assert.equal(response.status,403);
-}finally{await new Promise(resolve=>server.close(resolve));}
-console.log('Analytics checks passed: production-only SPA tracking, daily identity/opt-out, real PostgreSQL migration + UV/PV deduplication + rate limits + admin isolation + cursor pagination + retention, and loopback HTTP/CSRF/PKCE/session checks. No production data was changed.');
+console.log('Analytics checks passed: production-only SPA tracking, daily identity/opt-out, and real PostgreSQL migration + UV/PV deduplication + rate limits + admin isolation + cursor pagination + retention. No production data was changed.');

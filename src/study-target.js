@@ -8,10 +8,6 @@ export const SECTION_LABELS = {
   'lesson-practice': '练习',
   'lesson-challenge': '独立挑战',
   'java-experiment': 'Java 小步实验',
-  'career-concepts': '职业概念',
-  'career-steps': '跟随操作',
-  'career-practice': '职业实践',
-  'career-check': '阶段自检',
   'topic-example': '专题推演',
   'topic-definition': '专题概念',
   'topic-check': '专题自检',
@@ -27,7 +23,7 @@ export function splitStudyTarget(raw) {
   const params = new URLSearchParams(query);
   const allowed = new Set(['at', 'step', 'example', 'input']);
   if ([...params.keys()].some((k) => !allowed.has(k) || params.getAll(k).length !== 1)) return null;
-  if (!/^\/(learn|boss|java|careers|topics)\//.test(path)) return null;
+  if (!/^\/(learn|boss|java|topics)\//.test(path)) return null;
   const section = params.get('at');
   if (!section || !sectionOK(section)) return null;
   const target = { section };

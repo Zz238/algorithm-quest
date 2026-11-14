@@ -37,7 +37,6 @@ const KnowledgePage = lazy(() => import('./pages/KnowledgePage.vue'));
 const ExecutionPage = lazy(() => import('./pages/ExecutionPage.vue'));
 const ComparePage = lazy(() => import('./pages/ComparePage.vue'));
 const ComplexityPage = lazy(() => import('./pages/ComplexityPage.vue'));
-const CareerPage = lazy(() => import('./pages/CareerPage.vue'));
 const PracticePage = lazy(() => import('./pages/PracticePage.vue'));
 const AlgorithmTopics = lazy(() => import('./pages/AlgorithmTopics.vue'));
 const AccountPanel = lazy(() => import('./components/AccountPanel.vue'));
@@ -429,14 +428,6 @@ onUnmounted(() => {
           :topic-id="current.topic"
           :stage-id="current.topicStage"
           :target="current.target"
-          :owner="owner"
-          :disabled="cloud.state.initializing"
-          @navigate="go"
-        />
-        <CareerPage
-          v-else-if="view === 'careers'"
-          :route-id="current.routeId"
-          :stage-id="current.stageId"
           :owner="owner"
           :disabled="cloud.state.initializing"
           @navigate="go"

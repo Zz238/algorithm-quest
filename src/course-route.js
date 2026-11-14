@@ -1,5 +1,4 @@
 import { chapters, JAVA_INDEX as JAVA_BY_ID, CODING_INDEX } from './data/course-index.js';
-import { CAREER_BY_ID } from './data/career-index.js';
 import { splitStudyTarget } from './study-target.js';
 import { ALGORITHM_TOPIC_BY_ID, ROADMAP_STAGES } from './data/algorithm-roadmap.js';
 
@@ -19,7 +18,6 @@ const staticRoutes = new Map([
   ['/review', 'review'],
   ['/trial', 'trial'],
   ['/playground', 'playground'],
-  ['/careers', 'careers'],
   ['/practice', 'practice'],
   ['/practice/review', 'practice-review'],
   ['/topics', 'topics'],
@@ -65,9 +63,6 @@ function parseBaseRoute(input, terms = {}) {
   ) {
     return { ...fallback, view: 'review', topic: review[1] };
   }
-  const career = /^\/careers\/(backend|algorithm)(?:\/([a-z-]+))?$/.exec(path);
-  if (career && (!career[2] || CAREER_BY_ID[career[1]].stages.some(([id]) => id === career[2])))
-    return { ...fallback, view: 'careers', routeId: career[1], stageId: career[2] || null };
   const practice = /^\/practice\/(review\/)?(code-[a-z0-9-]+)$/.exec(path);
   if (practice && Object.hasOwn(CODING_INDEX, practice[2]))
     return { ...fallback, view: practice[1] ? 'practice-review' : 'practice', topic: practice[2] };
@@ -116,13 +111,12 @@ const TITLES = {
   review: '复习与阶段练习',
   trial: '零基础试学',
   playground: 'Java 在线实验台',
-  careers: '职业路线',
   practice: '编程练习库',
   topics: '算法专题与进阶路线',
   'practice-review': '编程复习',
   'not-found': '没有找到页面',
 };
-export function routeTitle({ view, lesson, chapter, topic, routeId, stageId, topicStage }) {
+export function routeTitle({ view, lesson, chapter, topic, topicStage }) {
   const title =
     lesson?.title ||
     (view === 'boss'
@@ -132,16 +126,13 @@ export function routeTitle({ view, lesson, chapter, topic, routeId, stageId, top
         : view === 'glossary' && topic
           ? topic + ' · 术语手册'
           : TITLES[view]);
-  const career = CAREER_BY_ID[routeId];
   return (
     (view === 'topics'
       ? ALGORITHM_TOPIC_BY_ID[topic]?.title ||
         ROADMAP_STAGES.find((s) => s.id === topicStage)?.title ||
         TITLES.topics
-      : view === 'careers' && career
-        ? career.stages.find(([id]) => id === stageId)?.[1] || career.title
-        : view.startsWith('practice') && topic
-          ? CODING_INDEX[topic].title
-          : title) + ' · 算法之旅'
+      : view.startsWith('practice') && topic
+        ? CODING_INDEX[topic].title
+        : title) + ' · 算法之旅'
   );
 }

@@ -61,3 +61,26 @@
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; animation: none !important; transition-duration: 0s !important; }
 }
+
+/* The complete corner scale lives here. Components consume tokens, never new values. */
+:root { --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; }
+button,select,.file-button,.github-link,.chapter-progress,.chapter-progress i,
+.trace-tile,.tile,.trace-vars > div,.trace-secondary code,.calendar-grid button,
+.calendar-legend i,.calendar-detail span,.reading-progress,.reading-progress i,
+.question-type,.practice-saved,.reward,.comment-mine,.comment-avatar { border-radius: var(--radius-sm); }
+input,textarea,.story,.trace-error,.trace-current,.trace-output,.trace-code,
+.cost-note,.code-overview,.overview-io p,.selected-source,.mini-solution,
+.misconceptions article,.optional-note,.code-later,.daily-lesson,.daily-ready,
+.relation,.hint-box,.case-answer,.test-case pre,.cloud-status,.login-setup,
+.comment-error,.comment-empty,.toast,.github-tooltip,.profile-avatar,.profile-avatar img,
+.glossary-layout pre,.empty-state,.terms-table tr { border-radius: var(--radius-md); }
+dialog,[role=dialog],[role=alertdialog],[role=alert],.hero-next,.chapter-card,
+.howto,.terms-table,.worked-case,.trace-lab,.visualizer,.code-reader,
+.explanation-panel,.mini-question,.related-problems article,.test-case,
+.clear-chapter,.record-summary,.term-list button,.comment-composer,.comment-card,
+.account-card,.guest-merge,.account-summary,.checkin-stats,.today-card,.calendar-card,
+.chapter-panel,.search-results > button { border-radius: var(--radius-lg); }
+.visualizer > .section-bar,.trace-lab > .section-bar,.code-reader > .section-bar,
+.comment-composer > .composer-tabs { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
+.node-svg rect { rx: var(--radius-sm); ry: var(--radius-sm); }
+.foundation-compare table { border-radius: var(--radius-lg); clip-path: inset(0 round var(--radius-lg)); }

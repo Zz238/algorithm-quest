@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue';
-import { CAREER_BY_ID } from '../data/career-index.js';
 import { CODING_INDEX, JAVA_INDEX } from '../data/course-index.js';
 import { routeTitle } from '../course-route.js';
 import CourseLink from './CourseLink.vue';
@@ -35,18 +34,6 @@ const parts = computed(() => {
       { label: 'Java 起步课', to: '/java' },
       ...(r.topic ? [{ label: JAVA_INDEX[r.topic].title }] : []),
     ];
-  if (r.view === 'careers') {
-    const c = CAREER_BY_ID[r.routeId];
-    return [
-      { label: '职业路线', to: '/careers' },
-      ...(c
-        ? [
-            { label: c.title, to: '/careers/' + c.id },
-            ...(r.stageId ? [{ label: c.stages.find(([id]) => id === r.stageId)[1] }] : []),
-          ]
-        : []),
-    ];
-  }
   if (r.view.startsWith('practice') || r.view === 'playground')
     return [
       { label: '编程实践', to: '/practice' },

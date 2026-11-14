@@ -78,8 +78,19 @@ const related = computed(() => {
       <h1>{{ review ? '隔几天，再独立写出来' : '把看懂的知识写成程序' }}</h1>
       <p>
         {{ CODING_TASKS.length }}
-        项独立任务。从修改一个返回值，到完成数据结构和阶段作品。先通过对应讲解，再选任务；“工程基础”和“进阶衔接”有单独的补充说明。
+        项渐进式 Java 编程任务。每道题都提供「填 1 空 → 填 3 空 →
+        独立编写」三级阶梯，建议先完成对应小节的图解与推演再来动手。
       </p>
+      <div class="study-actions practice-quick-links">
+        <CourseLink to="/playground" @navigate="emit('navigate', $event)"
+          >打开 Java 自由实验台 →</CourseLink
+        >
+        <CourseLink
+          :to="review ? '/practice' : '/practice/review'"
+          @navigate="emit('navigate', $event)"
+          >{{ review ? '查看全部编程题库 →' : '进入到期编程复习 →' }}</CourseLink
+        >
+      </div>
       <div class="practice-toolbar coding-filters">
         <UiSearchField
           v-model="query"

@@ -3,27 +3,6 @@ import { editCodingBody, editJavaCode } from './editor-helpers.js';
 import { buildLearnerProgram } from '../../src/java/coding-program.js';
 import { CODING_BY_ID } from '../../src/data/coding-catalog.js';
 
-test('career routes, breadcrumbs and prerequisite-aware content remain separate from basic lessons', async ({
-  page,
-}) => {
-  await page.goto('/#/careers');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('从会写程序，到完成一份岗位作品');
-  await page.getByRole('link', { name: '查看路线与实践 →' }).first().click();
-  await expect(page).toHaveURL(/#\/careers\/backend$/);
-  await page
-    .locator('.career-sidebar')
-    .getByRole('link', { name: '4. HTTP 与 Spring Boot 接口' })
-    .click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('HTTP 与 Spring Boot 接口');
-  await page
-    .getByRole('navigation', { name: '面包屑' })
-    .getByRole('link', { name: 'Java 后端' })
-    .click();
-  await expect(page).toHaveURL(/#\/careers\/backend$/);
-  await page.goto('/#/careers/algorithm/data');
-  await expect(page.locator('.career-content')).toContainText('先划分，再拟合预处理参数');
-});
-
 test('practice search, daily review and drafts work before loading Java resources', async ({ page }) => {
   const runtime = [];
   page.on('request', (r) => {
@@ -69,22 +48,24 @@ test('a glossary tab returns to the previous lesson and its reading position', a
   await expect.poll(() => glossary.evaluate(() => scrollY)).toBeGreaterThan(Math.max(100, y - 250));
 });
 
-test('documentation search shortcut includes career and programming material', async ({ page }) => {
+test('documentation search shortcut includes algorithm topics and programming material', async ({
+  page,
+}) => {
   await page.goto('/#/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await page.keyboard.press('Control+k');
   const field = page.getByRole('searchbox', { name: '搜索课程、题目、术语、代码和笔记' });
   await expect(field).toBeFocused();
-  await field.fill('均方误差');
+  await field.fill('滑动窗口');
   await expect(
-    page.locator('.result-group').filter({ has: page.getByRole('heading', { name: /职业路线/ }) }),
+    page.locator('.result-group').filter({ has: page.getByRole('heading', { name: /算法专题/ }) }),
   ).toBeVisible();
 });
 
 for (const width of [320, 390, 768, 1024, 1440])
-  test('career and coding layout at ' + width + 'px', async ({ page }) => {
+  test('coding and playground layout at ' + width + 'px', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/careers', '/careers/backend/http', '/practice/code-core-3-2']) {
+    for (const path of ['/practice', '/practice/code-core-3-2', '/playground']) {
       await page.goto('/#' + path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       expect(
@@ -112,6 +93,7 @@ test('real browser Java compiles and reports all course test cases', async ({ pa
   await page.reload();
   await expect(page.locator('.coding-badge')).toHaveText('曾独立通过');
 });
+
 test('a task keeps its complete Main file and runs the edited main separately from judged tests', async ({
   page,
 }) => {

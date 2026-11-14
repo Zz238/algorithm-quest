@@ -7,7 +7,7 @@ export const EXTRA_JAVA_TASKS = {
     solution:
       'for (int end = a.length - 1; end > 0; end--) {\n    for (int i = 0; i < end; i++) {\n        if (a[i] > a[i + 1]) {\n            int temp = a[i];\n            a[i] = a[i + 1];\n            a[i + 1] = temp;\n        }\n    }\n}',
     support:
-      '    static int checkSort(int[] a, int[] expected) {\n        bubble(a);\n        if (a.length != expected.length) return 0;\n        for (int i = 0; i < a.length; i++) {\n            if (a[i] != expected[i]) return 0;\n        }\n        return 1;\n    }\n',
+      '    static int checkSort(int[] a, int[] expected) {\n        bubble(a);\n        if (a.length != expected.length) return 0;\n        for (int i = 0; i < a.length; i++) {\n            if (a[i] != expected[i]) {\n                System.out.println("当前排序结果：" + java.util.Arrays.toString(a) + "，期望结果：" + java.util.Arrays.toString(expected));\n                return 0;\n            }\n        }\n        return 1;\n    }\n',
     cases: [
       ['checkSort(new int[]{3,1,2}, new int[]{1,2,3})', 1],
       ['checkSort(new int[]{2,-1,2}, new int[]{-1,2,2})', 1],

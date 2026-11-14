@@ -31,7 +31,17 @@ try {
     const run = JSON.parse(
       execFileSync(
         'java',
-        ['-cp', 'src/java/generated/runner.jar', 'quest.runtime.Runner', file, '', program.entryClass],
+        [
+          '-Dfile.encoding=UTF-8',
+          '-Dsun.stdout.encoding=UTF-8',
+          '-Dstdout.encoding=UTF-8',
+          '-cp',
+          'src/java/generated/runner.jar',
+          'quest.runtime.Runner',
+          file,
+          '',
+          program.entryClass,
+        ],
         {
           encoding: 'utf8',
           timeout: 10000,
@@ -49,10 +59,22 @@ try {
     if (sampleIds.has(task.id)) {
       writeFileSync(file, buildLearnerProgram(task, task.solution));
       const sample = JSON.parse(
-        execFileSync('java', ['-cp', 'src/java/generated/runner.jar', 'quest.runtime.Runner', file], {
-          encoding: 'utf8',
-          timeout: 10000,
-        }),
+        execFileSync(
+          'java',
+          [
+            '-Dfile.encoding=UTF-8',
+            '-Dsun.stdout.encoding=UTF-8',
+            '-Dstdout.encoding=UTF-8',
+            '-cp',
+            'src/java/generated/runner.jar',
+            'quest.runtime.Runner',
+            file,
+          ],
+          {
+            encoding: 'utf8',
+            timeout: 10000,
+          },
+        ),
       );
       assert.equal(sample.state, 'finished', task.id + ': Main example');
       const expected = task.cases[0][1];

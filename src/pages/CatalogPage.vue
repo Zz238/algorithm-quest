@@ -37,7 +37,8 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
       <CourseLink to="/knowledge" @navigate="navigate">知识图谱</CourseLink
       ><CourseLink to="/execution" @navigate="navigate">逐行执行</CourseLink
       ><CourseLink to="/compare" @navigate="navigate">对比辨析</CourseLink
-      ><CourseLink to="/complexity" @navigate="navigate">复杂度训练</CourseLink>
+      ><CourseLink to="/complexity" @navigate="navigate">复杂度训练</CourseLink
+      ><CourseLink to="/playground" @navigate="navigate">Java 实验台</CourseLink>
     </nav>
     <section v-if="selected" :id="'catalog-chapter-' + selected.id" class="chapter-directory study-page">
       <CourseLink to="/" @navigate="navigate">← 全部基础教学</CourseLink
@@ -158,19 +159,19 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
         </div>
         <CourseLink to="/topics" @navigate="navigate">查看四阶段算法专题 →</CourseLink>
       </aside>
-      <section class="starting-route" aria-label="入门路线">
-        <h3>第一次写程序，按这条路线开始</h3>
+      <details class="starting-route study-details" :open="!hasStarted" aria-label="入门路线">
+        <summary>第一次写程序？按这条三步路线开始</summary>
         <ol>
           <li>
-            <CourseLink to="/java/print" @navigate="navigate">先学打印、变量和判断</CourseLink
+            <CourseLink to="/java/print" @navigate="navigate">1. 先学打印、变量和判断</CourseLink
             ><span>先完成 3 节起步课，做出看得见的小结果。</span>
           </li>
           <li>
-            <CourseLink to="/learn/1/0" @navigate="navigate">再用纸笔理解算法</CourseLink
+            <CourseLink to="/learn/1/0" @navigate="navigate">2. 再用纸笔理解算法</CourseLink
             ><span>从输入、输出和状态开始，接上下面的主线。</span>
           </li>
           <li>
-            <CourseLink to="/java" @navigate="navigate">其余 Java 短课按需补</CourseLink
+            <CourseLink to="/java" @navigate="navigate">3. 其余 Java 短课按需补</CourseLink
             ><span>循环、引用、二维数组会在用到前提醒；已练过可先做题确认。</span>
           </li>
         </ol>
@@ -180,7 +181,7 @@ const courseGroups = [0, 1, 2, 3].map((index) => ({
             >复习与阶段作品{{ summary.due ? ' · ' + summary.due + ' 项待做' : '' }} →</CourseLink
           >
         </div>
-      </section>
+      </details>
       <SearchResults v-if="query.trim()" :query="query" :notes="notes" @navigate="navigate" />
       <div v-else class="course-path">
         <section v-for="w in courseGroups" :key="w.index" class="course-group">

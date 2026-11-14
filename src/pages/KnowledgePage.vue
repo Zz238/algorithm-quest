@@ -9,12 +9,13 @@ const props = defineProps({ progress: Object });
 const emit = defineEmits(['navigate']);
 const query = ref(''),
   scope = ref('all'),
+  category = ref('all'),
   selected = ref('');
 const canvas = ref(null),
   canvasWidth = ref(828);
 let resizeObserver;
 onMounted(() => {
-  if (canvas.value.clientWidth) canvasWidth.value = canvas.value.clientWidth;
+  if (canvas.value?.clientWidth) canvasWidth.value = canvas.value.clientWidth;
   if (typeof ResizeObserver === 'undefined') return;
   resizeObserver = new ResizeObserver(([entry]) => {
     canvasWidth.value = entry.contentRect.width;
@@ -27,6 +28,7 @@ const nodes = computed(() => [
     id: j.id,
     title: j.title,
     group: 'Java 预备课',
+    kind: 'java',
     path: '/java/' + j.id.slice(5),
     dependencies: [],
     done: props.progress.learning.prepared.includes(j.id),
@@ -36,6 +38,7 @@ const nodes = computed(() => [
       id: l.id,
       title: l.title,
       group: '第 ' + c.id + ' 章',
+      kind: 'course',
       path: lessonRoute(l.id),
       dependencies: priorIds(l.id),
       done: props.progress.lessons.includes(l.id),
@@ -45,6 +48,7 @@ const nodes = computed(() => [
     id: 'topic-' + t.id,
     title: t.title,
     group: '算法专题',
+    kind: 'topic',
     path: '/topics/' + t.id,
     dependencies: (TOPIC_LESSONS.find((l) => l.id === t.id)?.requires || []).map((id) =>
       ALGORITHM_TOPICS.some((a) => a.id === id) ? 'topic-' + id : id,
@@ -58,6 +62,7 @@ const visible = computed(() =>
   nodes.value.filter(
     (n) =>
       (!query.value || (n.title + n.group).toLowerCase().includes(query.value.toLowerCase())) &&
+      (category.value === 'all' || n.kind === category.value) &&
       (scope.value === 'all' || (scope.value === 'done' ? n.done : !n.done)),
   ),
 );
@@ -67,11 +72,11 @@ const positioned = computed(() =>
   visible.value.map((node, i) => ({
     ...node,
     x: 24 + (i % columns.value) * (nodeWidth.value + 35),
-    y: 24 + Math.floor(i / columns.value) * 76,
+    y: 24 + Math.floor(i / columns.value) * 82,
   })),
 );
 const canvasHeight = computed(() =>
-  Math.max(96, Math.ceil(visible.value.length / columns.value) * 76 + 24),
+  Math.max(104, Math.ceil(visible.value.length / columns.value) * 82 + 24),
 );
 const links = computed(() => {
   const shown = new Map(positioned.value.map((n) => [n.id, n]));
@@ -80,18 +85,15 @@ const links = computed(() => {
   );
 });
 function edgePath({ from, to }) {
-  if (from.y === to.y) return `M${from.x + nodeWidth.value},${from.y + 26} H${to.x}`;
+  if (from.y === to.y) return `M${from.x + nodeWidth.value},${from.y + 30} H${to.x}`;
   const startX = from.x + nodeWidth.value / 2,
     endX = to.x + nodeWidth.value / 2,
     laneX = Math.min(from.x, to.x) - 14;
-  return `M${startX},${from.y + 52} V${from.y + 64} H${laneX} V${to.y - 12} H${endX} V${to.y}`;
+  return `M${startX},${from.y + 60} V${from.y + 70} H${laneX} V${to.y - 12} H${endX} V${to.y}`;
 }
-function titleLines(node) {
-  const title = (node.done ? '已读 · ' : '') + node.title;
-  const count = Math.max(10, Math.floor((nodeWidth.value - 20) / 12));
-  return title.length > count
-    ? [title.slice(0, count), title.slice(count, count * 2 - 1) + (title.length >= count * 2 ? '…' : '')]
-    : [title];
+function shortTitle(node) {
+  const count = Math.max(10, Math.floor((nodeWidth.value - 24) / 13));
+  return node.title.length > count ? node.title.slice(0, count - 1) + '…' : node.title;
 }
 function related(n) {
   return (
@@ -105,13 +107,22 @@ function related(n) {
 <template>
   <main class="study-page knowledge-page">
     <CourseLink to="/" @navigate="emit('navigate', $event)">← 课程目录</CourseLink>
+    <span class="eyebrow">前置关系 · 全局导览</span>
     <h1>看见知识之间的连接</h1>
     <p>
-      包含 {{ chapters.reduce((n, c) => n + c.lessons.length, 0) }} 节课程、{{ ALGORITHM_TOPICS.length }}
-      篇专题及 Java 预备课。箭头从前置知识指向后续内容；亮色为已读，灰色为未读。完成阅读不等于已掌握。
+      涵盖 15 节 Java 预备课、{{ chapters.reduce((n, c) => n + c.lessons.length, 0) }} 节核心课程与
+      {{ ALGORITHM_TOPICS.length }}
+      篇进阶专题。悬停或聚焦任意节点即可高亮它的前置与后续脉络，点击节点直达对应课程。
     </p>
     <div class="practice-toolbar">
       <label>查找节点<input v-model="query" type="search" placeholder="递归、链表、背包…" /></label
+      ><label
+        >所属模块<select v-model="category">
+          <option value="all">全部模块（128）</option>
+          <option value="java">Java 预备课（15）</option>
+          <option value="course">12 章核心课（72）</option>
+          <option value="topic">算法专题（41）</option>
+        </select></label
       ><label
         >阅读状态<select v-model="scope">
           <option value="all">全部</option>
@@ -120,8 +131,20 @@ function related(n) {
         </select></label
       ><button v-if="selected" @click="selected = ''">取消聚焦</button>
     </div>
-    <p class="micro">
-      图谱随页面完整展开；悬停或聚焦节点查看依赖，点击节点进入课程。键盘用户也可在下方节点列表中直接进入。
+    <section v-if="active" class="study-note knowledge-active-card" aria-live="polite">
+      <div>
+        <span class="eyebrow">{{ active.group }} · {{ active.done ? '已读' : '未读' }}</span>
+        <h2>{{ active.title }}</h2>
+        <p>
+          前置知识：{{
+            active.dependencies.map((id) => byId[id]?.title || id).join('、') || '零基础可直接开始'
+          }}
+        </p>
+      </div>
+      <CourseLink :to="active.path" @navigate="emit('navigate', $event)">打开该节课程 →</CourseLink>
+    </section>
+    <p v-else class="micro">
+      图谱随页面完整展开；悬停或聚焦节点查看依赖关系，点击节点进入课程。键盘用户也可在下方列表中直接跳转。
     </p>
     <div ref="canvas" class="knowledge-canvas" aria-label="完整知识依赖图">
       <svg
@@ -155,7 +178,11 @@ function related(n) {
           v-for="n in positioned"
           :key="n.id"
           :transform="`translate(${n.x},${n.y})`"
-          :class="['knowledge-node', { done: n.done, dim: !related(n), selected: n.id === selected }]"
+          :class="[
+            'knowledge-node',
+            'kind-' + n.kind,
+            { done: n.done, dim: !related(n), selected: n.id === selected },
+          ]"
           role="button"
           tabindex="0"
           :aria-label="n.group + ' ' + n.title + (n.done ? ' 已读' : ' 未读')"
@@ -166,22 +193,14 @@ function related(n) {
           @keydown.space.prevent="emit('navigate', n.path)"
         >
           <title>{{ n.group }} · {{ n.title }}</title>
-          <rect :width="nodeWidth" height="52" rx="6" />
-          <text x="10" :y="titleLines(n).length === 1 ? 31 : 21">
-            <tspan v-for="(line, i) in titleLines(n)" :key="i" x="10" :dy="i ? 18 : 0">{{ line }}</tspan>
+          <rect :width="nodeWidth" height="60" rx="8" />
+          <text x="12" y="22">
+            <tspan class="node-meta" x="12" dy="0">{{ n.group }} · {{ n.done ? '已读' : '待学' }}</tspan>
+            <tspan class="node-title" x="12" dy="22">{{ shortTitle(n) }}</tspan>
           </text>
         </g>
       </svg>
     </div>
-    <section v-if="active" class="study-note" aria-live="polite">
-      <h2>{{ active.title }}</h2>
-      <p>
-        前置知识：{{
-          active.dependencies.map((id) => byId[id]?.title || id).join('、') || '无额外前置要求'
-        }}
-      </p>
-      <CourseLink :to="active.path" @navigate="emit('navigate', $event)">打开课程 →</CourseLink>
-    </section>
     <details class="study-details">
       <summary>展开可访问的节点列表（{{ visible.length }}）</summary>
       <ul>

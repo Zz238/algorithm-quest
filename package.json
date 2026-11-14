@@ -13,7 +13,6 @@
     "check:comments": "node scripts/check-comments.mjs",
     "check:reading": "node scripts/check-reading.mjs",
     "check:analytics": "node scripts/check-analytics.mjs",
-    "admin": "node admin/server.mjs --open",
     "check:java": "node scripts/check-starter-java.mjs",
     "generate:java": "node scripts/generate-java-examples.mjs",
     "lint": "eslint src scripts tests *.config.js",
@@ -24,7 +23,6 @@
     "generate:index": "node scripts/generate-course-index.mjs",
     "build:java-runner": "node scripts/build-java-runner.mjs",
     "check:coding": "node scripts/generate-course-index.mjs --check && node scripts/check-coding.mjs",
-    "check:careers": "node scripts/check-career-projects.mjs",
     "check:topics": "node scripts/check-topics.mjs",
     "measure:build": "node scripts/measure-build.mjs"
   },
